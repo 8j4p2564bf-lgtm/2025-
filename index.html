@@ -7,24 +7,32 @@
    <script src="https://cdn.tailwindcss.com"></script>
    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
    <style>
+       /* 1. 嚴格的全局 CSS 重設：強制移除瀏覽器預設的邊距和內距 */
+       html, body {
+           margin: 0;
+           padding: 0;
+           overflow-x: hidden; /* 防止出現水平捲軸 */
+       }
+       
        body {
            font-family: 'Inter', sans-serif;
            background-color: #f7f3f0; /* 柔和的米白色背景 */
        }
-       /* 調整 app-container：寬度設為 100% 填滿手機畫面，並設定較大的 max-width 避免電腦畫面過寬 */
+       
+       /* 2. App Container 調整：強制佔據整個視窗寬度，並保持置中最大寬度 */
        .app-container {
-           max-width: 640px; /* 模擬平板/桌面最大寬度 */
-           width: 100%; /* 關鍵：讓手機畫面自動撐滿 */
+           width: 100vw; /* 關鍵：強制佔據視窗寬度，解決留白問題 */
+           max-width: 640px; /* 在電腦或平板上保持合理的閱讀寬度 */
            min-height: 100vh;
-           /* 移除 rounded-2xl 和 shadow-2xl，讓手機看起來像全螢幕 App */
        }
+       
+       /* 保持原有的樣式 */
        .tab-button.active {
-           background-color: #d9e9c9; /* 柔和的綠色底 */
+           background-color: #d9e9c9;
            color: #38761d;
            border-bottom: 3px solid #6aa84f;
            font-weight: 600;
        }
-       /* 可點擊景點的樣式 */
        .spot-clickable {
            cursor: pointer;
            text-decoration: underline;
@@ -37,10 +45,9 @@
        }
    </style>
 </head>
-<!-- 移除 body 上的 p-4，讓內容可以貼合螢幕邊緣 -->
+<!-- 設置 body 為 flex 容器並居中，確保 app-container (最大寬度 640px) 始終居中 -->
 <body class="flex justify-center">
 
-<!-- 移除 rounded-2xl 和 shadow-2xl 讓畫面貼合螢幕 -->
 <div class="app-container bg-white overflow-hidden">
 
    <!-- 頂部標題與總覽 -->
