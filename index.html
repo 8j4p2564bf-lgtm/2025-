@@ -1,269 +1,370 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
+<!doctype html>
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>京都・大阪 5 日自由行 App</title>
-
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>京都・大阪 5日行程 — App 版</title>
+<meta name="theme-color" content="#fff7f1" />
 <style>
-/* ------------------ 基礎 ------------------ */
-body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: #faf7f2;
-    color: #2a2a2a;
-    overflow: hidden;
+/* === 基礎重設 === */
+:root{
+  --bg:#fbf7f2;
+  --card:#ffffff;
+  --muted:#6b6b6b;
+  --accent:#e86d4b;
+  --glass: rgba(255,255,255,0.75);
 }
-.app-header {
-    padding: 16px;
-    padding-top: 36px;
-    font-size: 20px;
-    font-weight: 700;
-    text-align: center;
-    background: #ffffffdd;
-    backdrop-filter: blur(8px);
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 20;
-    border-bottom: 1px solid #eee;
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;padding:0;background:var(--bg);-webkit-font-smoothing:antialiased;font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Noto Sans TC", "Segoe UI", Arial}
+.app{
+  width:100%;
+  max-width:720px;
+  margin:0 auto;
+  min-height:100vh;
+  position:relative;
+  overflow:hidden;
 }
 
-/* ------------------ 分頁滑動容器 ------------------ */
-.page-wrapper {
-    position: absolute;
-    top: 80px;
-    bottom: 70px;
-    width: 100%;
-    overflow: hidden;
+/* === Header (iOS style) === */
+.header{
+  position:fixed;
+  top:0;left:0;right:0;
+  height:78px;
+  padding-top:28px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.6));
+  backdrop-filter: blur(8px);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding-left:16px;padding-right:16px;border-bottom:1px solid rgba(0,0,0,0.05);z-index:40;
+}
+.header .title{font-weight:800;font-size:16px;color:#111}
+.header .subtitle{font-size:12px;color:var(--muted);opacity:0.9}
+.header .nav{
+  display:flex;gap:8px;align-items:center;
+}
+.icon-btn{
+  width:38px;height:38px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;border:1px solid rgba(0,0,0,0.03);box-shadow:0 6px 18px rgba(10,10,10,0.06);cursor:pointer
 }
 
-.pages {
-    display: flex;
-    width: 500%;
-    height: 100%;
-    transition: transform 0.35s ease;
+/* === Pages (左右滑動) === */
+.pages-wrap{position:absolute;top:78px;bottom:0;left:0;right:0;overflow:hidden}
+.pages{display:flex;height:100%;transition:transform .36s cubic-bezier(.22,.9,.37,1)}
+.page{width:100%;padding:18px 16px 120px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+/* page header */
+.day-header{margin-bottom:14px}
+.day-title{font-size:20px;font-weight:800;color:#111}
+.day-meta{font-size:13px;color:var(--muted);margin-top:6px}
+
+/* === 卡片樣式（spot） === */
+.spot{
+  background:var(--card);
+  border-radius:14px;
+  padding:12px 14px;
+  margin-bottom:12px;
+  box-shadow: 0 6px 20px rgba(16,16,16,0.06);
+  border:1px solid rgba(0,0,0,0.03);
+  transition: transform .18s ease, box-shadow .18s ease;
+  cursor:pointer;
+}
+.spot:active{transform:scale(.995)}
+.spot .row{display:flex;gap:12px;align-items:flex-start}
+.spot .time{min-width:64px;color:var(--muted);font-weight:700}
+.spot .title{font-weight:800;font-size:16px;color:#111}
+.spot .meta{font-size:13px;color:var(--muted);margin-top:6px}
+
+/* subtle accent label */
+.badge{display:inline-block;background:linear-gradient(90deg,#ffdab1,#ffe1d6);color:#3a1c11;padding:6px 8px;border-radius:999px;font-weight:700;font-size:12px;margin-left:6px}
+
+/* === Bottom sheet (B1) === */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.36);opacity:0;pointer-events:none;transition:opacity .25s;z-index:70}
+.sheet{
+  position:fixed;left:0;right:0;bottom:-100vh;height:72vh;background:linear-gradient(180deg,#fff,#fff);border-radius:18px 18px 0 0;padding:14px 16px;z-index:80;transition:transform .32s cubic-bezier(.22,.9,.37,1);
+  box-shadow: 0 -30px 70px rgba(10,10,10,0.12);
+}
+.sheet.open{transform:translateY(-0%);}
+.sheet-header{width:56px;height:5px;background:#e8e8e8;border-radius:99px;margin:6px auto 12px}
+.sheet-title{font-weight:800;font-size:18px;color:#111;margin-bottom:6px}
+.sheet-desc{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:12px}
+.sheet-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sheet .map-btn{background:var(--accent);color:white;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:800}
+
+/* drag hint */
+.sheet-hint{font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px}
+
+/* === small screen tweaks === */
+@media (max-width:420px){
+  .header{height:74px;padding-top:24px}
+  .page{padding-bottom:140px}
+  .sheet{height:78vh}
 }
 
-.page {
-    width: 100%;
-    overflow-y: scroll;
-    padding: 16px 14px 40px;
-    box-sizing: border-box;
-}
-
-/* ------------------ 景點卡片 ------------------ */
-.spot-card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 14px;
-    box-shadow: 0 2px 6px #0001;
-    cursor: pointer;
-}
-.spot-title {
-    font-size: 17px;
-    font-weight: 700;
-}
-.spot-time {
-    font-size: 13px;
-    color: #8e8e8e;
-    margin-bottom: 6px;
-}
-
-/* ------------------ Bottom Sheet ------------------ */
-.sheet-backdrop {
-    position: fixed;
-    inset: 0;
-    background: #0005;
-    opacity: 0;
-    pointer-events: none;
-    transition: 0.25s;
-}
-
-.sheet {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: -70%;
-    height: 70%;
-    background: #fff;
-    border-radius: 20px 20px 0 0;
-    padding: 20px;
-    transition: 0.35s ease;
-    z-index: 50;
-}
-.sheet-handle {
-    width: 42px;
-    height: 5px;
-    background: #ddd;
-    border-radius: 50px;
-    margin: 0 auto 12px;
-}
-.sheet-title {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
-.sheet-desc {
-    font-size: 15px;
-    line-height: 1.5;
-    margin-bottom: 14px;
-}
-.map-btn {
-    display: inline-block;
-    background: #e46c4c;
-    padding: 10px 16px;
-    font-size: 15px;
-    color: white;
-    border-radius: 10px;
-    text-decoration: none;
-}
-
-/* ------------------ 底部 Tab Bar ------------------ */
-.tab-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 70px;
-    background: white;
-    border-top: 1px solid #ddd;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-.tab-btn {
-    text-align: center;
-    font-size: 14px;
-    color: #777;
-    flex: 1;
-    padding: 10px 0;
-}
-.tab-btn.active {
-    color: #e46c4c;
-    font-weight: 700;
-}
+/* hide native scrollbars slightly */
+.page::-webkit-scrollbar{width:6px}
+.page::-webkit-scrollbar-thumb{background:#eee;border-radius:6px}
 </style>
 </head>
-
 <body>
 
-<div class="app-header">京都・大阪 5 日行程</div>
-
-<!-- ------------------ 分頁內容 ------------------ -->
-<div class="page-wrapper">
-    <div class="pages" id="pages">
-
-        <!-- Day1 -->
-        <div class="page">
-            <h2>Day 1｜嵐山・月燈路</h2>
-
-            <div class="spot-card" onclick="openSheet('嵐山・渡月橋', '京都必訪景點，竹林小徑與渡月橋的絕美景色。', 'https://goo.gl/maps/Qn1k233s5j1F9R1D9')">
-                <div class="spot-time">16:10</div>
-                <div class="spot-title">嵐山・渡月橋、竹林小徑</div>
-            </div>
-
-            <div class="spot-card" onclick="openSheet('嵐山月燈路', '期間限定夜間點燈，美到像動畫場景。', 'https://goo.gl/maps/h1gVJJd6t1qeCpXu6')">
-                <div class="spot-time">18:00</div>
-                <div class="spot-title">嵐山月燈路</div>
-            </div>
-        </div>
-
-        <!-- Day2 -->
-        <div class="page">
-            <h2>Day 2｜清水寺・八坂神社</h2>
-
-            <div class="spot-card" onclick="openSheet('清水寺', '京都代表寺院，三年坂與二年坂超好拍。', 'https://goo.gl/maps/2nn8eqWcDxX1JQ4Y8')">
-                <div class="spot-time">09:30</div>
-                <div class="spot-title">清水寺</div>
-            </div>
-
-            <div class="spot-card" onclick="openSheet('八坂神社', '京都最重要的神社之一，旁邊是花見小路。', 'https://goo.gl/maps/ui9YcFh2yFQ1iLST9')">
-                <div class="spot-time">11:40</div>
-                <div class="spot-title">八坂神社</div>
-            </div>
-        </div>
-
-        <!-- Day3 -->
-        <div class="page">
-            <h2>Day 3｜伏見稻荷・大阪</h2>
-
-            <div class="spot-card" onclick="openSheet('伏見稻荷大社', '千本鳥居超壯觀，必拍！', 'https://goo.gl/maps/PB5SqYcRHae7i8')">
-                <div class="spot-time">08:30</div>
-                <div class="spot-title">伏見稻荷大社</div>
-            </div>
-        </div>
-
-        <!-- Day4 -->
-        <div class="page">
-            <h2>Day 4｜大阪城・天滿宮</h2>
-
-            <div class="spot-card" onclick="openSheet('大阪城', '大阪地標級景點，可搭御座船。', 'https://goo.gl/maps/Q3Rj5K9YBYqN8')">
-                <div class="spot-time">09:00</div>
-                <div class="spot-title">大阪城</div>
-            </div>
-        </div>
-
-        <!-- Day5 -->
-        <div class="page">
-            <h2>Day 5｜大鳥大社・返台</h2>
-
-            <div class="spot-card" onclick="openSheet('大鳥大社', '關西最古老的大社之一。', 'https://goo.gl/maps/FJd2uXfEq6C2')">
-                <div class="spot-time">09:20</div>
-                <div class="spot-title">大鳥大社</div>
-            </div>
-        </div>
-
+<div class="app" id="app">
+  <!-- Header with left/right nav but no tab bar -->
+  <div class="header" role="banner">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="icon-btn" id="prevBtn" title="上一天" aria-label="上一天">&lt;</div>
+      <div>
+        <div class="title">京都・大阪 5 日行程</div>
+        <div class="subtitle">5天4夜 · 4人家族</div>
+      </div>
     </div>
-</div>
 
-<!-- ------------------ Bottom Sheet ------------------ -->
-<div class="sheet-backdrop" id="backdrop" onclick="closeSheet()"></div>
-<div class="sheet" id="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" id="sheet-title"></div>
-    <div class="sheet-desc" id="sheet-desc"></div>
-    <a id="sheet-map" class="map-btn" target="_blank">查看地圖</a>
-</div>
+    <div class="nav" style="display:flex;align-items:center;">
+      <div id="dayLabel" style="text-align:center">
+        <div class="day-label-strong" style="font-weight:800">Day 1</div>
+        <div style="font-size:12px;color:var(--muted)">10/16 (四)</div>
+      </div>
+      <div style="width:10px"></div>
+      <div class="icon-btn" id="nextBtn" title="下一天" aria-label="下一天">&gt;</div>
+    </div>
+  </div>
 
-<!-- ------------------ Tab Bar ------------------ -->
-<div class="tab-bar">
-    <div class="tab-btn active" onclick="switchPage(0)">Day1</div>
-    <div class="tab-btn" onclick="switchPage(1)">Day2</div>
-    <div class="tab-btn" onclick="switchPage(2)">Day3</div>
-    <div class="tab-btn" onclick="switchPage(3)">Day4</div>
-    <div class="tab-btn" onclick="switchPage(4)">Day5</div>
+  <!-- Pages container -->
+  <div class="pages-wrap">
+    <div class="pages" id="pages">
+      <!-- Day 1 -->
+      <div class="page" data-day="1">
+        <div class="day-header">
+          <div class="day-title">Day 1｜嵐山・月燈路</div>
+          <div class="day-meta">京都抵達、嵐山竹林、夜間點燈（視活動）</div>
+        </div>
+
+        <div class="spot" data-spot="嵐山渡月橋、竹林小徑" data-time="16:10" data-desc="京都最具代表的自然景觀，參天竹林營造出幽靜氛圍，秋季楓葉時最美。" data-link="https://maps.google.com/?q=%E5%B5%90%E5%B1%B1%E7%AB%B9%E6%9E%97">
+          <div class="row">
+            <div class="time">16:10</div>
+            <div>
+              <div class="title">嵐山・渡月橋、竹林小徑<span class="badge">免費</span></div>
+              <div class="meta">建議停留 1.5-2 小時 / 交通：JR 嵯峨嵐山站</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spot" data-spot="嵐山月燈路" data-time="18:00" data-desc="夜間點燈活動，氣氛浪漫。請確認當年舉辦日期。" data-link="">
+          <div class="row">
+            <div class="time">18:00</div>
+            <div>
+              <div class="title">嵐山月燈路</div>
+              <div class="meta">季節性活動，視年度公告</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 小提示卡 -->
+        <div style="margin-top:8px;padding:12px;background:#fff;border-radius:12px;border:1px solid rgba(0,0,0,0.03);color:var(--muted);font-size:13px">
+          飛機：CI0152（TPE→KIX）09:00 → 12:50。 早出門請預留通關與移動時間。
+        </div>
+      </div>
+
+      <!-- Day 2 -->
+      <div class="page" data-day="2">
+        <div class="day-header">
+          <div class="day-title">Day 2｜清水寺・八坂神社</div>
+          <div class="day-meta">清水寺三年坂、錦市場午餐、花見小路</div>
+        </div>
+
+        <div class="spot" data-spot="清水寺參觀+散步三年坂／二年坂" data-time="09:30" data-desc="世界遺產，清水之舞台，建議早上前往避開人潮。" data-link="https://maps.google.com/?q=%E6%B8%85%E6%B0%B4%E5%AF%BA">
+          <div class="row">
+            <div class="time">09:30</div>
+            <div>
+              <div class="title">清水寺參觀 + 三年坂/二年坂</div>
+              <div class="meta">門票 ¥500 / 建議停留 2 小時以上</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spot" data-spot="八坂神社＆花見小路走走" data-time="11:40" data-desc="祇園地區的守護神，傍晚氛圍極佳。" data-link="https://maps.google.com/?q=%E5%85%AB%E5%9D%82%E7%A5%9E%E7%A4%BE">
+          <div class="row">
+            <div class="time">11:40</div>
+            <div>
+              <div class="title">八坂神社 & 花見小路</div>
+              <div class="meta">建議停留 1 小時</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day 3 -->
+      <div class="page" data-day="3">
+        <div class="day-header">
+          <div class="day-title">Day 3｜伏見稻荷・移動大阪</div>
+          <div class="day-meta">千本鳥居、午後轉往大阪心齋橋</div>
+        </div>
+
+        <div class="spot" data-spot="伏見稻荷大社參拜（千本鳥居）" data-time="08:30" data-desc="千本鳥居非常壯觀，24 小時開放，建議早去避免人潮。" data-link="https://maps.google.com/?q=%E4%BC%8F%E8%A6%8B%E7%A8%B2%E8%8D%B7%E5%A4%A7%E7%A4%BE">
+          <div class="row">
+            <div class="time">08:30</div>
+            <div>
+              <div class="title">伏見稻荷大社（千本鳥居）</div>
+              <div class="meta">建議停留 1-2 小時</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day 4 -->
+      <div class="page" data-day="4">
+        <div class="day-header">
+          <div class="day-title">Day 4｜大阪城・今昔館・黑門市場</div>
+          <div class="day-meta">文化與庶民美食兼備</div>
+        </div>
+
+        <div class="spot" data-spot="大阪城＆御座船＋博物館" data-time="09:00" data-desc="大阪地標，天守閣博物館可參觀並搭御座船體驗。" data-link="https://maps.google.com/?q=%E5%A4%A7%E9%98%AA%E5%9F%8E">
+          <div class="row">
+            <div class="time">09:00</div>
+            <div>
+              <div class="title">大阪城 & 博物館</div>
+              <div class="meta">建議停留 約 2.5 小時</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spot" data-spot="黑門市場散策" data-time="15:30" data-desc="大阪廚房，午餐或下午茶推薦在此解決。" data-link="https://maps.google.com/?q=%E9%BB%92%E9%96%80%E5%B8%82%E5%A0%B4">
+          <div class="row">
+            <div class="time">15:30</div>
+            <div>
+              <div class="title">黑門市場散策</div>
+              <div class="meta">新鮮海鮮與小吃</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day 5 -->
+      <div class="page" data-day="5">
+        <div class="day-header">
+          <div class="day-title">Day 5｜大鳥大社・返台</div>
+          <div class="day-meta">參拜大鳥大社，返回關西機場</div>
+        </div>
+
+        <div class="spot" data-spot="參拜大鳥大社" data-time="09:20" data-desc="位於堺市，建議停留一小時。" data-link="https://maps.google.com/?q=%E5%A4%A7%E9%B3%A5%E5%A4%A7%E7%A4%BE">
+          <div class="row">
+            <div class="time">09:20</div>
+            <div>
+              <div class="title">大鳥大社</div>
+              <div class="meta">交通：JR 阪和線至鳳站</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Backdrop + Bottom sheet -->
+  <div class="backdrop" id="backdrop" aria-hidden="true"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="sheet-header">
+      <div class="sheet-handle" style="width:40px;height:5px;background:#eee;border-radius:99px;margin:0 auto 12px"></div>
+    </div>
+    <div class="sheet-title" id="sheetTitle"></div>
+    <div class="sheet-desc" id="sheetDesc"></div>
+    <div class="sheet-row" style="margin-top:12px">
+      <div style="color:var(--muted);font-size:13px">建議停留 / 交通資訊</div>
+      <a id="sheetMap" class="map-btn" target="_blank" rel="noopener">查看地圖</a>
+    </div>
+    <div style="margin-top:10px;font-size:13px;color:var(--muted)">向下滑動或點背景關閉</div>
+  </div>
+
 </div>
 
 <script>
-/* ------------------ 分頁 ------------------ */
-let current = 0;
-function switchPage(i) {
-    current = i;
-    document.getElementById("pages").style.transform = `translateX(-${i * 100}%)`;
-    document.querySelectorAll(".tab-btn").forEach((b, idx) => {
-        b.classList.toggle("active", idx === i);
-    });
+/* ====== 簡潔的互動邏輯 ====== */
+const pagesEl = document.getElementById('pages');
+const dayLabel = document.getElementById('dayLabel');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const spots = Array.from(document.querySelectorAll('.spot'));
+const backdrop = document.getElementById('backdrop');
+const sheet = document.getElementById('sheet');
+const sheetTitle = document.getElementById('sheetTitle');
+const sheetDesc = document.getElementById('sheetDesc');
+const sheetMap = document.getElementById('sheetMap');
+
+let curIndex = 0;
+const days = Array.from(document.querySelectorAll('.page'));
+const total = days.length;
+
+function updateView(index){
+  index = Math.max(0, Math.min(total-1, index));
+  pagesEl.style.transform = `translateX(-${index*100}%)`;
+  curIndex = index;
+  // update header label
+  const day = days[index].getAttribute('data-day');
+  const title = days[index].querySelector('.day-title')?.innerText || '';
+  const meta = days[index].querySelector('.day-meta')?.innerText || '';
+  dayLabel.querySelector('.day-label-strong').innerText = `Day ${day}`;
+  dayLabel.querySelector('div:nth-child(2)')?.remove(); // remove old small date if any
+  // insert small date below
+  if (!dayLabel.querySelector('div:nth-child(2)')){
+    const el = document.createElement('div'); el.style.fontSize='12px'; el.style.color='var(--muted)'; el.style.marginTop='2px';
+    // optional dates mapping:
+    const mapDates = {1:'10/16 (四)',2:'10/17 (五)',3:'10/18 (六)',4:'10/19 (日)',5:'10/20 (一)'};
+    el.innerText = mapDates[day] || '';
+    dayLabel.appendChild(el);
+  } else {
+    dayLabel.querySelector('div:nth-child(2)').innerText = mapDates[day] || '';
+  }
+  // enable/disable nav buttons (visual)
+  prevBtn.style.opacity = (index===0?0.36:1);
+  nextBtn.style.opacity = (index===total-1?0.36:1);
 }
 
-/* ------------------ Bottom Sheet ------------------ */
-function openSheet(title, desc, link) {
-    document.getElementById("sheet-title").innerText = title;
-    document.getElementById("sheet-desc").innerText = desc;
-    document.getElementById("sheet-map").href = link;
+/* arrow nav */
+prevBtn.addEventListener('click',()=>{ if(curIndex>0) updateView(curIndex-1); });
+nextBtn.addEventListener('click',()=>{ if(curIndex<total-1) updateView(curIndex+1); });
 
-    document.getElementById("backdrop").style.opacity = 1;
-    document.getElementById("backdrop").style.pointerEvents = "auto";
-    document.getElementById("sheet").style.bottom = "0";
-}
+/* swipe support */
+let startX=0, currentX=0, isDown=false;
+pagesEl.addEventListener('touchstart', (e)=>{ startX = e.touches[0].clientX; isDown=true; pagesEl.style.transition='none';});
+pagesEl.addEventListener('touchmove', (e)=>{ if(!isDown) return; currentX = e.touches[0].clientX; const dx = currentX - startX; pagesEl.style.transform = `translateX(${ -curIndex*100 + (dx / window.innerWidth)*100 }%)`;});
+pagesEl.addEventListener('touchend',(e)=>{ isDown=false; pagesEl.style.transition='transform .36s cubic-bezier(.22,.9,.37,1)'; const dx = currentX - startX; if(Math.abs(dx) > 60){ if(dx<0 && curIndex<total-1) curIndex++; if(dx>0 && curIndex>0) curIndex--; } updateView(curIndex); startX=0; currentX=0; });
 
-function closeSheet() {
-    document.getElementById("backdrop").style.opacity = 0;
-    document.getElementById("backdrop").style.pointerEvents = "none";
-    document.getElementById("sheet").style.bottom = "-70%";
+/* open sheet on spot click */
+spots.forEach(s => {
+  s.addEventListener('click', ()=> {
+    const title = s.dataset.spot || s.querySelector('.title')?.innerText || '景點';
+    const desc = s.dataset.desc || '';
+    const link = s.dataset.link || '';
+    sheetTitle.innerText = title;
+    sheetDesc.innerText = desc;
+    sheetMap.href = link || '#';
+    // show sheet
+    backdrop.style.opacity = '1';
+    backdrop.style.pointerEvents = 'auto';
+    sheet.style.transform = 'translateY(-0%)';
+    sheet.setAttribute('aria-hidden','false');
+    backdrop.setAttribute('aria-hidden','false');
+  });
+});
+
+/* close sheet */
+function closeSheet(){
+  backdrop.style.opacity = '0';
+  backdrop.style.pointerEvents = 'none';
+  sheet.style.transform = 'translateY(100%)';
+  sheet.setAttribute('aria-hidden','true');
+  backdrop.setAttribute('aria-hidden','true');
 }
+backdrop.addEventListener('click', closeSheet);
+
+/* sheet drag to dismiss (vertical) */
+let sStartY=0, sCurY=0, dragging=false;
+sheet.addEventListener('touchstart', (e)=>{ sStartY = e.touches[0].clientY; dragging=true; sheet.style.transition='none'; });
+sheet.addEventListener('touchmove', (e)=>{ if(!dragging) return; sCurY = e.touches[0].clientY; const dy = sCurY - sStartY; if(dy>0) sheet.style.transform = `translateY(${dy}px)`; });
+sheet.addEventListener('touchend', (e)=>{ dragging=false; sheet.style.transition='transform .28s ease'; const dy = sCurY - sStartY; if(dy > 80) closeSheet(); else sheet.style.transform = 'translateY(0)'; sStartY=0; sCurY=0; });
+
+/* keyboard left/right (for desktop testing) */
+document.addEventListener('keydown',(e)=>{ if(e.key==='ArrowLeft') prevBtn.click(); if(e.key==='ArrowRight') nextBtn.click(); });
+
+/* init */
+updateView(0);
 </script>
-
 </body>
 </html>
