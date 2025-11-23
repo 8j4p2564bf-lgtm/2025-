@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>京都・大阪自由行｜5天4夜行程表</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    nav { margin-bottom: 20px; }
+    button { margin-right: 10px; }
+    .day { display: none; }
+    .active { display: block; }
+    .poi { margin: 10px 0; }
+    .poi button { margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🍁 京都・大阪自由行｜5天4夜</h1>
+  <nav>
+    <button onclick="showDay(1)">Day 1</button>
+    <button onclick="showDay(2)">Day 2</button>
+    <button onclick="showDay(3)">Day 3</button>
+    <button onclick="showDay(4)">Day 4</button>
+    <button onclick="showDay(5)">Day 5</button>
+  </nav>
+
+  <!-- Day 1 -->
+  <div id="day1" class="day active">
+    <h2>Day 1｜京都初印象：嵐山＋月燈路</h2>
+    <ul>
+      <li>09:00 桃園機場出發</li>
+      <li>13:00 抵達關西機場</li>
+      <li>16:10 嵐山渡月橋、竹林小徑</li>
+    </ul>
+    <div class="poi">
+      嵐山渡月橋
+      <button onclick="openMap('Arashiyama Togetsukyo Bridge')">地圖</button>
+      <p>嵐山地標，秋季賞楓與月燈路氛圍極佳。</p>
+    </div>
+    <div class="poi">
+      嵐山竹林小徑
+      <button onclick="openMap('Arashiyama Bamboo Grove')">地圖</button>
+      <p>清幽步道，建議清晨或傍晚人潮較少。</p>
+    </div>
+  </div>
+
+  <!-- Day 2 -->
+  <div id="day2" class="day">
+    <h2>Day 2｜古都風情：清水寺＋八坂神社＋錦市場</h2>
+    <div class="poi">
+      清水寺
+      <button onclick="openMap('Kiyomizu-dera Kyoto')">地圖</button>
+      <p>京都代表性寺院，舞台視野極佳。</p>
+    </div>
+    <div class="poi">
+      八坂神社
+      <button onclick="openMap('Yasaka Shrine Kyoto')">地圖</button>
+      <p>祇園地區的信仰中心，免費參拜。</p>
+    </div>
+    <div class="poi">
+      錦市場
+      <button onclick="openMap('Nishiki Market Kyoto')">地圖</button>
+      <p>京都的廚房，各式美食與伴手禮。</p>
+    </div>
+  </div>
+
+  <!-- Day 3 -->
+  <div id="day3" class="day">
+    <h2>Day 3｜伏見稻荷＋大阪摩天輪＋入住</h2>
+    <div class="poi">
+      伏見稻荷大社
+      <button onclick="openMap('Fushimi Inari Taisha Kyoto')">地圖</button>
+      <p>千本鳥居，京都必訪景點。</p>
+    </div>
+    <div class="poi">
+      HEP FIVE 摩天輪
+      <button onclick="openMap('HEP FIVE Ferris Wheel Osaka')">地圖</button>
+      <p>梅田地標，夜景浪漫（維修中）。</p>
+    </div>
+    <div class="poi">
+      道頓堀＆心齋橋
+      <button onclick="openMap('Dotonbori Osaka')">地圖</button>
+      <p>大阪最熱鬧的美食與購物區。</p>
+    </div>
+  </div>
+
+  <!-- Day 4 -->
+  <div id="day4" class="day">
+    <h2>Day 4｜大阪深度：大阪城＋天滿宮＋今昔館＋黑門市場</h2>
+    <div class="poi">
+      大阪城
+      <button onclick="openMap('Osaka Castle')">地圖</button>
+      <p>大阪象徵，含博物館與御座船。</p>
+    </div>
+    <div class="poi">
+      大阪天滿宮
+      <button onclick="openMap('Osaka Tenmangu Shrine')">地圖</button>
+      <p>學問之神，免費參拜。</p>
+    </div>
+    <div class="poi">
+      大阪生活今昔館
+      <button onclick="openMap('Osaka Museum of Housing and Living')">地圖</button>
+      <p>江戶時代街景體驗，可租和服。</p>
+    </div>
+    <div class="poi">
+      黑門市場
+      <button onclick="openMap('Kuromon Ichiba Market Osaka')">地圖</button>
+      <p>大阪的廚房，海鮮和牛串必試。</p>
+    </div>
+  </div>
+
+  <!-- Day 5 -->
+  <div id="day5" class="day">
+    <h2>Day 5｜大鳥大社參拜＋返台</h2>
+    <div class="poi">
+      大鳥大社
+      <button onclick="openMap('Ootori Taisha Osaka')">地圖</button>
+      <p>大阪堺市的古老神社，免費參拜。</p>
+    </div>
+    <div class="poi">
+      關西機場
+      <button onclick="openMap('Kansai International Airport')">地圖</button>
+      <p>返台航班 CI0153，14:00 起飛。</p>
+    </div>
+  </div>
+
+  <script>
+    function showDay(n) {
+      document.querySelectorAll('.day').forEach(d => d.classList.remove('active'));
+      document.getElementById('day' + n).classList.add('active');
+    }
+    function openMap(query) {
+      window.open(`https://maps.google.com/?q=${encodeURIComponent(query)}`, '_blank');
+    }
+  </script>
+</body>
+</html>
