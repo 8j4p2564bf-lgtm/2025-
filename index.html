@@ -1,457 +1,436 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>⚡️ 關西漫遊 | 動態行程表</title>
-   <script src="https://cdn.tailwindcss.com"></script>
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-   <style>
-       /* 1. 全局 CSS 基礎設定 */
-       html, body {
-           margin: 0;
-           padding: 0;
-           overflow-x: hidden;
-           scroll-behavior: smooth;
-       }
-       body {
-           font-family: 'Inter', sans-serif;
-           background-color: #0c0a09; /* 更深的背景 (Stone 950) */
-           color: #f5f5f4;
-       }
-       .app-container {
-           width: 100vw;
-           max-width: 640px;
-           min-height: 100vh;
-           background-color: #1c1917; /* 內容卡片背景 (Stone 900) */
-           box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-       }
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+
+// --- 數據模型 (Data Model) ---
+interface ScheduleItem {
+ time: string;
+ desc: string;
+ icon: string;
+ detail: string;
+ isSpot?: boolean;
+ spotName?: string;
+}
+
+interface DayItinerary {
+ id: string;
+ day: number;
+ date: string;
+ title: string;
+ theme: string;
+ schedule: ScheduleItem[];
+}
+
+// 旅遊核心數據
+const ITINERARY_DATA: DayItinerary[] = [
+   {
+       id: 'day1', day: 1, date: "10/16 (四)", title: "京都初印象：嵐山＋月燈路", theme: "自然・移動",
+       schedule: [
+           { time: "05:30", desc: "竹北 >> 桃機 2 航廈", icon: "🚗", detail: "私人接送" },
+           { time: "09:00", desc: "桃園機場出發", icon: "✈️", detail: "中華航空 CI0152" },
+           { time: "13:00", desc: "抵達關西機場", icon: "🛬", detail: "預計 12:50 抵達" },
+           { time: "14:00", desc: "搭 JR Haruka 特急 → 京都車站", icon: "🚅", detail: "車程約 70-80 分鐘 (ICOCA/Haruka套票)" },
+           { time: "15:30", desc: "入住 Hotel The M’s Kyoto", icon: "🏨", detail: "Check-in: 15:00 / 飯店電話: +81-75-661-8000" },
+           { time: "16:10", desc: "嵐山渡月橋、竹林小徑", icon: "🍃", detail: "免費參觀，感受京都的自然美", isSpot: true },
+           { time: "18:00", desc: "參加嵐山月燈路", icon: "🌙", detail: "季節性點燈活動 (請注意舉辦日期)", spotName: "嵐山渡月橋、竹林小徑", isSpot: true },
+           { time: "19:30", desc: "晚餐或回飯店休息", icon: "🍜", detail: "滾動式調整，可選擇車站周邊美食" },
+       ],
+   },
+   {
+       id: 'day2', day: 2, date: "10/17 (五)", title: "古都風情：清水寺＋八坂神社＋錦市場", theme: "文化・美食",
+       schedule: [
+           { time: "08:30", desc: "出發 → 市巴士至五条坂", icon: "🚌", detail: "搭乘市區巴士，準備開始古蹟巡禮" },
+           { time: "09:30", desc: "清水寺參觀+散步三年坂／二年坂", icon: "🏯", detail: "門票¥500，可眺望京都市區", isSpot: true },
+           { time: "11:40", desc: "八坂神社＆花見小路走走", icon: "⛩️", detail: "景點免費，可購買御守", isSpot: true },
+           { time: "13:25", desc: "錦市場午餐＋逛街", icon: "🛍️", detail: "京都的廚房，品嚐各種在地小吃" },
+           { time: "15:00", desc: "四条河原町自由活動 (或去平安神宮本殿區域免費)", icon: "🏙️", detail: "百貨公司購物或參觀", isSpot: true, spotName: "平安神宮本殿區域" },
+           { time: "18:30", desc: "壽喜燒三條河原町店", icon: "🥩", detail: "晚餐預訂，大快朵頤" },
+           { time: "傍晚", desc: "回飯店休息", icon: "🛌", detail: "" },
+       ],
+   },
+   {
+       id: 'day3', day: 3, date: "10/18 (六)", title: "伏見稻荷＋大阪摩天輪＋入住", theme: "移動・鳥居",
+       schedule: [
+           { time: "08:30", desc: "出發 → 伏見稻荷大社參拜（千本鳥居）", icon: "⛩️", detail: "景點免費，建議穿著舒適鞋子", isSpot: true },
+           { time: "11:00", desc: "午餐 → 回京都飯店取行李", icon: "🍴", detail: "M's Hotel Check-out: 10:00" },
+           { time: "14:20", desc: "搭 JR 新快速 → 大阪梅田", icon: "🚅", detail: "跨城市移動，車程約 30 分鐘" },
+           { time: "15:30", desc: "抵達梅田 → HEP FIVE 摩天輪", icon: "🎡", detail: "🚨 **注意：行程註明維修中**，建議替代方案", isSpot: true },
+           { time: "17:00", desc: "前往飯店 → 入住 The Bridge Hotel Shinsaibashi", icon: "🏨", detail: "Check-in: 15:00 / 飯店電話: +81-6-4963-3060" },
+           { time: "18:30", desc: "道頓堀＆心齋橋自由活動", icon: "🎏", detail: "夜間購物與美食，必拍格力高招牌", isSpot: true },
+       ],
+   },
+   {
+       id: 'day4', day: 4, date: "10/19 (日)", title: "大阪深度：大阪城＋天滿宮＋今昔館＋黑門市場", theme: "歷史・庶民",
+       schedule: [
+           { time: "08:30", desc: "地鐵至大阪商務園區", icon: "🚇", detail: "開始使用大阪周遊券" },
+           { time: "09:00", desc: "參觀大阪城＆御座船＋博物館", icon: "🏯", detail: "約 2.5 小時，周遊券可用", isSpot: true },
+           { time: "12:00", desc: "大阪天滿宮參拜", icon: "⛩️", detail: "免費參觀，祈求學業順利", isSpot: true },
+           { time: "12:30", desc: "天神橋筋商店街午餐", icon: "🍜", detail: "日本最長商店街，邊走邊吃" },
+           { time: "13:30", desc: "大阪生活今昔館（穿越江戶時代街景，可體驗和服）", icon: "🏘️", detail: "周遊券可用，室內景點", isSpot: true },
+           { time: "15:30", desc: "黑門市場散策，嚐鮮海鮮/和牛串/水果大福", icon: "🐟", detail: "大阪美食廚房，盡情享用", isSpot: true },
+           { time: "17:00", desc: "回心齋橋／道頓堀自由逛街", icon: "🛍️", detail: "補足伴手禮或藥妝" },
+           { time: "20:00", desc: "燒肉力丸難波道頓堀店", icon: "🥩", detail: "晚餐預訂，享受吃到飽" },
+       ],
+   },
+   {
+       id: 'day5', day: 5, date: "10/20 (一)", title: "大鳥大社參拜＋返台", theme: "返程・參拜",
+       schedule: [
+           { time: "08:30", desc: "地鐵至天王寺 → JR至鳳站", icon: "🚇", detail: "前往大阪郊區進行告別參拜" },
+           { time: "09:20", desc: "參拜大鳥大社", icon: "⛩️", detail: "免費參觀，感謝旅途平安", isSpot: true },
+           { time: "10:00", desc: "JR／南海電鐵 → 關西機場", icon: "🚅", detail: "預留充足時間前往 KIX" },
+           { time: "11:00", desc: "報到／退稅／午餐準備", icon: "🛄", detail: "Bridge Hotel Check-out: 11:00 / 機場手續及最後的購物時間" },
+           { time: "14:00", desc: "搭機返台", icon: "🛬", detail: "中華航空 CI0153，期待下次旅程！" },
+       ],
+   }
+];
+
+// 景點詳細資料庫
+const SPOT_DESCRIPTIONS = {
+   "嵐山渡月橋、竹林小徑": {
+       desc: "京都最具代表性的自然景觀，參天竹林營造出幽靜氛圍，秋季楓葉時最美。",
+       details: "📍 最近車站：JR嵯峨嵐山站 (步行10分)。\n⏰ 營業時間：全日開放 (竹林)。\n⏳ 建議停留：1.5-2小時。\n✨ 特色：免費、可租借和服漫步，景色宜人。",
+       link: "https://maps.google.com/maps?q=%E5%B5%90%E5%B1%B1%E7%AB%B9%E6%9E%97%E5%B0%8F%E5%BE%91+%C2%B7+Kyoto%2C+Kyoto"
+   },
+   "清水寺參觀+散步三年坂／二年坂": {
+       desc: "世界遺產，以「清水之舞台」聞名，可遠眺京都市區。是購買伴手禮的好去處。",
+       details: "📍 最近車站：市巴士「五条坂」站 (步行10分)。\n⏰ 營業時間：06:00 - 18:00。\n⏳ 建議停留：2-3小時 (含二年坂/三年坂)。\n💰 門票：¥500。提示：建議早上前往避開人潮。",
+       link: "https://maps.google.com/maps?q=%E6%B8%85%E6%B0%B4%E5%AF%BA+%C2%B7+Kyoto%2C+Kyoto"
+   },
+   "八坂神社＆花見小路走走": {
+       desc: "京都祇園地區的守護神，晚上點燈後氛圍極佳，感受古都夜色。",
+       details: "📍 最近車站：京阪祇園四条站。\n⏰ 營業時間：全日開放。\n⏳ 建議停留：1小時。\n✨ 特色：夜間景色美麗，花見小路是藝妓可能出沒的地方。",
+       link: "https://maps.google.com/maps?q=%E5%85%AB%E5%9D%82%E7%A5%9E%E7%A4%BE%E6%9C%AC%E6%AE%BF+%C2%B7+Kyoto%2C+Kyoto"
+   },
+   "平安神宮本殿區域": {
+       desc: "宏偉的朱紅色建築和日本最大的鳥居之一，充滿歷史感。",
+       details: "📍 最近車站：地鐵東西線東山站。\n⏰ 營業時間：06:00 - 17:00 (依季節變動)。\n⏳ 建議停留：1小時。\n💰 費用：本殿免費，神苑（日式庭園）需另購票。",
+       link: "https://maps.google.com/maps?q=%E5%B9%B3%E5%AE%89%E7%A5%9E%E5%AE%AE+%C2%B7+Kyoto%2C+Kyoto"
+   },
+   "伏見稻荷大社參拜（千本鳥居）": {
+       desc: "以綿延山頭的「千本鳥居」聞名，是祈求生意興隆的免費景點。",
+       details: "📍 最近車站：JR稻荷站。\n⏰ 營業時間：全日開放。\n⏳ 建議停留：1-2小時 (走完一圈約需2小時)。\n✨ 特色：免費、24小時開放。拍照建議早上或傍晚，光線較佳。",
+       link: "https://maps.google.com/maps?q=%E4%BC%8F%E8%A6%8B%E7%A8%B2%E8%8D%B7%E5%A4%A7%E7%A4%BE+%C2%B7+Kyoto%2C+Kyoto"
+   },
+   "HEP FIVE 摩天輪": {
+       desc: "🚨 維修警示：您的行程註明此處維修。建議改為梅田藍天大廈空中庭園等替代景點。",
+       details: "📍 最近車站：阪急梅田站。\n⏰ 營業時間：通常 11:00 - 22:45。\n✨ 替代建議：梅田藍天大廈空中庭園 (周遊券可用)。",
+       link: "" // 不提供連結，強調維修
+   },
+   "道頓堀＆心齋橋自由活動": {
+       desc: "大阪最熱鬧的區域之一，充滿了美食、購物和娛樂。必拍格力高招牌。",
+       details: "📍 最近車站：地鐵心齋橋站/難波站。\n⏰ 營業時間：店家各異，多數至 22:00。\n⏳ 建議停留：3小時以上。\n✨ 特色：心齋橋 PARCO、藥妝店購物、美食集中地。",
+       link: "https://maps.google.com/maps?q=%E5%BF%83%E6%96%8E%E6%A9%8BPARCO+%C2%B7+Osaka%2C+Osaka"
+   },
+   "參觀大阪城＆御座船＋博物館": {
+       desc: "日本三大名城之一，是大阪歷史的象徵。包含御座船體驗及博物館參觀。",
+       details: "📍 最近車站：JR森之宮站。\n⏰ 營業時間：09:00 - 17:00 (天守閣)。\n⏳ 建議停留：2.5小時。\n💰 費用：天守閣¥600，御座船¥1500 (周遊券可用)。",
+       link: "https://maps.google.com/maps?q=%E5%A4%A7%E9%98%AA%E5%9F%8E+%C2%B7+Osaka%2C+Osaka"
+   },
+   "大阪天滿宮參拜": {
+       desc: "主祀學問之神，是當地人祈求學業和考試順利的重要神社。",
+       details: "📍 最近車站：JR大阪天滿宮站。\n⏰ 營業時間：09:00 - 17:00。\n⏳ 建議停留：0.5-1小時。\n✨ 鄰近：天神橋筋商店街，適合逛街購物。",
+       link: "https://maps.google.com/maps?q=%E5%A4%A7%E9%98%AA%E5%A4%A9%E6%BB%85%E5%AE%AE+%C2%B7+Osaka%2C+Osaka"
+   },
+   "大阪生活今昔館（穿越江戶時代街景，可體驗和服）": {
+       desc: "重現江戶時代街景，可付費體驗和服，是了解大阪庶民生活的獨特博物館。",
+       details: "📍 最近車站：地鐵天神橋筋六丁目站。\n⏰ 營業時間：10:00 - 17:00 (週二休館)。\n⏳ 建議停留：1.5小時。\n💰 費用：¥600 (周遊券免費)。特色：室內景點，不受天氣影響。",
+       link: "https://maps.google.com/maps?q=%E5%A4%A7%E9%98%AA%E7%94%9F%E6%B4%BB%E4%BB%8A%E6%98%94%E9%A4%A8+%C2%B7+Osaka%2C+Osaka"
+   },
+   "黑門市場散策，嚐鮮海鮮/和牛串/水果大福": {
+       desc: "有「大阪廚房」之稱，是品嚐現做新鮮海鮮、和牛串和季節水果的天堂。",
+       details: "📍 最近車站：地鐵日本橋站。\n⏰ 營業時間：多數店家 09:00 - 18:00。\n⏳ 建議停留：1.5-2小時。\n✨ 提示：建議午餐時段前往，店家較齊全。",
+       link: "https://maps.google.com/maps?q=%E9%BB%91%E9%96%80%E5%B8%82%E5%A0%B4+%C2%B7+Osaka%2C+Osaka"
+   },
+   "參拜大鳥大社": {
+       desc: "位於大阪府堺市，供奉日本武尊。是告別之旅的最後一站，祈求旅途平安。",
+       details: "📍 最近車站：JR阪和線至鳳站，轉乘南海巴士。\n⏰ 營業時間：09:00 - 17:00。\n⏳ 建議停留：1小時。\n✨ 特色：環境清幽，適合旅途結束前沉澱心情。",
+       link: "https://maps.google.com/maps?q=%E5%A4%A7%E9%B3%A5%E5%A4%A7%E7%A4%BE+%C2%B7+Sakai%2C+Osaka"
+   }
+};
+
+@Component({
+ selector: 'app-root',
+ // 使用 Tailwind CSS 進行專業且響應式的佈局
+ template: `
+   <div class="min-h-screen bg-gray-50 flex flex-col items-center">
+     <!-- 頂部標題列 -->
+     <header class="w-full bg-white border-b-4 border-blue-600 shadow-md p-6 sticky top-0 z-10">
+         <h1 class="text-3xl font-black text-blue-800 flex items-center">
+             <span class="mr-3 text-4xl">✈️</span> 關西五日・專業行程表
+         </h1>
+         <p class="text-sm text-gray-500 mt-1">日期：10/16 ~ 10/20 (5天4夜) | 4人家族旅行</p>
+     </header>
+     
+     <!-- 主內容區塊 - 側邊欄與行程列表 -->
+     <div class="w-full max-w-7xl flex flex-col lg:flex-row p-4 lg:space-x-6">
        
-       /* 2. 動態及生動化效果 */
-       
-       /* Tab 按鈕樣式與過渡 */
-       .tab-button {
-           color: #d6d3d1;
-           border-bottom: 3px solid transparent;
-           transition: all 0.3s ease-in-out; /* 增加過渡效果 */
-           transform: translateY(0);
-       }
-       .tab-button.active {
-           background-color: #292524;
-           color: #fcd34d; /* 更亮的金琥珀色 (Amber 300) */
-           border-bottom: 3px solid #fcd34d;
-           font-weight: 700;
-           box-shadow: 0 4px 10px rgba(252, 211, 77, 0.1); /* 底部陰影 */
-       }
-       
-       /* 景點可點擊連結樣式 (點擊脈衝效果) */
-       .spot-clickable {
-           cursor: pointer;
-           text-decoration: underline;
-           text-decoration-color: #fcd34d;
-           text-underline-offset: 4px;
-           font-weight: 600;
-           transition: color 0.2s, transform 0.1s;
-       }
-       .spot-clickable:active {
-            transform: scale(0.98); /* 點擊下壓效果 */
-       }
-       
-       /* 時間軸線條顏色 */
-       .timeline-line {
-           border-left: 2px solid #57534e;
-           transition: all 0.5s ease-out;
-       }
-       
-       /* 景點彈窗進入動畫 */
-       @keyframes fadeInScale {
-           from { opacity: 0; transform: scale(0.95) translateY(10px); }
-           to { opacity: 1; transform: scale(1) translateY(0); }
-       }
-       .modal-card {
-           animation: fadeInScale 0.25s ease-out forwards;
-       }
-       
-       /* 展開/收合標題的旋轉效果 */
-       .summary-icon {
-           transition: transform 0.3s;
-       }
-       details[open] .summary-icon {
-           transform: rotate(90deg);
-       }
+       <!-- 側邊欄：行前必備資訊 (在小螢幕上在最上方，大螢幕上固定左側) -->
+       <div class="lg:w-1/3 w-full mb-6 lg:mb-0 lg:sticky lg:top-[110px] lg:h-fit">
+           <div class="bg-white p-6 rounded-xl shadow-xl border-t-4 border-amber-500">
+               <h2 class="text-xl font-extrabold text-amber-600 mb-4 flex items-center">
+                   <span class="text-2xl mr-2">🌟</span> 行前必備與救命資訊
+               </h2>
+               <div class="space-y-3 text-sm text-gray-700">
+                   <p><span class="font-bold text-blue-600">💴 參考匯率：</span> 1 TWD ≈ 4.8 JPY</p>
+                   <p><span class="font-bold text-blue-600">📶 網路狀態：</span> <span class="text-green-600 font-bold">已確認不限容量高速網卡！</span></p>
 
-   </style>
-</head>
-
-<body class="flex justify-center">
-
-<div class="app-container overflow-hidden">
-
-   <!-- 頂部標題與總覽 (使用 Stone 950 最深的背景) -->
-   <header class="p-6 bg-stone-950 shadow-lg border-b border-stone-800">
-       <h1 class="text-3xl font-extrabold text-fcd34d mb-1 flex items-center">
-           <span class="mr-2 text-4xl">✈️</span> 關西五日・動態行程
-       </h1>
-       <p class="text-sm text-stone-300">日期：10/16 ~ 10/20 (5天4夜) | 4人家族旅行</p>
-   </header>
-
-   <!-- 航班與重要資訊區 -->
-   <div class="p-4 bg-stone-900 border-b border-stone-800">
-       <h2 class="text-lg font-bold text-stone-200 mb-2">機票與飯店總覽</h2>
-       <div class="grid grid-cols-2 gap-2 text-sm">
-           <div>
-               <p class="font-medium text-stone-300">去程 (10/16)</p>
-               <p class="text-stone-400">CI0152 TPE 09:00 → KIX 12:50</p>
-           </div>
-           <div>
-               <p class="font-medium text-stone-300">回程 (10/20)</p>
-               <p class="text-stone-400">CI0153 KIX 14:00 → TPE 15:55</p>
-           </div>
-           <div class="col-span-2 mt-2">
-                <p class="text-xs text-stone-400">📍 住宿：<span class="font-semibold text-fcd34d">京都 (M's Hotel)</span>, <span class="font-semibold text-fcd34d">大阪 (Bridge Hotel)</span></p>
-           </div>
-       </div>
-   </div>
-   
-   <!-- 旅遊重要資訊區 (可折疊的 Accordion 效果) -->
-   <details class="mx-4 my-4 rounded-xl bg-stone-900 border border-fcd34d/50 shadow-xl">
-       <summary class="p-4 font-extrabold text-fcd34d flex justify-between items-center cursor-pointer">
-           <span>🚨 行前必備與救命資訊 (點擊展開)</span>
-           <span class="summary-icon">▶</span>
-       </summary>
-       <div class="p-4 pt-0 text-sm space-y-3 text-stone-300 border-t border-stone-800">
-           
-           <!-- 網路資訊 -->
-           <p><span class="font-bold text-amber-500">📶 網路連線狀態：</span> <span class="text-green-400 font-bold">已確認不限容量高速網卡！</span></p>
-
-           <!-- 匯率與緊急電話 -->
-           <p><span class="font-bold text-amber-500">💴 參考匯率：</span> 1 TWD ≈ 4.8 JPY (請以實際換匯為準)</p>
-           <p><span class="font-bold text-amber-500">📞 緊急聯絡：</span></p>
-           <ul class="ml-4 list-disc text-stone-400">
-               <li>日本急救/消防：<span class="text-red-400 font-bold">119</span></li>
-               <li>日本報警：<span class="text-red-400 font-bold">110</span></li>
-               <li>台北駐大阪經濟文化辦事處：+81-6-6612-8750</li>
-           </ul>
-
-           <!-- 飯店資訊 -->
-           <div class="pt-3 border-t border-stone-700">
-               <p class="font-bold text-amber-500 mb-2">🏨 住宿詳細資訊</p>
-
-               <!-- 京都飯店 -->
-               <p class="font-semibold text-fcd34d mt-2">📍 京都：M's Hotel Kyoto Station South (10/16 - 10/18)</p>
-               <ul class="ml-4 list-disc text-stone-400 space-y-0.5">
-                   <li>地址：〒601-8002 京都府京都市南區東九条東山王町19</li>
-                   <li>電話：<span class="font-medium">+81-75-661-8000</span></li>
-                   <li>Check-in: 15:00 / Check-out: 10:00</li>
-               </ul>
-
-               <!-- 大阪飯店 -->
-               <p class="font-semibold text-fcd34d mt-2">📍 大阪：The Bridge Hotel Shinsaibashi (10/18 - 10/20)</p>
-                <ul class="ml-4 list-disc text-stone-400 space-y-0.5">
-                   <li>地址：〒542-0083 大阪府大阪市中央區東心齋橋1丁目11-19</li>
-                   <li>電話：<span class="font-medium">+81-6-4963-3060</span></li>
-                   <li>Check-in: 15:00 / Check-out: 11:00</li>
-               </ul>
-           </div>
-       </div>
-   </details>
-
-   <!-- 每日行程 Tab 導航 -->
-   <nav id="tab-navigation" class="flex justify-between sticky top-0 bg-stone-900 border-b border-stone-800 z-10 shadow-lg">
-       <!-- Tab buttons will be dynamically generated here -->
-   </nav>
-
-   <!-- 每日行程內容區 -->
-   <main id="itinerary-content" class="p-4">
-       <!-- Content will be dynamically loaded here -->
-   </main>
-   
-   <!-- 景點詳情彈窗 (Modal) -->
-   <div id="spot-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4" onclick="closeSpotModal()">
-       <!-- Modal 內容卡片使用 Stone 900 背景，並加入動畫 class -->
-       <div class="modal-card bg-stone-900 rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-fcd34d/70" onclick="event.stopPropagation()">
-           <h3 id="modal-title" class="text-2xl font-extrabold text-fcd34d mb-2 border-b border-stone-700 pb-2"></h3>
-           <p id="modal-desc" class="text-stone-300 mb-4"></p>
-           <div id="modal-details" class="text-sm text-stone-400 space-y-2 mb-6 p-3 rounded-lg bg-stone-800/50"></div>
-           
-           <a id="modal-link" href="#" target="_blank" class="block w-full text-center py-3 rounded-xl bg-fcd34d text-stone-950 font-bold hover:bg-amber-400 transition transform hover:scale-[1.01] shadow-2xl">
-               開啟 Google 地圖導航 🗺️
-           </a>
-           <button onclick="closeSpotModal()" class="w-full mt-4 text-sm text-stone-400 py-1 hover:text-fcd34d transition">關閉視窗</button>
-       </div>
-   </div>
-
-</div>
-
-<script>
-   // 景點介紹與連結的資料庫 - 資訊已加強
-   const SPOT_DESCRIPTIONS = {
-       "嵐山渡月橋、竹林小徑": {
-           desc: "京都最具代表性的自然景觀，參天竹林營造出幽靜氛圍，秋季楓葉時最美。",
-           details: "📍 最近車站：JR嵯峨嵐山站 (步行10分)。\n⏰ 營業時間：全日開放 (竹林)。\n⏳ 建議停留：1.5-2小時。\n✨ 特色：免費、可租借和服漫步，景色宜人。",
-           link: "https://maps.google.com/maps?q=%E5%B5%90%E5%B1%B1%E7%AB%B9%E6%9E%97%E5%B0%8F%E5%BE%91+%C2%B7+Kyoto%2C+Kyoto"
-       },
-       "清水寺參觀+散步三年坂／二年坂": {
-           desc: "世界遺產，以「清水之舞台」聞名，可遠眺京都市區。是購買伴手禮的好去處。",
-           details: "📍 最近車站：市巴士「五条坂」站 (步行10分)。\n⏰ 營業時間：06:00 - 18:00。\n⏳ 建議停留：2-3小時 (含二年坂/三年坂)。\n💰 門票：¥500。提示：建議早上前往避開人潮。",
-           link: "https://maps.google.com/maps?q=%E6%B8%85%E6%B0%B4%E5%AF%BA+%C2%B7+Kyoto%2C+Kyoto"
-       },
-       "八坂神社＆花見小路走走": {
-           desc: "京都祇園地區的守護神，晚上點燈後氛圍極佳，感受古都夜色。",
-           details: "📍 最近車站：京阪祇園四条站。\n⏰ 營業時間：全日開放。\n⏳ 建議停留：1小時。\n✨ 特色：夜間景色美麗，花見小路是藝妓可能出沒的地方。",
-           link: "https://maps.google.com/maps?q=%E5%85%AB%E5%9D%82%E7%A5%9E%E7%A4%BE%E6%9C%AC%E6%AE%BF+%C2%B7+Kyoto%2C+Kyoto"
-       },
-       "平安神宮本殿區域": {
-           desc: "宏偉的朱紅色建築和日本最大的鳥居之一，充滿歷史感。",
-           details: "📍 最近車站：地鐵東西線東山站。\n⏰ 營業時間：06:00 - 17:00 (依季節變動)。\n⏳ 建議停留：1小時。\n💰 費用：本殿免費，神苑（日式庭園）需另購票。",
-           link: "https://maps.google.com/maps?q=%E5%B9%B3%E5%AE%89%E7%A5%9E%E5%AE%AE+%C2%B7+Kyoto%2C+Kyoto"
-       },
-       "伏見稻荷大社參拜（千本鳥居）": {
-           desc: "以綿延山頭的「千本鳥居」聞名，是祈求生意興隆的免費景點。",
-           details: "📍 最近車站：JR稻荷站。\n⏰ 營業時間：全日開放。\n⏳ 建議停留：1-2小時 (走完一圈約需2小時)。\n✨ 特色：免費、24小時開放。拍照建議早上或傍晚，光線較佳。",
-           link: "https://maps.google.com/maps?q=%E4%BC%8F%E8%A6%8B%E7%A8%B2%E8%8D%B7%E5%A4%A7%E7%A4%BE+%C2%B7+Kyoto%2C+Kyoto"
-       },
-       "HEP FIVE 摩天輪": {
-           desc: "🚨 維修警示：您的行程註明此處維修。建議改為梅田藍天大廈空中庭園等替代景點。",
-           details: "📍 最近車站：阪急梅田站。\n⏰ 營業時間：通常 11:00 - 22:45。\n✨ 替代建議：梅田藍天大廈空中庭園 (周遊券可用)。",
-           link: "" // 不提供連結，強調維修
-       },
-       "道頓堀＆心齋橋自由活動": {
-           desc: "大阪最熱鬧的區域之一，充滿了美食、購物和娛樂。必拍格力高招牌。",
-           details: "📍 最近車站：地鐵心齋橋站/難波站。\n⏰ 營業時間：店家各異，多數至 22:00。\n⏳ 建議停留：3小時以上。\n✨ 特色：心齋橋 PARCO、藥妝店購物、美食集中地。",
-           link: "https://maps.google.com/maps?q=%E5%BF%83%E6%96%8E%E6%A9%8BPARCO+%C2%B7+Osaka%2C+Osaka"
-       },
-       "參觀大阪城＆御座船＋博物館": {
-           desc: "日本三大名城之一，是大阪歷史的象徵。包含御座船體驗及博物館參觀。",
-           details: "📍 最近車站：JR森之宮站。\n⏰ 營業時間：09:00 - 17:00 (天守閣)。\n⏳ 建議停留：2.5小時。\n💰 費用：天守閣¥600，御座船¥1500 (周遊券可用)。",
-           link: "https://maps.google.com/maps?q=%E5%A4%A7%E9%98%AA%E5%9F%8E+%C2%B7+Osaka%2C+Osaka"
-       },
-       "大阪天滿宮參拜": {
-           desc: "主祀學問之神，是當地人祈求學業和考試順利的重要神社。",
-           details: "📍 最近車站：JR大阪天滿宮站。\n⏰ 營業時間：09:00 - 17:00。\n⏳ 建議停留：0.5-1小時。\n✨ 鄰近：天神橋筋商店街，適合逛街購物。",
-           link: "https://maps.google.com/maps?q=%E5%A4%A7%E9%98%AA%E5%A4%A9%E6%BB%85%E5%AE%AE+%C2%B7+Osaka%2C+Osaka"
-       },
-       "大阪生活今昔館（穿越江戶時代街景，可體驗和服）": {
-           desc: "重現江戶時代街景，可付費體驗和服，是了解大阪庶民生活的獨特博物館。",
-           details: "📍 最近車站：地鐵天神橋筋六丁目站。\n⏰ 營業時間：10:00 - 17:00 (週二休館)。\n⏳ 建議停留：1.5小時。\n💰 費用：¥600 (周遊券免費)。特色：室內景點，不受天氣影響。",
-           link: "https://maps.google.com/maps?q=%E5%A4%A7%E9%98%AA%E7%94%9F%E6%B4%BB%E4%BB%8A%E6%98%94%E9%A4%A8+%C2%B7+Osaka%2C+Osaka"
-       },
-       "黑門市場散策，嚐鮮海鮮/和牛串/水果大福": {
-           desc: "有「大阪廚房」之稱，是品嚐現做新鮮海鮮、和牛串和季節水果的天堂。",
-           details: "📍 最近車站：地鐵日本橋站。\n⏰ 營業時間：多數店家 09:00 - 18:00。\n⏳ 建議停留：1.5-2小時。\n✨ 提示：建議午餐時段前往，店家較齊全。",
-           link: "https://maps.google.com/maps?q=%E9%BB%91%E9%96%80%E5%B8%82%E5%A0%B4+%C2%B7+Osaka%2C+Osaka"
-       },
-       "參拜大鳥大社": {
-           desc: "位於大阪府堺市，供奉日本武尊。是告別之旅的最後一站，祈求旅途平安。",
-           details: "📍 最近車站：JR阪和線至鳳站，轉乘南海巴士。\n⏰ 營業時間：09:00 - 17:00。\n⏳ 建議停留：1小時。\n✨ 特色：環境清幽，適合旅途結束前沉澱心情。",
-           link: "https://maps.google.com/maps?q=%E5%A4%A7%E9%B3%A5%E5%A4%A7%E7%A4%BE+%C2%B7+Sakai%2C+Osaka"
-       }
-   };
-
-   // 行程資料庫 (Data Model)
-   const itineraryData = [
-       {
-           id: 'day1', day: 1, date: "10/16 (四)", title: "京都初印象：嵐山＋月燈路", theme: "自然・移動",
-           schedule: [
-               { time: "05:30", desc: "竹北 >> 桃機 2 航廈", icon: "🚗", detail: "私人接送" },
-               { time: "09:00", desc: "桃園機場出發", icon: "✈️", detail: "中華航空 CI0152" },
-               { time: "13:00", desc: "抵達關西機場", icon: "🛬", detail: "預計 12:50 抵達" },
-               { time: "14:00", desc: "搭 JR Haruka 特急 → 京都車站", icon: "🚅", detail: "車程約 70-80 分鐘 (ICOCA/Haruka套票)" },
-               { time: "15:30", desc: "入住 Hotel The M’s Kyoto", icon: "🏨", detail: "Check-in: 15:00 / 飯店電話: +81-75-661-8000" },
-               { time: "16:10", desc: "嵐山渡月橋、竹林小徑", icon: "🍃", detail: "免費參觀，感受京都的自然美", isSpot: true },
-               { time: "18:00", desc: "參加嵐山月燈路", icon: "🌙", detail: "季節性點燈活動 (請注意舉辦日期)", spotName: "嵐山渡月橋、竹林小徑", isSpot: true },
-               { time: "19:30", desc: "晚餐或回飯店休息", icon: "🍜", detail: "滾動式調整，可選擇車站周邊美食" },
-           ],
-       },
-       {
-           id: 'day2', day: 2, date: "10/17 (五)", title: "古都風情：清水寺＋八坂神社＋錦市場", theme: "文化・美食",
-           schedule: [
-               { time: "08:30", desc: "出發 → 市巴士至五条坂", icon: "🚌", detail: "搭乘市區巴士，準備開始古蹟巡禮" },
-               { time: "09:30", desc: "清水寺參觀+散步三年坂／二年坂", icon: "🏯", detail: "門票¥500，可眺望京都市區", isSpot: true },
-               { time: "11:40", desc: "八坂神社＆花見小路走走", icon: "⛩️", detail: "景點免費，可購買御守", isSpot: true },
-               { time: "13:25", desc: "錦市場午餐＋逛街", icon: "🛍️", detail: "京都的廚房，品嚐各種在地小吃" },
-               { time: "15:00", desc: "四条河原町自由活動 (或去平安神宮本殿區域免費)", icon: "🏙️", detail: "百貨公司購物或參觀", isSpot: true, spotName: "平安神宮本殿區域" },
-               { time: "18:30", desc: "壽喜燒三條河原町店", icon: "🥩", detail: "晚餐預訂，大快朵頤" },
-               { time: "傍晚", desc: "回飯店休息", icon: "🛌", detail: "" },
-           ],
-       },
-       {
-           id: 'day3', day: 3, date: "10/18 (六)", title: "伏見稻荷＋大阪摩天輪＋入住", theme: "移動・鳥居",
-           schedule: [
-               { time: "08:30", desc: "出發 → 伏見稻荷大社參拜（千本鳥居）", icon: "⛩️", detail: "景點免費，建議穿著舒適鞋子", isSpot: true },
-               { time: "11:00", desc: "午餐 → 回京都飯店取行李", icon: "🍴", detail: "M's Hotel Check-out: 10:00" },
-               { time: "14:20", desc: "搭 JR 新快速 → 大阪梅田", icon: "🚅", detail: "跨城市移動，車程約 30 分鐘" },
-               { time: "15:30", desc: "抵達梅田 → HEP FIVE 摩天輪", icon: "🎡", detail: "🚨 **注意：行程註明維修中**，建議替代方案", isSpot: true },
-               { time: "17:00", desc: "前往飯店 → 入住 The Bridge Hotel Shinsaibashi", icon: "🏨", detail: "Check-in: 15:00 / 飯店電話: +81-6-4963-3060" },
-               { time: "18:30", desc: "道頓堀＆心齋橋自由活動", icon: "🎏", detail: "夜間購物與美食，必拍格力高招牌", isSpot: true },
-           ],
-       },
-       {
-           id: 'day4', day: 4, date: "10/19 (日)", title: "大阪深度：大阪城＋天滿宮＋今昔館＋黑門市場", theme: "歷史・庶民",
-           schedule: [
-               { time: "08:30", desc: "地鐵至大阪商務園區", icon: "🚇", detail: "開始使用大阪周遊券" },
-               { time: "09:00", desc: "參觀大阪城＆御座船＋博物館", icon: "🏯", detail: "約 2.5 小時，周遊券可用", isSpot: true },
-               { time: "12:00", desc: "大阪天滿宮參拜", icon: "⛩️", detail: "免費參觀，祈求學業順利", isSpot: true },
-               { time: "12:30", desc: "天神橋筋商店街午餐", icon: "🍜", detail: "日本最長商店街，邊走邊吃" },
-               { time: "13:30", desc: "大阪生活今昔館（穿越江戶時代街景，可體驗和服）", icon: "🏘️", detail: "周遊券可用，室內景點", isSpot: true },
-               { time: "15:30", desc: "黑門市場散策，嚐鮮海鮮/和牛串/水果大福", icon: "🐟", detail: "大阪美食廚房，盡情享用", isSpot: true },
-               { time: "17:00", desc: "回心齋橋／道頓堀自由逛街", icon: "🛍️", detail: "補足伴手禮或藥妝" },
-               { time: "20:00", desc: "燒肉力丸難波道頓堀店", icon: "🥩", detail: "晚餐預訂，享受吃到飽" },
-           ],
-       },
-       {
-           id: 'day5', day: 5, date: "10/20 (一)", title: "大鳥大社參拜＋返台", theme: "返程・參拜",
-           schedule: [
-               { time: "08:30", desc: "地鐵至天王寺 → JR至鳳站", icon: "🚇", detail: "前往大阪郊區進行告別參拜" },
-               { time: "09:20", desc: "參拜大鳥大社", icon: "⛩️", detail: "免費參觀，感謝旅途平安", isSpot: true },
-               { time: "10:00", desc: "JR／南海電鐵 → 關西機場", icon: "🚅", detail: "預留充足時間前往 KIX" },
-               { time: "11:00", desc: "報到／退稅／午餐準備", icon: "🛄", detail: "Bridge Hotel Check-out: 11:00 / 機場手續及最後的購物時間" },
-               { time: "14:00", desc: "搭機返台", icon: "🛬", detail: "中華航空 CI0153，期待下次旅程！" },
-           ],
-       }
-   ];
-
-   const tabNavigation = document.getElementById('tab-navigation');
-   const itineraryContent = document.getElementById('itinerary-content');
-   const spotModal = document.getElementById('spot-modal');
-   const modalTitle = document.getElementById('modal-title');
-   const modalDesc = document.getElementById('modal-desc');
-   const modalDetails = document.getElementById('modal-details');
-   const modalLink = document.getElementById('modal-link');
-
-   // 1. 渲染導航 Tab 按鈕
-   itineraryData.forEach(item => {
-       const button = document.createElement('button');
-       button.className = 'tab-button flex-1 py-3 text-sm focus:outline-none';
-       button.textContent = `Day ${item.day}`;
-       button.dataset.day = item.id;
-       button.onclick = () => switchTab(item.id);
-       tabNavigation.appendChild(button);
-   });
-
-   // 2. 渲染單日行程內容
-   function renderDayContent(dayId) {
-       const data = itineraryData.find(d => d.id === dayId);
-       if (!data) return;
-
-       let contentHTML = `
-           <!-- 行程標題卡片 -->
-           <div class="day-header mb-4 p-4 bg-stone-950 rounded-xl shadow-2xl border border-fcd34d/20 transition transform hover:scale-[1.01]">
-               <h2 class="text-xl font-bold text-fcd34d">${data.title}</h2>
-               <p class="text-sm text-stone-400 mt-1">${data.date} | 主題：${data.theme}</p>
-           </div>
-           <h3 class="text-lg font-bold text-stone-200 mb-4 border-b border-stone-700 pb-1">🕒 每日行程時間軸</h3>
-           <div class="space-y-4 mb-8">
-       `;
-
-       // 行程時間表
-       data.schedule.forEach(item => {
-           const isSpot = item.isSpot;
-           const spotKey = item.spotName || item.desc;
-           
-           let descContent = item.desc;
-           let detailClass = 'text-stone-400';
-           let iconBgClass = 'bg-fcd34d/80 text-stone-950';
-
-           if (isSpot) {
-               // 如果是景點，將描述包裝為可點擊元素
-               descContent = `<span class="spot-clickable" onclick="showSpotModal('${spotKey}')">${item.desc}</span>`;
-               iconBgClass = 'bg-amber-500 text-black shadow-md'; // 景點使用更亮的圖標
-               if (item.detail.includes("維修中")) {
-                   detailClass = 'text-red-400 font-bold'; // 特別標記維修
-                   iconBgClass = 'bg-red-600/70 text-white shadow-md';
-               }
-           }
-           
-           contentHTML += `
-               <div class="flex items-start space-x-3">
-                   <div class="w-12 pt-1 flex-shrink-0">
-                       <span class="text-sm font-semibold text-stone-300">${item.time}</span>
+                   <div class="pt-2 border-t border-gray-100">
+                       <p class="font-bold text-red-600 mb-1">📞 緊急聯絡</p>
+                       <ul class="ml-4 list-disc text-gray-500">
+                           <li>日本急救/消防：<span class="font-bold">119</span></li>
+                           <li>日本報警：<span class="font-bold">110</span></li>
+                           <li>辦事處：+81-6-6612-8750</li>
+                       </ul>
                    </div>
-                   <div class="flex-shrink-0 mt-1">
-                       <!-- 圖標使用動態背景 -->
-                       <div class="w-7 h-7 flex items-center justify-center rounded-full ${iconBgClass} font-bold text-base transition-colors duration-300">${item.icon}</div>
-                   </div>
-                   <!-- 時間軸線條 (timeline-line class) -->
-                   <div class="flex-1 timeline-line pl-4 py-0.5">
-                       <p class="font-medium text-stone-200">${descContent}</p>
-                       <p class="text-xs ${detailClass}">${item.detail}</p>
+
+                   <div class="pt-2 border-t border-gray-100">
+                       <p class="font-bold text-blue-600 mb-1">🏨 住宿詳細資訊</p>
+                       <p class="font-semibold text-gray-800 mt-2">📍 京都：M's Hotel (10/16 - 10/18)</p>
+                       <ul class="ml-4 list-disc text-gray-500 space-y-0.5 text-xs">
+                           <li>地址：京都市南區東九条東山王町19</li>
+                           <li>電話：+81-75-661-8000</li>
+                           <li>Check-in: 15:00 / Check-out: 10:00</li>
+                       </ul>
+                       <p class="font-semibold text-gray-800 mt-2">📍 大阪：Bridge Hotel (10/18 - 10/20)</p>
+                        <ul class="ml-4 list-disc text-gray-500 space-y-0.5 text-xs">
+                           <li>地址：大阪市中央區東心齋橋1丁目11-19</li>
+                           <li>電話：+81-6-4963-3060</li>
+                           <li>Check-in: 15:00 / Check-out: 11:00</li>
+                       </ul>
                    </div>
                </div>
-           `;
-       });
-       contentHTML += `</div>`;
-       itineraryContent.innerHTML = contentHTML;
-   }
+           </div>
+       </div>
 
-   // 3. 顯示景點彈窗
-   function showSpotModal(spotName) {
-       const spotData = SPOT_DESCRIPTIONS[spotName];
+       <!-- 主行程內容：垂直滾動列表 -->
+       <div class="lg:w-2/3 w-full space-y-8">
+           <h2 class="text-2xl font-bold text-gray-800 mb-2 border-b-2 pb-2">🗓️ 詳細每日行程</h2>
 
-       // Helper function to format details
-       const formatDetails = (details) => {
-           if (!details) return '';
-           // 使用 Emoji 替換文字標籤，讓細節更生動
-           const lines = details
-               .replace(/📍/g, '<span class="text-amber-400">📍</span>')
-               .replace(/⏰/g, '<span class="text-amber-400">⏰</span>')
-               .replace(/⏳/g, '<span class="text-amber-400">⏳</span>')
-               .replace(/💰/g, '<span class="text-amber-400">💰</span>')
-               .replace(/✨/g, '<span class="text-amber-400">✨</span>')
-               .split('\n');
+           <!-- Angular For Loop 渲染每日卡片 -->
+           @for (dayData of itineraryData; track dayData.id) {
+             <div class="bg-white p-6 rounded-xl shadow-2xl border-l-4 border-blue-500 hover:shadow-3xl transition-shadow duration-300">
+                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 pb-3 border-b border-gray-100">
+                     <div class="flex items-center">
+                         <span class="text-3xl font-extrabold text-blue-600 mr-3">Day {{ dayData.day }}</span>
+                         <div>
+                             <h3 class="text-xl font-bold text-gray-800">{{ dayData.title }}</h3>
+                             <span class="text-sm text-gray-500">{{ dayData.date }} | 主題：{{ dayData.theme }}</span>
+                         </div>
+                     </div>
+                     <button (click)="scrollToDay(dayData.id)" class="hidden sm:block text-sm text-blue-500 font-medium hover:text-blue-700 transition">
+                        跳至頂端
+                     </button>
+                 </div>
+                 
+                 <!-- 單日行程時間軸 -->
+                 <div class="relative pt-2">
+                   <!-- 時間軸線 -->
+                   <div class="absolute top-0 bottom-0 left-2 w-0.5 bg-blue-100"></div>
+
+                   <!-- Angular For Loop 渲染每個行程項目 -->
+                   @for (item of dayData.schedule; track $index) {
+                     <div class="mb-5 flex items-start pl-8 relative">
+                         <!-- 時間點圖標 -->
+                         <div class="absolute left-2 top-0.5 transform -translate-x-1/2">
+                             <div [class]="getTimelineIconClass(item.isSpot, item.detail)">{{ item.icon }}</div>
+                         </div>
+
+                         <div class="flex-shrink-0 w-16 text-sm font-semibold text-gray-500 pt-1">
+                             {{ item.time }}
+                         </div>
+
+                         <div class="flex-1 ml-3 pt-1">
+                             <!-- 描述/景點名稱 -->
+                             @if (item.isSpot) {
+                               <p (click)="openSpotModal(item.spotName || item.desc)"
+                                   class="font-bold text-blue-700 cursor-pointer hover:underline hover:text-blue-900 transition-colors duration-150"
+                                   [class]="{'!text-red-600': item.detail.includes('維修中')}"
+                               >
+                                   {{ item.desc }}
+                               </p>
+                             } @else {
+                               <p class="font-medium text-gray-800">{{ item.desc }}</p>
+                             }
+                             <!-- 詳細說明 -->
+                             <p class="text-xs mt-0.5 text-gray-500"
+                                 [class]="{'!text-red-500 font-medium': item.detail.includes('維修中')}"
+                             >
+                                 {{ item.detail }}
+                             </p>
+                         </div>
+                     </div>
+                   }
+                 </div>
+             </div>
+           }
+
+           <div class="text-center text-gray-500 py-8">--- 行程結束，祝旅途圓滿！ ---</div>
+       </div>
+     </div>
+   </div>
+   
+   <!-- 景點詳情彈窗 (Modal) -->
+   @if (selectedSpot()) {
+       <div class="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4" (click)="closeSpotModal()">
+           <div
+               class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-transform duration-300 scale-100"
+               (click)="$event.stopPropagation()"
+           >
+               <h3 class="text-2xl font-extrabold text-blue-700 mb-3 border-b border-gray-200 pb-2">
+                   {{ spotDetail()?.displayTitle }}
+               </h3>
                
-           return lines.map(line => `<p class="border-b border-stone-700 pb-2">${line}</p>`).join('');
+               <p class="text-gray-600 mb-4 text-base italic">{{ spotDetail()?.desc }}</p>
+               
+               <div class="text-sm space-y-3 mb-6 p-4 rounded-xl bg-blue-50 border border-blue-200">
+                   <!-- 格式化後的詳細資訊 -->
+                   @for (line of spotDetail()?.formattedDetails; track $index) {
+                       <p class="flex items-start text-gray-700 leading-relaxed">{{ line }}</p>
+                   }
+               </div>
+
+               @if (spotDetail()?.link) {
+                   <a
+                       [href]="spotDetail()?.link"
+                       target="_blank"
+                       class="block w-full text-center py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg"
+                   >
+                       開啟 Google 地圖導航 🗺️
+                   </a>
+               } @else {
+                   <div class="text-center text-red-500 font-medium py-3 border border-red-200 rounded-xl bg-red-50">
+                       🚨 無地圖連結或地點維修中
+                   </div>
+               }
+               
+               <button (click)="closeSpotModal()" class="w-full mt-4 text-sm text-gray-500 py-1 hover:text-blue-600 transition">
+                   關閉視窗
+               </button>
+           </div>
+       </div>
+   }
+ `,
+ styles: [
+   `
+     /* 確保主內容區在寬螢幕上能正確佈局 */
+     @media (min-width: 1024px) {
+       /* Lg breakpoint */
+       .lg\\:sticky {
+         position: sticky;
+         top: 100px; /* 考慮到 header 的高度 */
+       }
+     }
+     /* 自定義圓形圖標樣式 */
+     .timeline-icon {
+       width: 32px;
+       height: 32px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       border-radius: 9999px;
+       font-weight: 700;
+       font-size: 16px;
+       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+       transition: all 0.2s ease-in-out;
+     }
+     .bg-red {
+        background-color: #ef4444; /* red-500 */
+        color: white;
+     }
+     .bg-blue {
+        background-color: #3b82f6; /* blue-500 */
+        color: white;
+     }
+     .bg-gray {
+        background-color: #d1d5db; /* gray-300 */
+        color: #1f2937; /* gray-800 */
+     }
+     /* 景點專用動畫效果 */
+     .spot-icon-hover:hover {
+       transform: scale(1.1);
+       box-shadow: 0 4px 10px rgba(59, 130, 246, 0.5); /* blue-500 shadow */
+     }
+   `
+ ],
+ changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class App {
+   // 使用 Signals 儲存行程資料
+   itineraryData = signal(ITINERARY_DATA);
+   
+   // 使用 Signals 儲存當前選中的景點名稱 (用於 Modal)
+   selectedSpot = signal<string | null>(null);
+
+   /**
+    * 計算屬性：根據 selectedSpot 的值，動態計算景點的詳細資訊
+    */
+   spotDetail = computed(() => {
+       const spotName = this.selectedSpot();
+       if (!spotName) return null;
+
+       const spotData = SPOT_DESCRIPTIONS[spotName] || {
+           desc: "此項目為行程安排，無詳細景點介紹。",
+           details: "",
+           link: ""
        };
 
-       if (!spotData) {
-           modalTitle.textContent = spotName;
-           modalDesc.textContent = "此項目為行程安排，無詳細景點介紹。";
-           modalDetails.innerHTML = '';
-           modalLink.classList.add('hidden');
-       } else {
-           modalTitle.textContent = spotName.split('（')[0].split('+')[0].trim();
-           modalDesc.textContent = spotData.desc;
-           modalDetails.innerHTML = formatDetails(spotData.details);
-           
-           modalLink.href = spotData.link || '#';
-           if (spotData.link) {
-               modalLink.classList.remove('hidden');
-           } else {
-               modalLink.classList.add('hidden');
-           }
-       }
-       spotModal.classList.remove('hidden');
-   }
-
-   // 4. 關閉景點彈窗
-   function closeSpotModal() {
-       spotModal.classList.add('hidden');
-   }
-
-   // 5. 切換 Tab 邏輯
-   function switchTab(dayId) {
-       document.querySelectorAll('.tab-button').forEach(btn => {
-           btn.classList.remove('active');
+       const displayTitle = spotName.split('（')[0].split('+')[0].trim();
+       
+       // 格式化細節文字，加入表情符號
+       const formattedDetails = spotData.details.split('\n').map(line => {
+           if (line.includes('📍')) return `<span class="font-bold text-blue-600 mr-2">📍 地址/車站：</span>${line.substring(line.indexOf('📍') + 1).trim()}`;
+           if (line.includes('⏰')) return `<span class="font-bold text-blue-600 mr-2">⏰ 開放時間：</span>${line.substring(line.indexOf('⏰') + 1).trim()}`;
+           if (line.includes('⏳')) return `<span class="font-bold text-blue-600 mr-2">⏳ 建議停留：</span>${line.substring(line.indexOf('⏳') + 1).trim()}`;
+           if (line.includes('💰')) return `<span class="font-bold text-blue-600 mr-2">💰 門票費用：</span>${line.substring(line.indexOf('💰') + 1).trim()}`;
+           if (line.includes('✨')) return `<span class="font-bold text-blue-600 mr-2">✨ 特別提示：</span>${line.substring(line.indexOf('✨') + 1).trim()}`;
+           return line;
        });
-       const activeBtn = document.querySelector(`.tab-button[data-day="${dayId}"]`);
-       if (activeBtn) {
-           activeBtn.classList.add('active');
-       }
-       renderDayContent(dayId);
-   }
 
-   // 6. 應用程式啟動：預設顯示 Day 1
-   document.addEventListener('DOMContentLoaded', () => {
-       if (itineraryData.length > 0) {
-           switchTab(itineraryData[0].id);
-       }
+       return { ...spotData, displayTitle, formattedDetails };
    });
 
-   // 為了讓 showSpotModal 在全域可用，這裡將它附在 window 上
-   window.showSpotModal = showSpotModal;
-   window.closeSpotModal = closeSpotModal;
+   /**
+    * 獲取時間軸圖標的 CSS Class
+    * @param isSpot 是否為景點
+    * @param detail 行程細節
+    * @returns 組合的 Tailwind CSS Class
+    */
+   getTimelineIconClass(isSpot: boolean | undefined, detail: string): string {
+     let baseClass = 'timeline-icon';
+     if (detail.includes('維修中')) {
+       return `${baseClass} bg-red`; // 維修使用紅色
+     }
+     if (isSpot) {
+       return `${baseClass} bg-blue spot-icon-hover`; // 景點使用藍色
+     }
+     return `${baseClass} bg-gray`; // 一般行程使用灰色
+   }
 
-</script>
+   /**
+    * 打開景點詳情彈窗
+    * @param spotName 景點名稱
+    */
+   openSpotModal(spotName: string): void {
+     this.selectedSpot.set(spotName);
+   }
 
-</body>
-</html>
+   /**
+    * 關閉景點詳情彈窗
+    */
+   closeSpotModal(): void {
+     this.selectedSpot.set(null);
+   }
+   
+   /**
+    * 滾動到特定日期的卡片頂端
+    * @param dayId 日期 ID (e.g., 'day1')
+    */
+   scrollToDay(dayId: string): void {
+     const element = document.getElementById(dayId);
+     if (element) {
+       // 使用 smooth 滾動到頂部，並留出 header 的空間
+       window.scrollTo({
+         top: element.offsetTop - 100,
+         behavior: 'smooth'
+       });
+     }
+   }
+}
