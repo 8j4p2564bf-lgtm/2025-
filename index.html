@@ -1,474 +1,233 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>日本關西五日遊行程表</title>
-   <script src="https://cdn.tailwindcss.com"></script>
-   <style>
-       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-       body {
-           font-family: 'Inter', sans-serif;
-           background-color: #1a1a2e; /* Dark theme background */
-           color: #ffffff; /* Light text */
-           margin: 0;
-           padding: 0;
-           min-height: 100vh;
-       }
-       .app-container {
-           max-width: 768px;
-           margin: 0 auto;
-           padding: 0;
-           display: flex;
-           flex-direction: column;
-           min-height: 100vh;
-       }
-       /* 主導航按鈕樣式 */
-       .main-nav-button {
-           transition: all 0.3s ease;
-           cursor: pointer;
-           border-bottom: 3px solid transparent;
-           font-weight: 600;
-       }
-       .main-nav-button.active {
-           border-bottom-color: #ffb703; /* Accent color for active tab */
-           color: #ffb703;
-       }
-       .main-nav-button:hover:not(.active) {
-           color: #ffb703;
-           opacity: 0.8;
-       }
-       
-       /* 次級導航 (Day tabs) 樣式 */
-       .day-nav-button {
-           transition: all 0.2s ease;
-           padding: 8px 10px;
-           font-weight: 500;
-           border-radius: 8px;
-           color: #ccc;
-           background-color: transparent;
-           flex-shrink: 0; /* Prevent shrinking */
-       }
-       .day-nav-button.active {
-           background-color: #ffb703;
-           color: #1a1a2e;
-           font-weight: 700;
-           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-       }
-       .day-nav-button:hover:not(.active) {
-           background-color: #3a3a5a;
-       }
-
-       .card {
-           background-color: #272744; /* Darker card background */
-           border-radius: 12px;
-           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-           padding: 16px;
-           margin-bottom: 12px;
-           transition: transform 0.2s, box-shadow 0.2s;
-           border: 1px solid #3a3a5a;
-       }
-       .detail-item {
-           display: flex;
-           justify-content: space-between;
-           align-items: center;
-           padding: 8px 0;
-           border-bottom: 1px dashed #3a3a5a;
-       }
-       .detail-item:last-child {
-           border-bottom: none;
-       }
-       .weather-card {
-           flex-shrink: 0;
-           width: 140px;
-           background-color: #3a3a5a;
-           border: none;
-           text-align: center;
-           padding: 10px 5px;
-           margin-right: 8px;
-       }
-       .weather-icon {
-           font-size: 2.5rem;
-           line-height: 1;
-       }
-       .weather-temp {
-           font-size: 1.1rem;
-           font-weight: 700;
-           color: #8aff8a;
-       }
-   </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭旅行規劃 & 記帳</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 自定義深色 Vibe */
+        body { background-color: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .active-tab { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+        .weather-icon { font-size: 2rem; margin-right: 10px; }
+    </style>
 </head>
-<body>
-   <div id="app" class="app-container p-4">
-       <!-- App content will be rendered here -->
-   </div>
+<body class="min-h-screen flex flex-col items-center pb-20">
 
-   <script type="module">
-       // ====================================================================
-       // 行程資料 (已更新為用戶提供的詳細行程)
-       // ====================================================================
+    <header class="w-full max-w-md p-6 text-center">
+        <h1 class="text-2xl font-bold tracking-wider text-blue-400">FAMILY TRIP 2025</h1>
+        <p class="text-sm text-gray-400 mt-1">爸 · 媽 · 逸 · 松 的旅程</p>
+    </header>
 
-       const itineraryData = [
-           {
-               day: 1,
-               date: '10/16 (四)',
-               city: '京都 (Kyoto)',
-               theme: '抵達與嵐山月燈路',
-               activities: [
-                   { time: '05:30', description: '竹北 >> 桃園機場 (二航廈) (車資¥1500)' },
-                   { time: '09:00', description: '桃園機場出發 ✈️ (中華航空 CI0152)' },
-                   { time: '13:00', description: '抵達關西機場 (KIX)' },
-                   { time: '14:00', description: '搭乘 JR Haruka 特急 → 京都車站 🚅' },
-                   { time: '15:30', description: '入住 Hotel The M’s Kyoto 🏨' },
-                   { time: '16:10', description: '嵐山渡月橋、竹林小徑 🍃' },
-                   { time: '18:00', description: '參加嵐山月燈路活動 🌙' },
-                   { time: '19:30', description: '晚餐或回飯店休息 🍽️' }
-               ]
-           },
-           {
-               day: 2,
-               date: '10/17 (五)',
-               city: '京都 (Kyoto)',
-               theme: '古都風情：清水寺＋市場美食',
-               activities: [
-                   { time: '08:30', description: '市巴士至五条坂 🚌' },
-                   { time: '09:30', description: '清水寺參觀 (門票¥500) + 散步三年坂／二年坂 🏯' },
-                   { time: '11:40', description: '八坂神社＆花見小路走走 ⛩️' },
-                   { time: '13:25', description: '錦市場午餐＋逛街 🛍️' },
-                   { time: '15:00', description: '四条河原町自由活動 / 平安神宮本殿區域' },
-                   { time: '18:30', description: '晚餐：壽喜燒三條河原町店 🍽️' },
-                   { time: '傍晚', description: '回飯店休息 🌙' }
-               ]
-           },
-           {
-               day: 3,
-               date: '10/18 (六)',
-               city: '京都 → 大阪',
-               theme: '伏見稻荷＋大阪摩天輪＋入住',
-               activities: [
-                   { time: '08:30', description: '出發 → 伏見稻荷大社參拜（千本鳥居） ⛩️' },
-                   { time: '11:00', description: '午餐 → 回飯店取行李' },
-                   { time: '14:20', description: '搭乘 JR 新快速 → 大阪梅田 🚅' },
-                   { time: '15:30', description: '抵達梅田 → HEP FIVE 摩天輪 (⚠️ 注意：行程註明為維修中)' },
-                   { time: '17:00', description: '前往飯店 → 入住 The Bridge Hotel Shinsaibashi 🏨' },
-                   { time: '18:30', description: '道頓堀＆心齋橋自由活動 🎏' }
-               ]
-           },
-           {
-               day: 4,
-               date: '10/19 (日)',
-               city: '大阪 (Osaka)',
-               theme: '大阪深度：歷史、文化與美食',
-               activities: [
-                   { time: '08:30', description: '地鐵至大阪商務園區 🚇' },
-                   { time: '09:00', description: '參觀大阪城＆御座船＋博物館 (周遊卷，約2.5小時) 🏯' },
-                   { time: '12:00', description: '大阪天滿宮參拜 ⛩️' },
-                   { time: '12:30', description: '天神橋筋商店街午餐 🍜' },
-                   { time: '13:30', description: '大阪生活今昔館 (周遊卷，可體驗和服) 🏘️' },
-                   { time: '15:30', description: '黑門市場散策 (海鮮/和牛串/水果大福) 🐟' },
-                   { time: '17:00', description: '回心齋橋／道頓堀自由逛街 🛍️' },
-                   { time: '20:00', description: '晚餐：燒肉力丸難波道頓堀店 🥩' }
-               ]
-           },
-           {
-               day: 5,
-               date: '10/20 (一)',
-               city: '大阪 → 關西機場 (KIX)',
-               theme: '大鳥大社參拜＋返程',
-               activities: [
-                   { time: '08:30', description: '地鐵至天王寺 → JR至鳳站 🚇' },
-                   { time: '09:20', description: '參拜大鳥大社 ⛩️' },
-                   { time: '10:00', description: 'JR／南海電鐵 → 關西機場 🚅' },
-                   { time: '11:00', description: '報到／退稅／午餐準備 ✈️' },
-                   { time: '14:00', description: '搭機返台 🛬 (中華航空 CI0153)' }
-               ]
-           }
-       ];
+    <div class="w-full max-w-md flex overflow-x-auto space-x-2 p-4 scrollbar-hide" id="dayTabs">
+        </div>
 
-       // 五日天氣預報數據 (基於關西十月中旬的模擬數據)
-       const weatherForecast = [
-           { date: '10/16 (四)', city: '京都', icon: '☀️', condition: '晴朗', high: 23, low: 15 },
-           { date: '10/17 (五)', city: '京都', icon: '🌤️', condition: '多雲', high: 22, low: 14 },
-           { date: '10/18 (六)', city: '大阪', icon: '🌧️', condition: '有雨', high: 19, low: 16 },
-           { date: '10/19 (日)', city: '大阪', icon: '🌥️', condition: '局部多雲', high: 21, low: 13 },
-           { date: '10/20 (一)', city: '大阪', icon: '☀️', condition: '晴朗', high: 24, low: 15 },
-       ];
-       
-       // ====================================================================
-       // Utility Functions
-       // ====================================================================
+    <main class="w-full max-w-md p-4 space-y-6">
+        
+        <div class="glass rounded-2xl p-6 flex items-center justify-between shadow-lg">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-200" id="weatherLoc">東京, 日本</h2>
+                <p class="text-sm text-gray-400" id="weatherDesc">多雲時晴</p>
+            </div>
+            <div class="flex items-center text-yellow-400">
+                <i class="fas fa-cloud-sun weather-icon"></i>
+                <span class="text-3xl font-bold" id="weatherTemp">24°C</span>
+            </div>
+        </div>
 
-       function createElement(tag, classes = [], content = '', attributes = {}) {
-           const el = document.createElement(tag);
-           if (classes.length) {
-               el.className = classes.join(' ');
-           }
-           if (content) {
-               el.innerHTML = content;
-           }
-           for (const key in attributes) {
-               el.setAttribute(key, attributes[key]);
-           }
-           return el;
-       }
+        <div class="space-y-4" id="itineraryList">
+            </div>
 
-       function createDetailItem(label, value) {
-           const item = createElement('div', ['detail-item']);
-           item.appendChild(createElement('span', ['text-gray-300'], label));
-           item.appendChild(createElement('span', ['font-semibold', 'text-right', 'text-white'], value));
-           return item;
-       }
+        <hr class="border-gray-700 my-8">
 
-       // ====================================================================
-       // View Components
-       // ====================================================================
+        <div class="glass rounded-2xl p-6 shadow-lg border-t-4 border-blue-500">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-wallet mr-2"></i> 快速記帳
+            </h3>
+            
+            <div class="space-y-3">
+                <input type="text" id="expenseItem" placeholder="消費項目 (例如: 拉麵)" class="w-full bg-gray-800 rounded-lg p-3 text-white border border-gray-700 focus:border-blue-500 outline-none transition">
+                <input type="number" id="expenseAmount" placeholder="金額" class="w-full bg-gray-800 rounded-lg p-3 text-white border border-gray-700 focus:border-blue-500 outline-none transition">
+                
+                <p class="text-sm text-gray-400 mb-1">誰付錢？</p>
+                <div class="grid grid-cols-4 gap-2" id="payerButtons">
+                    <button onclick="selectPayer('爸')" class="payer-btn bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition text-sm">爸</button>
+                    <button onclick="selectPayer('媽')" class="payer-btn bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition text-sm">媽</button>
+                    <button onclick="selectPayer('逸')" class="payer-btn bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition text-sm">逸</button>
+                    <button onclick="selectPayer('松')" class="payer-btn bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition text-sm">松</button>
+                </div>
+                <input type="hidden" id="selectedPayer">
 
-       /**
-        * 渲染天氣預報區塊 (Essential Info 頁面專用)
-        */
-       function WeatherForecast() {
-           const container = createElement('div', ['p-0', 'mb-6']);
-           container.appendChild(createElement('h2', ['text-xl', 'font-bold', 'mb-3', 'text-yellow-400'], '五日天氣預報 (℃)'));
+                <button onclick="addExpense()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg mt-4 transition shadow-lg active:scale-95">
+                    新增紀錄
+                </button>
+            </div>
 
-           // 使用 flex 和 overflow-x-auto 實現橫向滾動
-           const forecastList = createElement('div', ['flex', 'overflow-x-auto', 'space-x-4', 'pb-2', 'snap-x', 'snap-mandatory']);
-           
-           weatherForecast.forEach(day => {
-               const card = createElement('div', [
-                   'weather-card', 'card', 'flex', 'flex-col', 'items-center', 'justify-between', 'snap-start'
-               ]);
-               
-               card.appendChild(createElement('div', ['text-sm', 'font-medium', 'text-gray-300'], day.date.substring(0, 5))); // 10/16
-               card.appendChild(createElement('div', ['text-xs', 'text-gray-400', 'mb-1'], day.city));
-               card.appendChild(createElement('div', ['weather-icon'], day.icon));
-               card.appendChild(createElement('div', ['weather-temp', 'mt-1'], `${day.high}° / ${day.low}°`));
-               card.appendChild(createElement('div', ['text-xs', 'text-gray-400', 'mt-1'], day.condition));
+            <div class="mt-6">
+                <h4 class="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">目前花費統計</h4>
+                <ul id="expenseStats" class="space-y-2 text-sm">
+                    </ul>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-700">
+                 <h4 class="text-xs font-bold text-gray-500 mb-2">近期紀錄</h4>
+                 <ul id="recentExpenses" class="text-xs text-gray-400 space-y-1"></ul>
+            </div>
+        </div>
+    </main>
 
-               forecastList.appendChild(card);
-           });
+    <script>
+        // ================= 配置區 (把你的行程貼在下面) =================
+        // 你可以在這裡修改每一天的行程和天氣預報
+        const tripData = [
+            {
+                day: "Day 1",
+                date: "10/10 (五)",
+                weather: { temp: "22°C", desc: "多雲", icon: "fa-cloud" },
+                events: [
+                    { time: "10:00", title: "抵達機場", desc: "領取 WiFi 機，購買交通卡" },
+                    { time: "12:30", title: "飯店 Check-in", desc: "放行李，稍作休息" },
+                    { time: "14:00", title: "市區觀光", desc: "自由活動，或是去咖啡廳" },
+                    { time: "19:00", title: "晚餐：燒肉", desc: "記得提前預約" }
+                ]
+            },
+            {
+                day: "Day 2",
+                date: "10/11 (六)",
+                weather: { temp: "25°C", desc: "晴天", icon: "fa-sun" },
+                events: [
+                    { time: "09:00", title: "出發去景點 A", desc: "搭乘地鐵紅線" },
+                    { time: "12:00", title: "午餐", desc: "當地特色料理" },
+                    { time: "15:00", title: "逛街購物", desc: "幫親戚買藥妝" }
+                ]
+            },
+            {
+                day: "Day 3",
+                date: "10/12 (日)",
+                weather: { temp: "19°C", desc: "有雨", icon: "fa-umbrella" },
+                events: [
+                    { time: "10:00", title: "博物館巡禮", desc: "室內行程避雨" },
+                    { time: "18:00", title: "前往機場", desc: "搭乘機場快線" }
+                ]
+            }
+        ];
 
-           container.appendChild(forecastList);
-           return container;
-       }
+        // 記帳資料 (預設為空)
+        let expenses = JSON.parse(localStorage.getItem('tripExpenses')) || [];
+        let currentDayIndex = 0;
 
+        // ================= 邏輯區 =================
 
-       /**
-        * 渲染必備資訊頁面
-        */
-       function EssentialInfo() {
-           const container = createElement('div', ['p-4', 'flex-grow']);
+        function renderTabs() {
+            const tabContainer = document.getElementById('dayTabs');
+            tabContainer.innerHTML = '';
+            tripData.forEach((day, index) => {
+                const btn = document.createElement('button');
+                btn.className = `px-5 py-2 rounded-full whitespace-nowrap text-sm font-medium transition border border-gray-700 ${index === currentDayIndex ? 'active-tab' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`;
+                btn.innerText = `${day.day} · ${day.date}`;
+                btn.onclick = () => switchDay(index);
+                tabContainer.appendChild(btn);
+            });
+        }
 
-           // 1. 插入天氣預報
-           container.appendChild(WeatherForecast());
+        function renderContent() {
+            const data = tripData[currentDayIndex];
+            
+            // 更新天氣
+            document.getElementById('weatherLoc').innerText = `第 ${currentDayIndex + 1} 天概況`;
+            document.getElementById('weatherDesc').innerText = data.weather.desc;
+            document.getElementById('weatherTemp').innerText = data.weather.temp;
+            document.querySelector('.weather-icon').className = `fas ${data.weather.icon} weather-icon`;
 
-           // 2. 航班資訊卡片
-           const flightCard = createElement('div', ['card', 'mb-6']);
-           flightCard.appendChild(createElement('h2', ['text-xl', 'font-bold', 'mb-3', 'text-red-400'], '✈️ 航班與人員資訊'));
-           
-           const flightList = createElement('div');
-           flightList.appendChild(createDetailItem('旅行人數', '4位 (家族旅行)'));
-           flightList.appendChild(createDetailItem('去程航班', 'CI0152 (TPE 09:00 → KIX 12:50)'));
-           flightList.appendChild(createDetailItem('回程航班', 'CI0153 (KIX 14:00 → TPE 15:55)'));
-           flightList.appendChild(createDetailItem('航空公司', '中華航空'));
-           flightCard.appendChild(flightList);
-           container.appendChild(flightCard);
+            // 更新行程
+            const list = document.getElementById('itineraryList');
+            list.innerHTML = '';
+            data.events.forEach(event => {
+                const item = document.createElement('div');
+                item.className = 'glass p-4 rounded-xl flex items-start space-x-4';
+                item.innerHTML = `
+                    <div class="text-blue-400 font-bold text-lg min-w-[60px]">${event.time}</div>
+                    <div>
+                        <h3 class="font-bold text-white text-lg">${event.title}</h3>
+                        <p class="text-gray-400 text-sm mt-1">${event.desc}</p>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
 
-           // 3. 飯店資訊卡片
-           const hotelCard = createElement('div', ['card', 'mb-6']);
-           hotelCard.appendChild(createElement('h2', ['text-xl', 'font-bold', 'mb-3', 'text-blue-400'], '🏨 飯店資訊 (分住)'));
-           
-           const hotelList = createElement('div');
-           hotelList.appendChild(createDetailItem('京都飯店 (10/16-10/18)', 'Hotel The M’s Kyoto'));
-           hotelList.appendChild(createDetailItem('大阪飯店 (10/18-10/20)', 'The Bridge Hotel Shinsaibashi'));
-           hotelList.appendChild(createDetailItem('主要交通方式', 'JR、地鐵、巴士 (含周遊卷)'));
-           hotelCard.appendChild(hotelList);
-           container.appendChild(hotelCard);
-           
-           // 4. 必備資訊卡片
-           const generalCard = createElement('div', ['card']);
-           generalCard.appendChild(createElement('h2', ['text-xl', 'font-bold', 'mb-3', 'text-yellow-400'], '旅行必備提醒'));
-           
-           const generalList = createElement('div');
-           generalList.appendChild(createDetailItem('貨幣', '日圓 (JPY)'));
-           generalList.appendChild(createDetailItem('時差', '日本快台灣 1 小時'));
-           generalList.appendChild(createDetailItem('電壓', '100V (扁平兩腳插頭)'));
-           generalList.appendChild(createDetailItem('注意', '⚠️ HEP FIVE 摩天輪維修中'));
-           generalCard.appendChild(generalList);
-           container.appendChild(generalCard);
-           
-           return container;
-       }
+        function switchDay(index) {
+            currentDayIndex = index;
+            renderTabs();
+            renderContent();
+        }
 
-       /**
-        * 渲染分日行程內容
-        */
-       function ItineraryDetail(appInstance) {
-           const container = createElement('div', ['p-4', 'flex-grow']);
-           const currentDay = appInstance.state.currentDay;
-           
-           // ------------------------------------------
-           // 1. 渲染次級導航 (Day Tabs)
-           // ------------------------------------------
-           const dayNavContainer = createElement('div', ['flex', 'overflow-x-auto', 'space-x-3', 'mb-4', 'pb-1', 'sticky', 'top-[75px]', 'z-5', 'bg-[#1a1a2e]', 'rounded-lg', 'shadow-md']);
-           
-           for (let i = 1; i <= itineraryData.length; i++) {
-               const dayBtn = createElement('button', [
-                   'day-nav-button',
-                   i === currentDay ? 'active' : ''
-               ], `Day ${i}`);
-               dayBtn.onclick = () => appInstance.handleDayChange(i);
-               dayNavContainer.appendChild(dayBtn);
-           }
-           container.appendChild(dayNavContainer);
+        // 記帳功能
+        function selectPayer(name) {
+            document.getElementById('selectedPayer').value = name;
+            document.querySelectorAll('.payer-btn').forEach(btn => {
+                if (btn.innerText === name) {
+                    btn.classList.remove('bg-gray-700');
+                    btn.classList.add('bg-blue-600', 'text-white');
+                } else {
+                    btn.classList.add('bg-gray-700');
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                }
+            });
+        }
 
-           // ------------------------------------------
-           // 2. 渲染當前日期的詳細行程
-           // ------------------------------------------
-           const dayPlan = itineraryData.find(p => p.day === currentDay);
-           
-           if (!dayPlan) {
-               container.appendChild(createElement('p', ['text-center', 'text-gray-400', 'mt-10'], '找不到此日的行程資訊。'));
-               return container;
-           }
+        function addExpense() {
+            const item = document.getElementById('expenseItem').value;
+            const amount = parseInt(document.getElementById('expenseAmount').value);
+            const payer = document.getElementById('selectedPayer').value;
 
-           const dayCard = createElement('div', ['card', 'mt-2']);
-           
-           // Card Header
-           const header = createElement('div', ['mb-3', 'pb-2', 'border-b', 'border-yellow-400']);
-           header.appendChild(createElement('h2', ['text-2xl', 'font-extrabold', 'text-yellow-400'], `Day ${dayPlan.day}: ${dayPlan.date}`));
-           header.appendChild(createElement('p', ['text-lg', 'font-medium', 'text-gray-300', 'mt-1'], `地點：${dayPlan.city}`));
-           header.appendChild(createElement('p', ['text-sm', 'text-gray-400'], `主題：${dayPlan.theme}`));
-           dayCard.appendChild(header);
+            if (!item || !amount || !payer) {
+                alert("請填寫完整資訊並選擇付款人！");
+                return;
+            }
 
-           // Activity List
-           const activitiesList = createElement('div', ['space-y-4']);
-           dayPlan.activities.forEach(activity => {
-               const activityItem = createElement('div', ['flex', 'items-start', 'space-x-3']);
-               
-               // Time Tag
-               const timeTagClasses = activity.time.includes('全天') ? ['bg-green-600'] : ['bg-red-600'];
-               const timeTag = createElement('span', [
-                   'text-xs', 'font-bold', 'px-2', 'py-1', 'rounded-full', ...timeTagClasses, 'text-white', 'flex-shrink-0', 'mt-1'
-               ], activity.time);
-               
-               // Description
-               const descriptionContent = activity.description.replace('⚠️', '<span class="text-red-400 font-bold">⚠️</span>'); // Highlight warning
-               const description = createElement('p', ['text-base', 'text-gray-100'], descriptionContent);
+            expenses.push({ item, amount, payer, time: new Date().toLocaleString() });
+            localStorage.setItem('tripExpenses', JSON.stringify(expenses));
+            
+            // 清空輸入
+            document.getElementById('expenseItem').value = '';
+            document.getElementById('expenseAmount').value = '';
+            renderStats();
+        }
 
-               activityItem.appendChild(timeTag);
-               activityItem.appendChild(description);
-               activitiesList.appendChild(activityItem);
-           });
+        function renderStats() {
+            const statsList = document.getElementById('expenseStats');
+            const recentList = document.getElementById('recentExpenses');
+            const totals = { '爸': 0, '媽': 0, '逸': 0, '松': 0 };
+            let grandTotal = 0;
 
-           dayCard.appendChild(activitiesList);
-           container.appendChild(dayCard);
-           
+            recentList.innerHTML = '';
+            // 顯示最近 3 筆
+            expenses.slice().reverse().slice(0, 3).forEach(exp => {
+                recentList.innerHTML += `<li class="flex justify-between"><span>${exp.payer} 付了 ${exp.item}</span> <span>$${exp.amount}</span></li>`;
+            });
 
-           // ------------------------------------------
-           // 3. 顯示下一日的預告 (作為滾動切換的替代)
-           // ------------------------------------------
-           if (currentDay < itineraryData.length) {
-               const nextDay = itineraryData.find(p => p.day === currentDay + 1);
-               if (nextDay) {
-                    const nextDayCard = createElement('div', ['card', 'mt-6', 'opacity-80', 'cursor-pointer'], `
-                       <p class="text-sm text-gray-400 mb-1">--- 下一日預告 ---</p>
-                       <h3 class="text-xl font-bold text-blue-300">Day ${nextDay.day}: ${nextDay.theme}</h3>
-                       <p class="text-sm text-gray-300">${nextDay.activities[0].description}...</p>
-                   `);
-                   nextDayCard.onclick = () => appInstance.handleDayChange(currentDay + 1);
-                   container.appendChild(nextDayCard);
-               }
-           }
+            expenses.forEach(exp => {
+                if (totals[exp.payer] !== undefined) totals[exp.payer] += exp.amount;
+                grandTotal += exp.amount;
+            });
 
+            statsList.innerHTML = `
+                <li class="flex justify-between border-b border-gray-700 pb-1 mb-2"><span class="font-bold text-white">總花費</span> <span class="font-bold text-blue-400">$${grandTotal}</span></li>
+                <li class="flex justify-between text-gray-300"><span>爸 先付</span> <span>$${totals['爸']}</span></li>
+                <li class="flex justify-between text-gray-300"><span>媽 先付</span> <span>$${totals['媽']}</span></li>
+                <li class="flex justify-between text-gray-300"><span>逸 先付</span> <span>$${totals['逸']}</span></li>
+                <li class="flex justify-between text-gray-300"><span>松 先付</span> <span>$${totals['松']}</span></li>
+            `;
+        }
 
-           return container;
-       }
+        // 初始化
+        renderTabs();
+        renderContent();
+        renderStats();
 
-
-       /**
-        * 主應用程式邏輯
-        */
-       class App {
-           constructor(containerId) {
-               this.container = document.getElementById(containerId);
-               this.state = {
-                   currentPage: 'itinerary', // 預設顯示行程
-                   currentDay: 1 // 預設顯示 Day 1
-               };
-               this.render();
-           }
-
-           setState(newState) {
-               this.state = { ...this.state, ...newState };
-               this.render();
-           }
-
-           // 處理主導航切換
-           handleNavigation(page) {
-               this.setState({ currentPage: page });
-           }
-
-           // 處理分日切換
-           handleDayChange(day) {
-               if (day !== this.state.currentDay) {
-                   this.setState({ currentDay: day });
-               }
-           }
-
-           // 渲染導航欄
-           renderNavBar() {
-               const navBar = createElement('nav', ['flex', 'justify-around', 'p-4', 'bg-[#121221]', 'sticky', 'top-0', 'z-10', 'shadow-lg', 'rounded-b-xl']);
-
-               const essentialBtn = createElement('button', [
-                   'main-nav-button',
-                   'p-2',
-                   this.state.currentPage === 'essential' ? 'active' : 'text-gray-400'
-               ], '必備資訊');
-               essentialBtn.onclick = () => this.handleNavigation('essential');
-
-               const itineraryBtn = createElement('button', [
-                   'main-nav-button',
-                   'p-2',
-                   this.state.currentPage === 'itinerary' ? 'active' : 'text-gray-400'
-               ], '每日行程');
-               itineraryBtn.onclick = () => this.handleNavigation('itinerary');
-
-               navBar.appendChild(essentialBtn);
-               navBar.appendChild(itineraryBtn);
-               return navBar;
-           }
-
-           renderContent() {
-               let content;
-               if (this.state.currentPage === 'itinerary') {
-                   // 將整個 App 實例傳入，以便子組件可以觸發狀態更新
-                   content = ItineraryDetail(this);
-               } else {
-                   content = EssentialInfo();
-               }
-               return content;
-           }
-
-           render() {
-               // 清空容器
-               this.container.innerHTML = '';
-
-               // 標題
-               const title = createElement('h1', ['text-3xl', 'font-extrabold', 'text-center', 'pt-6', 'pb-4', 'text-white'], '🇯🇵 關西五日遊 🇯🇵');
-               this.container.appendChild(title);
-
-               // 導航
-               this.container.appendChild(this.renderNavBar());
-
-               // 內容
-               this.container.appendChild(this.renderContent());
-           }
-       }
-
-       // 初始化應用程式
-       window.onload = () => {
-           new App('app');
-       };
-   </script>
+    </script>
 </body>
 </html>
