@@ -3,7 +3,7 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>關西五日遊記帳與行程</title>
+   <title>關西五日遊 - 行程與記帳整合版 (深色)</title>
    <!-- 載入 Tailwind CSS -->
    <script src="https://cdn.tailwindcss.com"></script>
    <!-- 載入 Inter 字體 -->
@@ -11,135 +11,177 @@
    <style>
        body {
            font-family: 'Inter', sans-serif;
-           background-color: #f7f9fc;
+           /* 深色背景 */
+           background-color: #1a202c; /* gray-900 */
        }
+       /* 隱藏捲軸 */
        .scroll-hidden::-webkit-scrollbar {
            display: none;
        }
        .scroll-hidden {
-           -ms-overflow-style: none;  /* IE and Edge */
-           scrollbar-width: none;  /* Firefox */
+           -ms-overflow-style: none;
+           scrollbar-width: none;
+       }
+       /* 提升字體清晰度 */
+       .text-shadow-sm {
+           text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+       }
+       .itinerary-item {
+           /* 深色模式下的左側邊線顏色 */
+           border-left: 3px solid #6366f1; /* indigo-500 */
+           padding-left: 1rem;
+       }
+       /* 調整輸入框的樣式以適應深色模式 */
+       input[type="text"], input[type="number"], select {
+           background-color: #2d3748; /* gray-700 */
+           color: #e2e8f0; /* gray-200 */
+           border-color: #4a5568; /* gray-600 */
        }
    </style>
 </head>
 <body>
 
    <!-- 主應用程式容器 -->
-   <div id="app" class="min-h-screen p-4 sm:p-6 md:p-8">
+   <div id="app" class="min-h-screen p-4 sm:p-6 md:p-8 text-gray-100">
        
-       <!-- 標題卡片 -->
-       <div class="bg-white p-6 rounded-2xl shadow-xl mb-6">
-           <h1 class="text-3xl font-extrabold text-green-700">🍁 關西五日遊・秋日漫遊</h1>
-           <p class="text-gray-500 mt-1">日期：10/16 ~ 10/20 (5天4夜) | 4人家庭旅行</p>
-           <div class="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
-               <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full">京都 (M's Hotel)</span>
-               <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full">大阪 (Bridge Hotel)</span>
+       <!-- 頂部概覽卡片 -->
+       <div class="bg-gradient-to-r from-green-700 to-emerald-800 p-6 rounded-2xl shadow-2xl mb-6">
+           <h1 class="text-3xl font-extrabold text-shadow-sm">🍁 關西五日・秋日漫遊</h1>
+           <p class="text-gray-200 mt-1 text-sm font-medium">10/16 ~ 10/20 (5天4夜) | 4人家庭旅行</p>
+           
+           <!-- 住宿與航班快速摘要 -->
+           <div class="mt-4 flex flex-wrap gap-4 text-xs font-semibold">
+               <div class="flex items-center">
+                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1 text-yellow-300">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125a3.375 3.375 0 003.375 3.375h1.5A1.5 1.5 0 0010.5 21v-3.75m-4.5-5.25v5.25c0 1.391-.84 2.55-1.95 2.55s-1.95-1.159-1.95-2.55v-5.25c0-1.391.84-2.55 1.95-2.55s1.95 1.159 1.95 2.55zM12 21.75V15m0 0a3 3 0 01-3-3V6a3 3 0 016 0v6a3 3 0 01-3 3zM15 15a3 3 0 003 3v3h-6v-3a3 3 0 003-3z" />
+                   </svg>
+                   <span>京都: M's Hotel</span>
+               </div>
+               <div class="flex items-center">
+                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1 text-yellow-300">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125a3.375 3.375 0 003.375 3.375h1.5A1.5 1.5 0 0010.5 21v-3.75m-4.5-5.25v5.25c0 1.391-.84 2.55-1.95 2.55s-1.95-1.159-1.95-2.55v-5.25c0-1.391.84-2.55 1.95-2.55s1.95 1.159 1.95 2.55zM12 21.75V15m0 0a3 3 0 01-3-3V6a3 3 0 016 0v6a3 3 0 01-3 3zM15 15a3 3 0 003 3v3h-6v-3a3 3 0 003-3z" />
+                   </svg>
+                   <span>大阪: Bridge Hotel</span>
+               </div>
+               <div class="flex items-center">
+                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1 text-yellow-300">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.874L5.999 12zm0 0h7.5" />
+                   </svg>
+                   <span>去程: CI0152 (TPE 09:00 → KIX 12:50)</span>
+               </div>
            </div>
-       </div>
 
-       <!-- 總支出概覽卡片 -->
-       <div class="bg-indigo-600 text-white p-5 rounded-2xl shadow-xl mb-6">
-           <div id="loading-status" class="text-center font-medium">
-               正在初始化 Firebase...
+           <!-- 總支出概覽 -->
+           <div id="loading-status" class="text-center mt-5 p-3 bg-white bg-opacity-10 rounded-lg">
+               正在初始化 Firebase 服務...
            </div>
-           <div id="summary-content" class="hidden">
-               <p class="text-sm opacity-80">本次旅行總支出 (日圓)</p>
-               <h2 id="total-trip-expense" class="text-4xl font-bold mt-1">¥ 0</h2>
+           <div id="summary-content" class="hidden mt-5">
+               <p class="text-sm opacity-90 font-light">本次旅行總支出概覽 (日圓)</p>
+               <h2 id="total-trip-expense" class="text-4xl font-bold mt-1 text-shadow-sm">¥ 0</h2>
+               <span class="inline-block text-xs mt-1 text-gray-300">使用者 ID: <span id="user-id-display">N/A</span></span>
            </div>
        </div>
 
        <!-- 日期導航標籤 -->
-       <div class="flex overflow-x-auto scroll-hidden mb-4 p-1 bg-white rounded-xl shadow-lg">
-           <template id="day-tabs-template">
-               <!-- 每日導航按鈕，將由 JS 填充 -->
-           </template>
+       <div class="flex overflow-x-auto scroll-hidden mb-6 p-2 bg-gray-800 rounded-xl shadow-lg">
+           <!-- 每日導航按鈕，將由 JS 填充 -->
        </div>
 
-       <!-- 記帳與行程內容區塊 -->
+       <!-- 行程與記帳主要內容 (Grid Layout) -->
        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-           <!-- 記帳功能區塊 -->
-           <div class="lg:col-span-1">
-               <div class="bg-white p-6 rounded-2xl shadow-xl sticky top-4">
-                   <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mr-2 text-indigo-500">
-                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+           <!-- 左側：每日行程大綱與明細 -->
+           <div class="lg:col-span-2 space-y-6">
+               <div class="bg-gray-800 p-6 rounded-2xl shadow-xl">
+                   <h2 class="text-2xl font-bold text-gray-100 mb-4 flex items-center">
+                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mr-2 text-green-400">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5" />
                        </svg>
-                       <span id="current-day-title">Day 1</span> 支出紀錄
+                       <span id="itinerary-day-title">Day 1</span> 行程規劃
                    </h2>
-
-                   <!-- 當日支出總額 -->
-                   <div class="mb-5 p-4 bg-indigo-50 rounded-xl border border-indigo-200">
-                       <p class="text-sm font-medium text-indigo-600">當日總支出</p>
-                       <p id="daily-total" class="text-3xl font-bold text-indigo-800">¥ 0</p>
+                   
+                   <!-- 當日行程內容 -->
+                   <div id="itinerary-content" class="text-gray-300 space-y-4">
+                       <!-- 行程內容將根據選擇的 Day 進行更新 -->
                    </div>
+               </div>
+               
+               <!-- 支出明細列表 -->
+               <div class="bg-gray-800 p-6 rounded-2xl shadow-xl">
+                   <h2 class="text-2xl font-bold text-gray-100 mb-4 flex items-center">
+                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mr-2 text-indigo-400">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.03 60.03 0 0 1 9.75-2.25v-7.5l-3 2.25m3 5.25v5.25c.571 0 1.127-.123 1.648-.351l-.317-.118m-7.648.351A59.98 59.98 0 0 1 2.25 18.75m12.012 4.409-.323-.139A39.292 39.292 0 0 0 12 21.75V19.5m0-9.75v-2.25m0 0a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" />
+                       </svg>
+                       支出明細
+                   </h2>
+                   
+                   <div class="mb-5 p-4 bg-indigo-900 rounded-xl border border-indigo-700">
+                       <p class="text-sm font-medium text-indigo-300">當日總支出</p>
+                       <p id="daily-total" class="text-3xl font-bold text-indigo-100">¥ 0</p>
+                   </div>
+
+                   <ul id="expense-list" class="space-y-3">
+                       <!-- 支出項目將由 JS 載入 -->
+                       <li id="empty-state" class="text-center py-8 text-gray-500">
+                           <p>點擊右側「+ 記錄支出」來記錄 Day ${currentDayIndex} 的第一筆花費。</p>
+                       </li>
+                   </ul>
+               </div>
+           </div>
+
+           <!-- 右側：記帳功能區塊 (Sticky for mobile) -->
+           <div class="lg:col-span-1">
+               <div class="bg-gray-800 p-6 rounded-2xl shadow-xl lg:sticky lg:top-8">
+                   <h2 class="text-2xl font-bold text-gray-100 mb-4">
+                       記帳新增
+                   </h2>
 
                    <!-- 新增支出表單 -->
                    <form id="expense-form" class="space-y-4">
                        <input type="hidden" id="expense-day-index" value="1">
 
+                       <!-- 新增：付款人欄位 -->
                        <div>
-                           <label for="expense-description" class="block text-sm font-medium text-gray-700">項目說明</label>
-                           <input type="text" id="expense-description" required placeholder="午餐、門票、交通卡"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                           <label for="expense-payer" class="block text-sm font-medium text-gray-300">付款人</label>
+                           <select id="expense-payer" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-gray-700 text-white">
+                               <option value="爸">爸</option>
+                               <option value="媽">媽</option>
+                               <option value="逸">逸</option>
+                               <option value="松">松</option>
+                           </select>
                        </div>
                        
                        <div>
-                           <label for="expense-amount" class="block text-sm font-medium text-gray-700">金額 (日圓 ¥)</label>
+                           <label for="expense-description" class="block text-sm font-medium text-gray-300">項目說明</label>
+                           <input type="text" id="expense-description" required placeholder="午餐、交通卡、紀念品"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-gray-700 text-white">
+                       </div>
+                       
+                       <div>
+                           <label for="expense-amount" class="block text-sm font-medium text-gray-300">金額 (日圓 ¥)</label>
                            <input type="number" id="expense-amount" required min="1" placeholder="例如：2500"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                               class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-gray-700 text-white">
                        </div>
 
                        <div>
-                           <label for="expense-category" class="block text-sm font-medium text-gray-700">類別</label>
+                           <label for="expense-category" class="block text-sm font-medium text-gray-300">類別</label>
                            <select id="expense-category" required
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-white">
-                               <option value="餐飲">餐飲 🍜</option>
-                               <option value="交通">交通 🚄</option>
-                               <option value="住宿">住宿 🏨</option>
-                               <option value="門票">門票/娛樂 🎟️</option>
-                               <option value="購物">購物/紀念品 🛍️</option>
-                               <option value="其他">其他 🏷️</option>
+                               class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-gray-700 text-white">
+                               <option value="餐飲">🍜 餐飲</option>
+                               <option value="交通">🚄 交通</option>
+                               <option value="住宿">🏨 住宿</option>
+                               <option value="門票">🎟️ 門票/娛樂</option>
+                               <option value="購物">🛍️ 購物/紀念品</option>
+                               <option value="其他">🏷️ 其他</option>
                            </select>
                        </div>
 
                        <button type="submit" id="add-expense-btn"
-                           class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:opacity-50">
-                           + 新增支出
+                           class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:opacity-50">
+                           + 記錄支出
                        </button>
                    </form>
-               </div>
-           </div>
-
-           <!-- 支出明細與行程區塊 -->
-           <div class="lg:col-span-2 space-y-6">
-               <!-- 每日行程大綱（可自訂） -->
-               <div class="bg-white p-6 rounded-2xl shadow-xl">
-                   <h2 class="text-xl font-bold text-gray-800 mb-3">今日行程大綱</h2>
-                   <div id="itinerary-content" class="text-gray-600 space-y-2">
-                       <!-- 行程內容將根據選擇的 Day 進行更新 -->
-                       <p class="text-sm italic">您可以在這裡規劃 Day 1 的行程細節。目前尚未有詳細規劃。</p>
-                       <ul class="list-disc list-inside ml-4 text-sm">
-                           <li>上午：關西國際機場 (KIX) 抵達與入境</li>
-                           <li>中午：搭乘 JR 或南海電鐵前往京都</li>
-                           <li>下午：抵達並辦理 M's Hotel 入住手續</li>
-                           <li>傍晚：探索飯店附近區域，尋找晚餐</li>
-                       </ul>
-                   </div>
-               </div>
-
-               <!-- 支出明細列表 -->
-               <div class="bg-white p-6 rounded-2xl shadow-xl">
-                   <h2 class="text-xl font-bold text-gray-800 mb-4">支出明細</h2>
-                   <ul id="expense-list" class="space-y-3">
-                       <!-- 支出項目將由 JS 載入 -->
-                       <li id="empty-state" class="text-center py-8 text-gray-400">
-                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mx-auto mb-2">
-                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.03 60.03 0 0 1 9.75-2.25v-7.5l-3 2.25m3 5.25v5.25c.571 0 1.127-.123 1.648-.351l-.317-.118m-7.648.351A59.98 59.98 0 0 1 2.25 18.75m12.012 4.409-.323-.139A39.292 39.292 0 0 0 12 21.75V19.5m0-9.75v-2.25m0 0a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" />
-                           </svg>
-                           <p>點擊「+ 新增支出」來記錄您的第一筆花費。</p>
-                       </li>
-                   </ul>
                </div>
            </div>
        </div>
@@ -166,8 +208,6 @@
            deleteDoc,
            orderBy,
            serverTimestamp,
-           setDoc,
-           getDoc,
            setLogLevel
        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -197,13 +237,13 @@
        const summaryContentEl = document.getElementById('summary-content');
        const totalTripExpenseEl = document.getElementById('total-trip-expense');
        const dayTabsContainer = document.querySelector('.flex.overflow-x-auto');
-       const currentDayTitleEl = document.getElementById('current-day-title');
+       const itineraryDayTitleEl = document.getElementById('itinerary-day-title');
        const dailyTotalEl = document.getElementById('daily-total');
        const expenseForm = document.getElementById('expense-form');
        const expenseListEl = document.getElementById('expense-list');
-       const emptyStateEl = document.getElementById('empty-state');
        const expenseDayIndexInput = document.getElementById('expense-day-index');
        const addExpenseBtn = document.getElementById('add-expense-btn');
+       const userIdDisplayEl = document.getElementById('user-id-display');
 
        // --- 輔助函數 ---
 
@@ -234,7 +274,7 @@
        };
 
        // --- 渲染函數 ---
-
+       
        /**
         * 渲染單一支出項目
         * @param {object} expense
@@ -242,24 +282,25 @@
         */
        const renderExpenseItem = (expense) => {
            const icon = getCategoryIcon(expense.category);
+           // 支出明細項目採用深色配色
            return `
-               <li data-id="${expense.id}" class="flex justify-between items-center p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200 hover:bg-gray-100 transition duration-150">
+               <li data-id="${expense.id}" class="flex justify-between items-center p-3 bg-gray-700 rounded-lg shadow-sm border border-gray-600 hover:bg-gray-600 transition duration-150">
                    <div class="flex items-center">
                        <span class="text-xl mr-3">${icon}</span>
                        <div>
-                           <p class="font-semibold text-gray-800">${expense.description}</p>
-                           <p class="text-xs text-gray-500">${expense.category}</p>
+                           <p class="font-semibold text-gray-100">${expense.description}</p>
+                           <!-- 顯示付款人和類別 -->
+                           <p class="text-xs text-gray-400">${expense.category} | 付款人: ${expense.payer || '未知'}</p>
                        </div>
                    </div>
                    <div class="flex items-center space-x-2">
-                       <span class="text-lg font-bold text-red-600">${formatCurrency(expense.amount)}</span>
+                       <span class="text-lg font-bold text-red-400">${formatCurrency(expense.amount)}</span>
                        <button onclick="deleteExpense('${expense.id}')"
-                               class="p-1 text-gray-400 hover:text-red-500 rounded-full transition duration-150"
+                               class="p-1 text-gray-400 hover:text-red-300 rounded-full transition duration-150"
                                aria-label="刪除項目">
                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                              <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.166 2.008-5.32c.162-.43.206-.867.144-1.272a.75.75 0 0 0-.96-.705L18.15 3.12l.142.378M18.15 3.12l-1.42 3.774M18.15 3.12 15.65 6.894" />
                            </svg>
-
                        </button>
                    </div>
                </li>
@@ -267,61 +308,88 @@
        };
        
        /**
-        * 渲染每日行程內容（簡單範例）
+        * 渲染每日行程內容
         */
        const renderItineraryContent = (dayIndex) => {
            const itineraryContentEl = document.getElementById('itinerary-content');
            let content = '';
 
-           // 這是根據您圖片提供的行程資訊撰寫的範例
-           switch (dayIndex) {
-               case 1:
-                   content = `<p class="text-sm italic">抵達關西並前往京都，開始秋日漫遊。</p>
-                       <ul class="list-disc list-inside ml-4 text-sm space-y-1">
-                           <li>**上午：** 台灣桃園機場 (TPE) 09:00 出發 (CI0152)</li>
-                           <li>**中午：** 關西國際機場 (KIX) 12:50 抵達</li>
-                           <li>**下午：** 搭乘 HARUKA 特快列車或利木津巴士前往京都</li>
-                           <li>**傍晚：** 辦理 M's Hotel 入住手續，晚餐於京都車站周邊</li>
-                       </ul>`;
-                   break;
-               case 2:
-                   content = `<p class="text-sm italic">京都深度文化體驗日。</p>
-                       <ul class="list-disc list-inside ml-4 text-sm space-y-1">
-                           <li>**上午：** 清水寺 (Kiyomizu-dera)，漫步二年坂、三年坂</li>
-                           <li>**中午：** 在祇園附近享用日式傳統午餐</li>
-                           <li>**下午：** 參觀伏見稻荷大社 (Fushimi Inari-taisha) 的千本鳥居</li>
-                           <li>**晚上：** 探索先斗町或錦市場周邊</li>
-                       </ul>`;
-                   break;
-               case 3:
-                   content = `<p class="text-sm italic">從京都移往大阪，並開始都會探索。</p>
-                       <ul class="list-disc list-inside ml-4 text-sm space-y-1">
-                           <li>**上午：** 退房，從京都車站搭乘新幹線或 JR 快速前往大阪</li>
-                           <li>**中午：** 在新大阪或難波車站享用午餐</li>
-                           <li>**下午：** 辦理 Bridge Hotel (大阪) 入住手續，前往大阪城公園</li>
-                           <li>**晚上：** 道頓堀 (Dotonbori) 享用晚餐及逛街</li>
-                       </ul>`;
-                   break;
-               case 4:
-                   content = `<p class="text-sm italic">大阪購物與美食之旅。</p>
-                       <ul class="list-disc list-inside ml-4 text-sm space-y-1">
-                           <li>**上午：** 心齋橋筋商店街 (Shinsaibashisuji) 購物</li>
-                           <li>**中午：** 在黑門市場 (Kuromon Market) 品嚐新鮮海產</li>
-                           <li>**下午：** 通天閣 (Tsutenkaku) 與新世界區散步</li>
-                           <li>**晚上：** 梅田空中庭園展望台 (Umeda Sky Building) 欣賞夜景</li>
-                       </ul>`;
-                   break;
-               case 5:
-                   content = `<p class="text-sm italic">準備賦歸，最後的關西時光。</p>
-                       <ul class="list-disc list-inside ml-4 text-sm space-y-1">
-                           <li>**上午：** 在飯店附近享用早餐，並進行最後的購物</li>
-                           <li>**中午：** 前往關西國際機場 (KIX)</li>
-                           <li>**下午：** KIX 14:00 出發 (CI0153) 飛往台北</li>
-                       </ul>`;
-                   break;
-               default:
-                   content = '<p>請選擇一個日期來規劃行程。</p>';
+           const itineraryDetails = {
+               1: {
+                   date: "10/16 (三) | 抵達日",
+                   title: "京都初體驗：機場至飯店",
+                   items: [
+                       { time: "09:00", desc: "台灣桃園機場 (TPE) 集合，搭乘 CI0152 啟程。" },
+                       { time: "12:50", desc: "抵達關西國際機場 (KIX)，辦理入境手續與領取行李。" },
+                       { time: "14:00", desc: "購買 ICOCA 或 JR Haruka 特快車票，搭乘前往京都。" },
+                       { time: "16:00", desc: "抵達 **M's Hotel (京都)**，辦理入住並稍作休息。" },
+                       { time: "18:30", desc: "晚餐：在京都車站周邊伊勢丹百貨或拉麵小路覓食。" }
+                   ]
+               },
+               2: {
+                   date: "10/17 (四) | 京都文化日",
+                   title: "清水寺與千本鳥居深度遊",
+                   items: [
+                       { time: "09:00", desc: "前往**清水寺 (Kiyomizu-dera)**，欣賞秋日楓葉景色。" },
+                       { time: "11:00", desc: "漫步**二年坂、三年坂**，享受傳統日式街道氛圍，購買紀念品。" },
+                       { time: "13:00", desc: "午餐：祇園附近，嘗試湯豆腐或蕎麥麵。" },
+                       { time: "15:00", desc: "參觀**伏見稻荷大社 (Fushimi Inari-taisha)**，挑戰千本鳥居。" },
+                       { time: "18:30", desc: "晚餐：探索先斗町或錦市場周邊的特色居酒屋。" }
+                   ]
+               },
+               3: {
+                   date: "10/18 (五) | 轉移與大阪城",
+                   title: "從京都到大阪：都會轉換",
+                   items: [
+                       { time: "09:00", desc: "辦理京都飯店退房手續，搭乘 JR 快速或新幹線前往大阪。" },
+                       { time: "11:30", desc: "抵達大阪，午餐於難波或心齋橋周邊。" },
+                       { time: "14:00", desc: "抵達 **Bridge Hotel (大阪)**，辦理入住手續。" },
+                       { time: "15:30", desc: "前往**大阪城公園**，參觀天守閣及歷史遺跡。" },
+                       { time: "19:00", desc: "晚餐：**道頓堀 (Dotonbori)**，品嚐章魚燒、大阪燒和著名的「固力果跑跑人」夜景。" }
+                   ]
+               },
+               4: {
+                   date: "10/19 (六) | 大阪深度探索",
+                   title: "美食、購物與新世界懷舊",
+                   items: [
+                       { time: "09:30", desc: "**心齋橋筋商店街 (Shinsaibashisuji)** 自由購物，享受大阪的購物樂趣。" },
+                       { time: "12:30", desc: "午餐：**黑門市場 (Kuromon Market)**，品嚐新鮮海產和在地小吃。" },
+                       { time: "15:00", desc: "前往懷舊的**新世界區**，參觀**通天閣 (Tsutenkaku)**。" },
+                       { time: "18:00", desc: "晚餐：在梅田地區或飯店附近用餐。" },
+                       { time: "20:00", desc: "夜景：**梅田空中庭園展望台 (Umeda Sky Building)**，欣賞大阪璀璨夜景。" }
+                   ]
+               },
+               5: {
+                   date: "10/20 (日) | 賦歸日",
+                   title: "最終巡禮與返程",
+                   items: [
+                       { time: "09:00", desc: "在飯店附近進行最後的購物或購買伴手禮。" },
+                       { time: "11:00", desc: "辦理退房手續，準備前往關西國際機場 (KIX)。" },
+                       { time: "12:00", desc: "午餐：機場或路途上快速用餐。" },
+                       { time: "14:00", desc: "搭乘 CI0153 航班，從 KIX 飛往台北 (TPE)。" }
+                   ]
+               }
+           };
+
+           const dayData = itineraryDetails[dayIndex];
+           
+           if (dayData) {
+               itineraryDayTitleEl.textContent = `Day ${dayIndex} - ${dayData.date}`;
+               
+               const itemsHtml = dayData.items.map(item => `
+                   <div class="itinerary-item">
+                       <p class="text-lg font-bold text-gray-50">${item.time}</p>
+                       <p class="text-base text-gray-300">${item.desc}</p>
+                   </div>
+               `).join('');
+
+               content = `<p class="font-semibold text-xl text-green-400 mb-3">${dayData.title}</p>
+                          <div class="space-y-4">${itemsHtml}</div>`;
+           } else {
+               itineraryDayTitleEl.textContent = `Day ${dayIndex} - 尚未規劃`;
+               content = '<p class="text-gray-500 italic">此日尚未有詳細行程規劃。請使用上方功能新增。</p>';
            }
+
 
            itineraryContentEl.innerHTML = content;
        };
@@ -340,11 +408,11 @@
            // 渲染列表
            if (dailyExpenses.length === 0) {
                expenseListEl.innerHTML = `
-                   <li class="text-center py-8 text-gray-400">
-                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mx-auto mb-2">
+                   <li class="text-center py-8 text-gray-500">
+                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mx-auto mb-2 text-gray-600">
                          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.03 60.03 0 0 1 9.75-2.25v-7.5l-3 2.25m3 5.25v5.25c.571 0 1.127-.123 1.648-.351l-.317-.118m-7.648.351A59.98 59.98 0 0 1 2.25 18.75m12.012 4.409-.323-.139A39.292 39.292 0 0 0 12 21.75V19.5m0-9.75v-2.25m0 0a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" />
                        </svg>
-                       <p>點擊「+ 新增支出」來記錄 Day ${currentDayIndex} 的第一筆花費。</p>
+                       <p>點擊右側「+ 記錄支出」來記錄 Day ${currentDayIndex} 的第一筆花費。</p>
                    </li>
                `;
            } else {
@@ -355,8 +423,7 @@
            const totalTrip = allExpenses.reduce((sum, exp) => sum + exp.amount, 0);
            totalTripExpenseEl.textContent = formatCurrency(totalTrip);
 
-           // 更新 Day 標題
-           currentDayTitleEl.textContent = `Day ${currentDayIndex}`;
+           // 更新 Day 標題 (記帳表單的隱藏欄位)
            expenseDayIndexInput.value = currentDayIndex;
 
            // 更新導航標籤上的總額顯示
@@ -380,18 +447,18 @@
                    const total = dayTotals[i];
                    dayTabEl.innerHTML = `
                        Day ${i}
-                       <span class="text-xs ml-1 font-normal ${total > 0 ? 'text-red-300' : 'text-gray-300'}">
+                       <span class="text-xs ml-1 font-normal ${total > 0 ? 'text-red-300' : 'text-gray-400'}">
                            ${total > 0 ? formatCurrency(total) : formatCurrency(0)}
                        </span>
                    `;
                    
                    // 更新活躍狀態
                    if (i === currentDayIndex) {
-                       dayTabEl.classList.add('bg-indigo-600', 'text-white');
-                       dayTabEl.classList.remove('bg-white', 'text-indigo-600', 'hover:bg-indigo-50');
+                       dayTabEl.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+                       dayTabEl.classList.remove('bg-gray-700', 'text-indigo-300', 'hover:bg-indigo-500/20', 'shadow-sm');
                    } else {
-                       dayTabEl.classList.remove('bg-indigo-600', 'text-white');
-                       dayTabEl.classList.add('bg-white', 'text-indigo-600', 'hover:bg-indigo-50');
+                       dayTabEl.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                       dayTabEl.classList.add('bg-gray-700', 'text-indigo-300', 'hover:bg-indigo-500/20', 'shadow-sm');
                    }
                }
            }
@@ -405,9 +472,9 @@
            for (let i = 1; i <= TOTAL_DAYS; i++) {
                html += `
                    <button id="day-tab-${i}" onclick="selectDay(${i})"
-                           class="flex-shrink-0 px-4 py-2 font-semibold rounded-xl transition duration-150 ease-in-out whitespace-nowrap text-indigo-600 bg-white hover:bg-indigo-50 shadow-md border border-gray-100">
+                           class="flex-shrink-0 px-4 py-2 font-semibold rounded-lg transition duration-150 ease-in-out whitespace-nowrap text-indigo-300 bg-gray-700 hover:bg-indigo-500/20 shadow-sm border border-gray-600 mr-2 last:mr-0">
                        Day ${i}
-                       <span class="text-xs ml-1 font-normal text-gray-300">${formatCurrency(0)}</span>
+                       <span class="text-xs ml-1 font-normal text-gray-400">${formatCurrency(0)}</span>
                    </button>
                `;
            }
@@ -433,7 +500,10 @@
         * @param {string} expenseId
         */
        window.deleteExpense = async (expenseId) => {
-           if (!isAuthReady) return console.error('Firebase Auth not ready.');
+           if (!isAuthReady) {
+               console.error('Firebase Auth not ready.');
+               return;
+           }
            
            try {
                // 確認路徑正確
@@ -453,19 +523,25 @@
         */
        const handleAddExpense = async (e) => {
            e.preventDefault();
-           if (!isAuthReady) return console.error('Firebase Auth not ready.');
+           if (!isAuthReady) {
+               console.error('Firebase Auth not ready.');
+               return;
+           }
 
+           // 新增：讀取付款人
+           const payer = document.getElementById('expense-payer').value;
            const description = document.getElementById('expense-description').value.trim();
            const amount = parseFloat(document.getElementById('expense-amount').value);
            const category = document.getElementById('expense-category').value;
            const dayIndex = parseInt(document.getElementById('expense-day-index').value);
 
-           if (!description || isNaN(amount) || amount <= 0 || !category) {
+           if (!description || isNaN(amount) || amount <= 0 || !category || !payer) {
+               console.warn("請填寫所有欄位並確保金額有效。");
                return;
            }
            
            addExpenseBtn.disabled = true;
-           addExpenseBtn.textContent = '新增中...';
+           addExpenseBtn.textContent = '記錄中...';
 
            try {
                await addDoc(expensesRef, {
@@ -473,17 +549,20 @@
                    description: description,
                    amount: amount,
                    category: category,
+                   payer: payer, // 新增：儲存付款人
                    createdAt: serverTimestamp(),
                    userId: userId
                });
                
                // 清空表單
                expenseForm.reset();
+               // 確保付款人下拉選單維持在預設值
+               document.getElementById('expense-payer').value = '爸';
            } catch (e) {
                console.error("新增支出時發生錯誤:", e);
            } finally {
                addExpenseBtn.disabled = false;
-               addExpenseBtn.textContent = '+ 新增支出';
+               addExpenseBtn.textContent = '+ 記錄支出';
            }
        };
 
@@ -503,7 +582,8 @@
                    ...doc.data(),
                    // 確保 amount 是數字，dayIndex 是數字
                    amount: parseFloat(doc.data().amount || 0),
-                   dayIndex: parseInt(doc.data().dayIndex || 1)
+                   dayIndex: parseInt(doc.data().dayIndex || 1),
+                   payer: doc.data().payer || '未知' // 確保有 payer 欄位
                }));
                
                // 渲染所有相關 UI
@@ -551,6 +631,7 @@
                        // 隱藏載入狀態，顯示總覽
                        loadingStatusEl.classList.add('hidden');
                        summaryContentEl.classList.remove('hidden');
+                       userIdDisplayEl.textContent = userId; // 顯示用戶 ID
 
                        // 3. 啟動數據監聽
                        subscribeToExpenses();
