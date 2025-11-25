@@ -1,468 +1,73 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>京都・大阪 5天4夜自由行</title>
-
-    <!-- 1. 引入 Tailwind CSS (樣式庫) -->
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kyoto Osaka Trip</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        navy: {
-                            950: '#020C1B',
-                            900: '#0A192F', // 主背景
-                            800: '#112240', // 卡片背景
-                            700: '#233554', // 邊框/懸停
-                            600: '#303C55',
-                        },
-                        accent: {
-                            teal: '#64FFDA', // 亮青色 (強調)
-                            rose: '#F43F5E', // 重點/警告
-                            gold: '#FBBF24', // 天氣/星號
-                            blue: '#60A5FA', // 連結
-                        },
-                        text: {
-                            light: '#E6F1FF', // 最亮白
-                            main: '#8892B0',  // 主要灰
-                            muted: '#4F5B78', // 暗淡灰
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'neon': '0 0 10px rgba(100, 255, 218, 0.1)',
-                        'card': '0 10px 30px -15px rgba(2, 12, 27, 0.7)',
-                    }
-                }
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'wood-dark': '#1A1614',   // Deep Ebony Background
+              'wood-card': '#26201B',   // Dark Walnut Card
+              'wood-light': '#3E342B',  // Lighter Wood Border
+              'wood-accent': '#C5A065', // Antique Gold/Bronze
+              'wood-text': '#EAE0D5',   // Cream/Sand Text
+              'wood-muted': '#9A8C7D',  // Muted Taupe Text
+            },
+            fontFamily: {
+              sans: ['Noto Sans TC', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-out',
+              'slide-up': 'slideUp 0.5s ease-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              }
             }
+          }
         }
+      }
     </script>
-
-    <!-- 2. 引入 React & Babel (核心運作庫) -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- 3. 自定義樣式 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #0A192F;
-            color: #8892B0;
-            -webkit-tap-highlight-color: transparent;
-            overscroll-behavior-y: none;
-        }
-        /* 隱藏捲軸但保留功能 */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* 動畫 */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.4s ease-out forwards;
-        }
-        
-        /* 毛玻璃 */
-        .glass-panel {
-            background: rgba(10, 25, 47, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
-        }
+      body {
+        font-family: 'Noto Sans TC', sans-serif;
+        background-color: #1A1614;
+        color: #EAE0D5;
+      }
+      /* Hide scrollbar for clean horizontal scrolling */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
     </style>
-<script type="importmap">
+  <script type="importmap">
 {
   "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
   }
 }
 </script>
 </head>
-<body>
+  <body>
     <div id="root"></div>
-
-    <!-- 4. React 應用程式邏輯 -->
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-
-        // --- 1. 圖示組件 (SVG) ---
-        const Icons = {
-            Plane: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>,
-            MapPin: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
-            Clock: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-            X: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-            Bed: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>,
-            Utensils: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>,
-            ShoppingBag: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
-            Train: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><path d="M2 8h20"/></svg>,
-            Sun: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>,
-            Cloud: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>,
-            Camera: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
-            Calculator: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>,
-            ChevronDown: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
-            Info: ({ className }) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        };
-
-        // --- 2. 行程資料 (DATA) ---
-        const TRIP_DATA = [
-            {
-                day: 1,
-                date: '10/16 (四)',
-                title: '京都初印象：嵐山＋月燈路',
-                weather: { type: 'sun', text: '16°C - 24°C' },
-                activities: [
-                    { time: '05:30', title: '前往桃園機場', desc: '竹北 >> 桃機2航廈。預算現金1500。', type: 'transport' },
-                    { time: '09:00', title: '飛往日本 (CI0152)', desc: '中華航空 TPE 09:00 >> KIX 12:50', type: 'flight' },
-                    { time: '13:00', title: '抵達關西機場', desc: '入境手續、領取行李。', type: 'other' },
-                    { time: '14:00', title: '搭 JR Haruka → 京都', desc: '前往京都車站，Hello Kitty 列車。', type: 'transport' },
-                    { time: '15:30', title: 'Check-in', desc: 'Hotel The M’s Kyoto 入住。', type: 'hotel', location: "Hotel The M's Kyoto" },
-                    { time: '16:10', title: '嵐山渡月橋、竹林小徑', desc: '京都必去。走過渡月橋，穿梭竹林小徑。', type: 'attraction', location: 'Arashiyama Bamboo Grove', price: '免費' },
-                    { time: '18:00', title: '嵐山月燈路', desc: '秋季限定夜間點燈活動。', type: 'attraction', location: 'Arashiyama Park' },
-                    { time: '19:30', title: '晚餐 / 休息', desc: '晚餐或回飯店休息。', type: 'food' }
-                ]
-            },
-            {
-                day: 2,
-                date: '10/17 (五)',
-                title: '古都風情：清水寺＋八坂神社',
-                weather: { type: 'cloud', text: '15°C - 23°C' },
-                activities: [
-                    { time: '08:30', title: '出發', desc: '市巴士 >> 五条坂。', type: 'transport' },
-                    { time: '09:30', title: '清水寺＋三年坂', desc: '參觀清水寺，散步古街。', type: 'attraction', location: 'Kiyomizu-dera', price: '門票 ¥500' },
-                    { time: '11:40', title: '八坂神社＆花見小路', desc: '參拜神社，體驗祇園風情。', type: 'attraction', location: 'Yasaka Shrine' },
-                    { time: '13:25', title: '錦市場午餐', desc: '京都的廚房，各種小吃。', type: 'food', location: 'Nishiki Market' },
-                    { time: '15:00', title: '四条河原町 / 平安神宮', desc: '自由活動或去平安神宮。', type: 'shopping', location: 'Heian Shrine' },
-                    { time: '18:30', title: '晚餐：壽喜燒', desc: '壽喜燒三條河原町店。', type: 'food', location: 'Sukiyaki Sanjo Kawaramachi' },
-                    { time: '傍晚', title: '回飯店休息', desc: 'Hotel The M’s Kyoto', type: 'hotel' }
-                ]
-            },
-            {
-                day: 3,
-                date: '10/18 (六)',
-                title: '移動日：伏見稻荷＋大阪',
-                weather: { type: 'cloud', text: '16°C - 22°C' },
-                activities: [
-                    { time: '08:30', title: '伏見稻荷大社', desc: '千本鳥居參拜。', type: 'attraction', location: 'Fushimi Inari Taisha' },
-                    { time: '11:00', title: '午餐 & 取行李', desc: '回飯店拿行李。', type: 'food' },
-                    { time: '14:20', title: 'JR 新快速 → 大阪', desc: '移動至大阪。', type: 'transport' },
-                    { time: '15:30', title: '梅田 HEP FIVE', desc: '紅色摩天輪 (維修中?)。', type: 'attraction', location: 'HEP FIVE Ferris Wheel' },
-                    { time: '17:00', title: '大阪飯店 Check-in', desc: 'The Bridge Hotel 心齋橋。', type: 'hotel', location: 'The Bridge Hotel Shinsaibashi' },
-                    { time: '18:30', title: '道頓堀 & 心齋橋', desc: '跑跑人、逛街、章魚燒。', type: 'shopping', location: 'Dotonbori' }
-                ]
-            },
-            {
-                day: 4,
-                date: '10/19 (日)',
-                title: '大阪深度：大阪城＋黑門市場',
-                weather: { type: 'sun', text: '17°C - 24°C' },
-                activities: [
-                    { time: '08:30', title: '地鐵 → 大阪商務園區', desc: '前往大阪城。', type: 'transport' },
-                    { time: '09:00', title: '大阪城公園', desc: '天守閣、御座船、海洋堂博物館。', type: 'attraction', location: 'Osaka Castle', price: '周遊卷' },
-                    { time: '12:00', title: '大阪天滿宮', desc: '學問之神。', type: 'attraction', location: 'Ōsaka Temmangū' },
-                    { time: '12:30', title: '天神橋筋商店街', desc: '日本最長商店街午餐。', type: 'food', location: 'Tenjinbashisuji Shopping Street' },
-                    { time: '13:30', title: '大阪生活今昔館', desc: '江戶時代街景體驗。', type: 'attraction', location: 'Osaka Museum of Housing and Living' },
-                    { time: '15:30', title: '黑門市場', desc: '海鮮、和牛、水果大福。', type: 'food', location: 'Kuromon Ichiba Market' },
-                    { time: '17:00', title: '道頓堀逛街', desc: '自由購物。', type: 'shopping' },
-                    { time: '20:00', title: '燒肉晚餐', desc: '燒肉力丸 難波道頓堀店。', type: 'food', location: 'Rikimaru Namba Dotonbori' }
-                ]
-            },
-            {
-                day: 5,
-                date: '10/20 (一)',
-                title: '大鳥大社＋返台',
-                weather: { type: 'sun', text: '16°C - 23°C' },
-                activities: [
-                    { time: '08:30', title: '前往鳳站', desc: '天王寺轉 JR 至鳳站。', type: 'transport' },
-                    { time: '09:20', title: '大鳥大社', desc: '參拜。', type: 'attraction', location: 'Otori Taisha' },
-                    { time: '10:00', title: '前往機場', desc: 'JR 或南海電鐵 → 關西機場。', type: 'transport' },
-                    { time: '11:00', title: '機場報到', desc: '報到、退稅、最後採買。', type: 'other', location: 'Kansai International Airport' },
-                    { time: '14:00', title: '搭機返台 (CI0153)', desc: '中華航空 KIX 14:00 >> TPE 15:55', type: 'flight' }
-                ]
-            }
-        ];
-
-        // --- 3. 實用工具組件 ---
-
-        // 彈出視窗
-        const Modal = ({ isOpen, onClose, data }) => {
-            if (!isOpen || !data) return null;
-
-            // 根據類型設定顏色
-            const getTypeColor = (t) => {
-                if (t === 'flight') return 'text-blue-400 border-blue-400';
-                if (t === 'attraction') return 'text-accent-rose border-accent-rose';
-                if (t === 'food') return 'text-accent-gold border-accent-gold';
-                return 'text-accent-teal border-accent-teal';
-            };
-
-            const mapUrl = data.location ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.location)}` : null;
-
-            return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-navy-950/90 backdrop-blur-sm" onClick={onClose}></div>
-                    <div className="relative w-full max-w-sm bg-navy-800 rounded-2xl shadow-2xl border border-navy-700 p-6 animate-fade-in">
-                        <button onClick={onClose} className="absolute top-4 right-4 text-text-muted hover:text-white">
-                            <Icons.X className="w-6 h-6" />
-                        </button>
-                        
-                        <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold border mb-4 ${getTypeColor(data.type)} bg-opacity-10`}>
-                            {data.time}
-                        </div>
-                        
-                        <h2 className="text-2xl font-bold text-text-light mb-4 leading-tight">{data.title}</h2>
-                        
-                        <div className="space-y-4">
-                            <p className="text-text-main text-sm leading-relaxed border-l-2 border-navy-600 pl-3">
-                                {data.desc}
-                            </p>
-                            
-                            {data.price && (
-                                <div className="flex items-center gap-2 text-accent-gold text-sm font-bold bg-navy-900/50 p-3 rounded-lg">
-                                    <span>💰</span> 費用: {data.price}
-                                </div>
-                            )}
-
-                            {mapUrl ? (
-                                <a href={mapUrl} target="_blank" className="flex items-center justify-center w-full gap-2 bg-accent-teal text-navy-900 font-bold py-3 rounded-xl mt-4 hover:bg-teal-300 transition-colors shadow-[0_0_15px_rgba(100,255,218,0.4)]">
-                                    <Icons.MapPin className="w-5 h-5" /> 開啟 Google Maps
-                                </a>
-                            ) : (
-                                <button onClick={onClose} className="w-full py-3 rounded-xl bg-navy-700 text-text-light font-bold mt-4">
-                                    關閉
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        // 天氣小工具
-        const WeatherWidget = ({ weather }) => {
-            const isSun = weather.type === 'sun';
-            return (
-                <div className="flex items-center justify-between bg-navy-800/50 border border-navy-700 rounded-xl p-3 mb-4">
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${isSun ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400'}`}>
-                            {isSun ? <Icons.Sun className="w-5 h-5" /> : <Icons.Cloud className="w-5 h-5" />}
-                        </div>
-                        <div>
-                            <div className="text-[10px] text-text-muted font-bold uppercase tracking-wider">Forecast</div>
-                            <div className="text-sm font-bold text-text-light">{weather.text}</div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        // 匯率計算機
-        const ToolsDrawer = ({ isOpen, onClose }) => {
-            if (!isOpen) return null;
-            const [jpy, setJpy] = useState('');
-            const rate = 0.22;
-
-            return (
-                <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
-                    <div className="absolute inset-0 bg-navy-950/80 backdrop-blur-sm" onClick={onClose}></div>
-                    <div className="relative w-full max-w-md bg-navy-800 border-t border-navy-700 sm:rounded-2xl rounded-t-2xl p-6 animate-fade-in shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold text-text-light flex items-center gap-2">
-                                <Icons.Calculator className="text-accent-teal w-5 h-5" /> 匯率試算
-                            </h3>
-                            <button onClick={onClose}><Icons.X className="text-text-muted w-6 h-6" /></button>
-                        </div>
-                        
-                        <div className="bg-navy-900 p-4 rounded-xl border border-navy-700 space-y-4">
-                            <div className="flex gap-4 items-center">
-                                <input 
-                                    type="number" 
-                                    placeholder="JPY" 
-                                    value={jpy}
-                                    onChange={e => setJpy(e.target.value)}
-                                    className="w-full bg-navy-800 text-white p-3 rounded-lg text-center font-mono text-lg outline-none focus:ring-2 focus:ring-accent-teal"
-                                />
-                                <span className="text-text-muted">=</span>
-                                <div className="w-full bg-navy-800/50 text-accent-teal p-3 rounded-lg text-center font-mono text-lg font-bold">
-                                    {jpy ? Math.round(jpy * rate) : 0} <span className="text-xs">TWD</span>
-                                </div>
-                            </div>
-                            <div className="text-center text-xs text-text-muted">匯率約 0.22</div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3 mt-4">
-                             <a href="https://translate.google.com/" target="_blank" className="p-3 bg-navy-700 rounded-lg text-center text-sm font-bold text-text-light hover:bg-navy-600">Google 翻譯</a>
-                             <a href="https://www.google.com/maps" target="_blank" className="p-3 bg-navy-700 rounded-lg text-center text-sm font-bold text-text-light hover:bg-navy-600">Google 地圖</a>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        // 資訊收合區塊 (航班/飯店)
-        const InfoAccordion = () => {
-            const [isOpen, setIsOpen] = useState(false);
-            return (
-                <div className="bg-navy-800 rounded-xl border border-navy-700 overflow-hidden mb-6 shadow-card">
-                    <button onClick={() => setIsOpen(!isOpen)} className="w-full flex items-center justify-between p-4 bg-navy-800 hover:bg-navy-700 transition-colors">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-navy-700 p-2 rounded-lg text-accent-blue"><Icons.Plane className="w-5 h-5" /></div>
-                            <span className="font-bold text-text-light">航班與飯店資訊</span>
-                        </div>
-                        <Icons.ChevronDown className={`w-5 h-5 text-text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    {isOpen && (
-                        <div className="p-4 bg-navy-900/50 border-t border-navy-700 space-y-4 text-sm">
-                            <div>
-                                <h4 className="text-accent-teal font-bold mb-1">去程 10/16 (CI0152)</h4>
-                                <p className="text-text-main">09:00 TPE 桃園 <span className="text-text-muted">→</span> 12:50 KIX 關西</p>
-                            </div>
-                            <div>
-                                <h4 className="text-accent-teal font-bold mb-1">回程 10/20 (CI0153)</h4>
-                                <p className="text-text-main">14:00 KIX 關西 <span className="text-text-muted">→</span> 15:55 TPE 桃園</p>
-                            </div>
-                            <div className="pt-2 border-t border-navy-700">
-                                <div className="mb-2">
-                                    <span className="text-xs bg-navy-700 px-1.5 py-0.5 rounded text-white mr-2">京都</span>
-                                    <span className="text-text-light">Hotel The M’s Kyoto</span>
-                                </div>
-                                <div>
-                                    <span className="text-xs bg-navy-700 px-1.5 py-0.5 rounded text-white mr-2">大阪</span>
-                                    <span className="text-text-light">The Bridge Hotel Shinsaibashi</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-
-        // --- 4. 主程式 (App) ---
-        const App = () => {
-            const [activeDay, setActiveDay] = useState(1);
-            const [modalData, setModalData] = useState(null);
-            const [showTools, setShowTools] = useState(false);
-
-            const currentDayData = TRIP_DATA.find(d => d.day === activeDay);
-
-            // 根據類型取得圖示
-            const getIcon = (type) => {
-                switch(type) {
-                    case 'flight': return <Icons.Plane className="w-5 h-5" />;
-                    case 'transport': return <Icons.Train className="w-5 h-5" />;
-                    case 'food': return <Icons.Utensils className="w-5 h-5" />;
-                    case 'shopping': return <Icons.ShoppingBag className="w-5 h-5" />;
-                    case 'hotel': return <Icons.Bed className="w-5 h-5" />;
-                    case 'attraction': return <Icons.Camera className="w-5 h-5" />;
-                    default: return <Icons.MapPin className="w-5 h-5" />;
-                }
-            };
-
-            // 根據類型取得顏色樣式
-            const getItemStyle = (type) => {
-                switch(type) {
-                    case 'flight': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
-                    case 'transport': return 'text-indigo-400 bg-indigo-400/10 border-indigo-400/20';
-                    case 'attraction': return 'text-accent-rose bg-accent-rose/10 border-accent-rose/20';
-                    case 'food': return 'text-accent-gold bg-accent-gold/10 border-accent-gold/20';
-                    default: return 'text-accent-teal bg-accent-teal/10 border-accent-teal/20';
-                }
-            };
-
-            return (
-                <div className="max-w-md mx-auto min-h-screen pb-10 relative">
-                    {/* Header */}
-                    <div className="sticky top-0 z-30 glass-panel pt-safe-top">
-                        <div className="px-4 py-3 flex justify-between items-center">
-                            <div>
-                                <h1 className="text-xl font-bold text-text-light tracking-tight">Kyoto & Osaka</h1>
-                                <p className="text-xs text-text-muted uppercase tracking-widest">Family Trip 2025</p>
-                            </div>
-                            <button onClick={() => setShowTools(true)} className="p-2 bg-navy-700 rounded-lg text-accent-teal hover:bg-navy-600 transition-colors">
-                                <Icons.Calculator className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Tabs */}
-                        <div className="flex overflow-x-auto no-scrollbar px-2 pb-1 space-x-1">
-                            {TRIP_DATA.map(d => (
-                                <button
-                                    key={d.day}
-                                    onClick={() => setActiveDay(d.day)}
-                                    className={`flex-1 min-w-[70px] py-2 rounded-t-lg transition-all relative ${
-                                        activeDay === d.day ? 'bg-navy-800 text-accent-teal' : 'text-text-muted hover:text-text-main'
-                                    }`}
-                                >
-                                    <div className="text-[10px] font-bold uppercase mb-0.5">Day {d.day}</div>
-                                    <div className="text-sm font-bold">{d.date.split(' ')[0]}</div>
-                                    {activeDay === d.day && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-teal shadow-[0_0_10px_#64FFDA]"></div>}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Main Content */}
-                    <div className="px-4 pt-6 animate-fade-in" key={activeDay}>
-                        
-                        <div className="mb-4">
-                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-navy-800 text-accent-blue border border-navy-700 mb-2">
-                                {currentDayData.date}
-                            </span>
-                            <h2 className="text-2xl font-bold text-text-light">{currentDayData.title}</h2>
-                        </div>
-
-                        <WeatherWidget weather={currentDayData.weather} />
-                        <InfoAccordion />
-
-                        {/* Timeline */}
-                        <div className="relative pl-4 space-y-3 pb-20">
-                            {/* Vertical Line */}
-                            <div className="absolute left-[23px] top-4 bottom-4 w-0.5 bg-navy-700"></div>
-
-                            {currentDayData.activities.map((item, idx) => (
-                                <div 
-                                    key={idx} 
-                                    className="relative flex gap-3 group cursor-pointer"
-                                    onClick={() => setModalData(item)}
-                                >
-                                    {/* Icon */}
-                                    <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center border shrink-0 transition-transform group-hover:scale-110 shadow-neon ${getItemStyle(item.type)}`}>
-                                        {getIcon(item.type)}
-                                    </div>
-
-                                    {/* Card */}
-                                    <div className="flex-1 bg-navy-800 border border-navy-700 rounded-xl p-3 hover:border-navy-600 hover:bg-navy-700/50 transition-colors shadow-card">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-xs font-mono font-bold text-accent-teal bg-navy-900 px-1.5 py-0.5 rounded">
-                                                {item.time}
-                                            </span>
-                                        </div>
-                                        <h3 className="font-bold text-text-light text-base mb-1">{item.title}</h3>
-                                        <p className="text-xs text-text-main line-clamp-1">{item.desc}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <Modal isOpen={!!modalData} onClose={() => setModalData(null)} data={modalData} />
-                    <ToolsDrawer isOpen={showTools} onClose={() => setShowTools(false)} />
-                </div>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
+  </body>
 </html>
