@@ -13,20 +13,21 @@
         theme: {
           extend: {
             colors: {
-              'wood-dark': '#1A1614',
-              'wood-card': '#26201B',
-              'wood-light': '#3E342B',
-              'wood-accent': '#C5A065',
-              'wood-text': '#EAE0D5',
-              'wood-muted': '#9A8C7D',
+              // 修改為：京都白茶風格 (Light Premium Theme)
+              'wood-dark': '#F7F5F0',       // 背景：溫潤米白 (原本是深黑)
+              'wood-card': '#FFFFFF',       // 卡片：純白 (原本是深咖)
+              'wood-light': '#E6E2DE',      // 線條：淺灰褐
+              'wood-accent': '#9C824A',     // 點綴：沉穩古銅金
+              'wood-text': '#332F2C',       // 文字：深灰褐
+              'wood-muted': '#85807C',      // 次要文字：中灰
             },
             fontFamily: {
               sans: ['Noto Sans TC', 'sans-serif'],
               serif: ['Playfair Display', 'serif'],
             },
             animation: {
-              'fade-in': 'fadeIn 0.5s ease-out',
-              'slide-up': 'slideUp 0.5s ease-out',
+              'fade-in': 'fadeIn 0.6s ease-out',
+              'slide-up': 'slideUp 0.6s ease-out',
             },
             keyframes: {
               fadeIn: {
@@ -46,13 +47,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     
     <style>
-      body { font-family: 'Noto Sans TC', sans-serif; background-color: #1A1614; color: #EAE0D5; }
+      body { font-family: 'Noto Sans TC', sans-serif; background-color: #F7F5F0; color: #332F2C; }
+      
+      /* 優化滾動條，使其融入亮色主題 */
+      .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #D1CEC7; border-radius: 10px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9C824A; }
+
       .no-scrollbar::-webkit-scrollbar { display: none; }
-      .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-      .custom-scrollbar::-webkit-scrollbar-track { background: #1A1614; }
-      .custom-scrollbar::-webkit-scrollbar-thumb { background: #3E342B; border-radius: 3px; }
-      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #C5A065; }
-      .text-shadow { text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      
+      /* 增加文字陰影層次 (只在圖片上使用) */
+      .text-shadow-lg { text-shadow: 0 4px 10px rgba(0,0,0,0.8); }
     </style>
 
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -82,28 +89,86 @@
         } from 'lucide-react';
         import { GoogleGenAI } from "@google/genai";
 
+        // ==========================================
+        // ⚠️ 請在這裡貼上您的 Google Gemini API Key
+        // ==========================================
+        const API_KEY = ""; 
+        // ==========================================
+
         // --- 預設資料 (範本) ---
         const DEFAULT_DATA = {
             tripName: "京都・大阪",
             tripDate: "2024.10.16 — 10.20",
-            apiKey: "", // 讓使用者自己填
+            apiKey: API_KEY, 
             flights: [
                 { airline: '中華航空', flightNo: 'CI0152', date: '10/16 (四)', route: 'TPE -> KIX', dep: '09:00', arr: '12:50' },
                 { airline: '中華航空', flightNo: 'CI0153', date: '10/20 (一)', route: 'KIX -> TPE', dep: '14:00', arr: '15:55' }
             ],
             preparation: [
                 { title: "護照", desc: "檢查有效期限是否超過 6 個月。" },
-                { title: "Visit Japan Web", desc: "提前填寫入境審查與海關申報。" },
-                { title: "日幣現金", desc: "建議攜帶約 ¥50,000 / 人。" },
-                { title: "網卡 / Roaming", desc: "確認 SIM 卡或漫遊已開通。" }
+                { title: "Visit Japan Web", desc: "提前填寫入境審查與海關申報，截圖 QR Code。" },
+                { title: "日幣現金", desc: "建議攜帶約 ¥50,000 - ¥80,000 / 人 (視購物需求)。" },
+                { title: "網卡 / Roaming", desc: "確認 SIM 卡或漫遊已開通。" },
+                { title: "交通卡 (ICOCA/Suica)", desc: "加入 Apple Pay 或準備實體卡。" },
+                { title: "充電設備", desc: "行動電源、充電線 (日本電壓 100V，插座與台灣相同)。" },
+                { title: "常備藥品", desc: "感冒藥、腸胃藥、止痛藥、OK繃。" }
             ],
             itinerary: [
                 {
                     id: 'day1', date: '10/16 (四)', title: '第一天：京都初印象',
                     items: [
-                        { time: '14:00', title: '搭乘 Haruka', location: '關西機場 -> 京都', type: 'transport', description: '約 75 分鐘車程。' },
-                        { time: '15:30', title: '飯店 Check-in', location: "Hotel The M’s Kyoto", type: 'hotel', mapQuery: "Hotel The M’s Kyoto", description: '時尚設計風格飯店。', imageUrl: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=800&q=80' },
-                        { time: '16:10', title: '嵐山竹林', location: '嵐山', type: 'activity', mapQuery: 'Arashiyama Bamboo Grove', description: '京都必訪景點。', imageUrl: 'https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=800&q=80' }
+                        { time: '05:30', title: '出發前往機場', location: '竹北 -> 桃機2航廈', type: 'transport', cost: '現金 1500', description: '準時出發，檢查護照、日幣、網卡。', imageUrl: 'https://images.unsplash.com/photo-1542296332-2e44a996aa0d?auto=format&fit=crop&w=800&q=80' },
+                        { time: '09:00', title: '搭乘班機 CI0152', location: '桃園國際機場', type: 'flight', description: '飛往關西國際機場 (KIX)。', imageUrl: 'https://images.unsplash.com/photo-1556382363-8967ac2b3548?auto=format&fit=crop&w=800&q=80' },
+                        { time: '13:00', title: '抵達關西機場', location: 'KIX', type: 'transport', description: '辦理入境手續，領取行李。', imageUrl: 'https://images.unsplash.com/photo-1626359518041-3b56247c1706?auto=format&fit=crop&w=800&q=80' },
+                        { time: '14:00', title: '搭乘 Haruka 特急', location: '關西機場 -> 京都車站', type: 'transport', description: '使用 JR Pass 或預購票券，約 75 分鐘車程。', imageUrl: 'https://images.unsplash.com/photo-1533036814668-3e913a80db63?auto=format&fit=crop&w=800&q=80' },
+                        { time: '15:30', title: '飯店 Check-in', location: "Hotel The M’s Kyoto", type: 'hotel', mapQuery: "Hotel The M’s Kyoto", description: '時尚設計風格飯店，位於京都車站附近，交通便利。', imageUrl: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=800&q=80' },
+                        { time: '16:10', title: '嵐山渡月橋、竹林小徑', location: '嵐山', type: 'activity', cost: '免費', mapQuery: 'Arashiyama Bamboo Grove', description: '京都必訪景點，感受竹林幽靜與渡月橋的開闊。', imageUrl: 'https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=800&q=80' },
+                        { time: '18:00', title: '嵐山月燈路', location: '嵐山', type: 'activity', description: '欣賞夜晚的燈光藝術（季節限定活動）。', imageUrl: 'https://images.unsplash.com/photo-1576485290814-1c72aa4bbb8e?auto=format&fit=crop&w=800&q=80' },
+                        { time: '19:30', title: '晚餐 / 休息', location: '京都車站周邊', type: 'food', description: '返回飯店附近享用晚餐。', imageUrl: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80' }
+                    ]
+                },
+                {
+                    id: 'day2', date: '10/17 (五)', title: '第二天：古都風情',
+                    items: [
+                        { time: '08:30', title: '飯店出發', location: '前往五条坂', type: 'transport', description: '搭乘市巴士前往清水寺區域。', imageUrl: 'https://images.unsplash.com/photo-1624523311893-61db078cb427?auto=format&fit=crop&w=800&q=80' },
+                        { time: '09:30', title: '清水寺 & 二三年坂', location: '清水寺', type: 'activity', cost: '門票 ¥500', mapQuery: 'Kiyomizu-dera', description: '世界遺產清水舞台，求姻緣的地主神社，漫步古色古香的坂道。', imageUrl: 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=800&q=80' },
+                        { time: '11:40', title: '八坂神社 & 花見小路', location: '八坂神社', type: 'activity', cost: '免費', mapQuery: 'Yasaka Shrine', description: '京都祇園的守護神社，接著漫步花見小路尋找藝妓身影。', imageUrl: 'https://images.unsplash.com/photo-1599406567151-50e41d8e8549?auto=format&fit=crop&w=800&q=80' },
+                        { time: '13:25', title: '錦市場午餐', location: '錦市場', type: 'food', mapQuery: 'Nishiki Market', description: '「京都的廚房」，品嚐玉子燒、豆乳甜甜圈等小吃。', imageUrl: 'https://images.unsplash.com/photo-1583244532610-2a234e7c3eca?auto=format&fit=crop&w=800&q=80' },
+                        { time: '15:00', title: '四条河原町 / 平安神宮', location: '四条河原町', type: 'shopping', description: '自由逛街購物，或前往平安神宮參觀（本殿免費）。', mapQuery: 'Heian Shrine', imageUrl: 'https://images.unsplash.com/photo-1506509018519-798836541e2e?auto=format&fit=crop&w=800&q=80' },
+                        { time: '18:30', title: '壽喜燒晚餐', location: '壽喜燒三條河原町店', type: 'food', description: '享受道地的關西壽喜燒。', imageUrl: 'https://images.unsplash.com/photo-1549608276-5786777e6587?auto=format&fit=crop&w=800&q=80' },
+                    ]
+                },
+                {
+                    id: 'day3', date: '10/18 (六)', title: '第三天：移動至大阪',
+                    items: [
+                        { time: '08:30', title: '伏見稻荷大社', location: '伏見稻荷大社', type: 'activity', cost: '免費', mapQuery: 'Fushimi Inari Taisha', description: '壯觀的千本鳥居，狐狸使者的守護地。', imageUrl: 'https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?auto=format&fit=crop&w=800&q=80' },
+                        { time: '11:00', title: '午餐 & 取行李', location: '京都', type: 'food', imageUrl: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80' },
+                        { time: '14:20', title: '搭 JR 新快速往大阪', location: '京都 -> 大阪', type: 'transport', imageUrl: 'https://images.unsplash.com/photo-1533036814668-3e913a80db63?auto=format&fit=crop&w=800&q=80' },
+                        { time: '15:30', title: '梅田 HEP FIVE 摩天輪', location: 'HEP FIVE', type: 'activity', description: '大阪地標紅色摩天輪（注意：行程表註記維修中，請確認現場狀況）。', mapQuery: 'HEP FIVE Ferris Wheel', imageUrl: 'https://images.unsplash.com/photo-1601051515286-63e8df3111f1?auto=format&fit=crop&w=800&q=80' },
+                        { time: '17:00', title: '飯店 Check-in', location: 'The Bridge Hotel Shinsaibashi', type: 'hotel', mapQuery: 'The Bridge Hotel Shinsaibashi', description: '位於心齋橋中心，每晚提供免費拉麵宵夜與啤酒暢飲。', imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80' },
+                        { time: '18:30', title: '道頓堀 & 心齋橋', location: '道頓堀', type: 'shopping', mapQuery: 'Dotonbori', description: '跑跑人看板打卡，藥妝店採購，章魚燒、拉麵吃到飽。', imageUrl: 'https://images.unsplash.com/photo-1590559899731-a38283956c8c?auto=format&fit=crop&w=800&q=80' },
+                    ]
+                },
+                {
+                    id: 'day4', date: '10/19 (日)', title: '第四天：大阪深度遊',
+                    items: [
+                        { time: '08:30', title: '前往大阪城', location: '地鐵至大阪商務園區', type: 'transport', imageUrl: 'https://images.unsplash.com/photo-1537233863486-1d18721c5770?auto=format&fit=crop&w=800&q=80' },
+                        { time: '09:00', title: '大阪城 & 御座船', location: '大阪城天守閣', type: 'activity', description: '大阪象徵，豐臣秀吉的居城。', mapQuery: 'Osaka Castle', imageUrl: 'https://images.unsplash.com/photo-1555427104-5f118c7fb391?auto=format&fit=crop&w=800&q=80' },
+                        { time: '12:00', title: '大阪天滿宮', location: '大阪天滿宮', type: 'activity', cost: '免費', mapQuery: 'Osaka Tenmangu', description: '學問之神菅原道真，祈求學業進步。', imageUrl: 'https://images.unsplash.com/photo-1590252973707-2c938f3cb293?auto=format&fit=crop&w=800&q=80' },
+                        { time: '12:30', title: '天神橋筋商店街', location: '天神橋筋', type: 'food', mapQuery: 'Tenjinbashi-suji Shopping Street', description: '日本最長的商店街，充滿庶民美食。', imageUrl: 'https://images.unsplash.com/photo-1533050487297-09b450131914?auto=format&fit=crop&w=800&q=80' },
+                        { time: '13:30', title: '大阪生活今昔館', location: '大阪生活今昔館', type: 'activity', description: '穿越時空回到江戶時代的大阪街道，可體驗和服。', mapQuery: 'Osaka Museum of Housing and Living', imageUrl: 'https://images.unsplash.com/photo-1522883040382-72922187d903?auto=format&fit=crop&w=800&q=80' },
+                        { time: '15:30', title: '黑門市場', location: '黑門市場', type: 'food', mapQuery: 'Kuromon Ichiba Market', description: '「大阪的廚房」，必吃海鮮、和牛串、水果大福。', imageUrl: 'https://images.unsplash.com/photo-1516475429286-465d815a0df7?auto=format&fit=crop&w=800&q=80' },
+                        { time: '20:00', title: '燒肉晚餐', location: '燒肉力丸難波道頓堀店', type: 'food', description: '日式燒肉吃到飽。', imageUrl: 'https://images.unsplash.com/photo-1553621042-f6e147245754?auto=format&fit=crop&w=800&q=80' }
+                    ]
+                },
+                {
+                    id: 'day5', date: '10/20 (一)', title: '第五天：參拜與返台',
+                    items: [
+                        { time: '08:30', title: '前往大鳥大社', location: '天王寺 -> JR 鳳站', type: 'transport', imageUrl: 'https://images.unsplash.com/photo-1537233863486-1d18721c5770?auto=format&fit=crop&w=800&q=80' },
+                        { time: '09:20', title: '大鳥大社參拜', location: '大鳥大社', type: 'activity', cost: '免費', mapQuery: 'Otori Taisha', description: '和泉國一之宮，歷史悠久的神社。', imageUrl: 'https://images.unsplash.com/photo-1605218439972-04e4e963fc30?auto=format&fit=crop&w=800&q=80' },
+                        { time: '10:00', title: '前往關西機場', location: '鳳站 -> KIX', type: 'transport', description: '搭乘 JR 或南海電鐵前往機場。', imageUrl: 'https://images.unsplash.com/photo-1533036814668-3e913a80db63?auto=format&fit=crop&w=800&q=80' },
+                        { time: '11:00', title: '機場報到', location: 'KIX 第一航廈', type: 'flight', description: '辦理登機、託運、最後免稅品採購。', imageUrl: 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=800&q=80' },
+                        { time: '14:00', title: '搭乘班機 CI0153', location: 'KIX -> TPE', type: 'flight', description: '帶著滿滿的回憶飛往溫暖的家。', imageUrl: 'https://images.unsplash.com/photo-1570710891163-6d3b5c47248b?auto=format&fit=crop&w=800&q=80' },
                     ]
                 }
             ]
@@ -111,8 +176,8 @@
 
         // --- Helper Components ---
         const Modal = ({ children, onClose }) => (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-wood-dark/95 backdrop-blur-md animate-fade-in" onClick={onClose}>
-                <div className="bg-wood-card border border-wood-light w-full max-w-md overflow-hidden flex flex-col max-h-[90vh] animate-slide-up relative shadow-[0_0_50px_rgba(0,0,0,0.6)]" onClick={(e) => e.stopPropagation()}>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-wood-text/20 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+                <div className="bg-wood-card border border-wood-light w-full max-w-md overflow-hidden flex flex-col max-h-[90vh] animate-slide-up relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     {children}
                 </div>
             </div>
@@ -129,7 +194,7 @@
             try {
                 const response = await ai.models.generateContent({
                     model: 'gemini-2.5-flash',
-                    contents: `請用繁體中文 (台灣用語) 為遊客提供關於「${location} ${placeName}」的迷人、簡短旅遊介紹 (最多 80 字)。`,
+                    contents: `請用繁體中文 (台灣用語) 為遊客提供關於「${location} ${placeName}」的迷人、簡短旅遊介紹 (最多 80 字)。重點介紹它的獨特之處。`,
                 });
                 const text = response.text || "暫無介紹。";
                 descriptionCache[cacheKey] = text;
@@ -171,24 +236,26 @@
 
             const seed = item.title.length * 123;
             const img = item.imageUrl || `https://picsum.photos/seed/${seed}/800/600`;
+            const mapLink = item.mapQuery ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ' ' + item.title)}`;
             
             return (
                 <Modal onClose={onClose}>
-                    <button onClick={onClose} className="absolute top-4 right-4 z-10 bg-wood-dark/60 p-2 rounded-full hover:text-wood-accent"><X size={20}/></button>
+                    <button onClick={onClose} className="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur p-2 rounded-full text-wood-text hover:bg-wood-accent hover:text-white transition-colors shadow-sm"><X size={20}/></button>
                     <div className="relative h-64 bg-wood-dark shrink-0">
-                        <img src={img} className="w-full h-full object-cover opacity-90"/>
-                        <div className="absolute bottom-0 left-0 p-6 w-full bg-gradient-to-t from-wood-card to-transparent">
-                            <h3 className="text-2xl font-serif italic text-wood-text text-shadow">{item.title}</h3>
-                            <p className="text-wood-accent text-xs tracking-widest uppercase flex items-center mt-1"><MapPin size={12} className="mr-1"/>{item.location}</p>
+                        <img src={img} className="w-full h-full object-cover"/>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div className="absolute bottom-0 left-0 p-6 w-full">
+                            <h3 className="text-2xl font-serif italic text-white text-shadow-lg tracking-wide">{item.title}</h3>
+                            <p className="text-white/90 text-xs tracking-widest uppercase flex items-center mt-1 font-medium"><MapPin size={12} className="mr-1"/>{item.location}</p>
                         </div>
                     </div>
-                    <div className="p-6 overflow-y-auto custom-scrollbar">
-                        <p className="text-wood-text text-sm leading-loose font-light mb-6">{item.description || '暫無說明'}</p>
-                        <div className="bg-wood-dark/50 border border-wood-light p-4 mb-6 relative">
-                            <div className="flex gap-2 text-wood-accent mb-2"><Sparkles size={14}/> <span className="text-xs font-serif italic">AI 導覽</span></div>
-                            {loading ? <Loader2 className="animate-spin text-wood-muted" size={16}/> : <p className="text-xs text-wood-text/80 leading-relaxed font-light">{aiDesc || (apiKey ? '無法取得資訊' : '請設定 API Key')}</p>}
+                    <div className="p-8 overflow-y-auto custom-scrollbar bg-wood-card">
+                        <p className="text-wood-text text-sm leading-loose font-light mb-6 tracking-wide">{item.description || '暫無說明'}</p>
+                        <div className="bg-wood-dark border border-wood-light p-5 mb-6 relative rounded-sm">
+                            <div className="flex gap-2 text-wood-accent mb-3"><Sparkles size={16}/> <span className="text-xs font-serif italic font-bold tracking-wider">AI 導覽</span></div>
+                            {loading ? <div className="flex items-center gap-2 text-xs text-wood-muted"><Loader2 className="animate-spin" size={14}/> 讀取中...</div> : <p className="text-xs text-wood-text/90 leading-relaxed font-light">{aiDesc || (apiKey ? '無法取得資訊' : '請設定 API Key')}</p>}
                         </div>
-                        {item.mapQuery && <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`} target="_blank" className="block w-full text-center bg-wood-text text-wood-dark py-3 text-xs tracking-widest hover:bg-wood-accent uppercase font-medium">開啟地圖</a>}
+                        <a href={mapLink} target="_blank" className="block w-full text-center bg-wood-text text-white py-3 text-xs tracking-[0.2em] hover:bg-wood-accent uppercase font-medium transition-colors shadow-md">開啟地圖</a>
                     </div>
                 </Modal>
             );
@@ -200,33 +267,52 @@
             const twd = yen ? Math.round(parseFloat(yen) * 0.215) : 0;
             return (
                 <div className="space-y-8 animate-fade-in pb-12">
-                    <div className="text-center pt-4">
-                        <div className="inline-block border-y border-wood-accent/30 py-1 mb-2 px-4"><span className="text-[10px] tracking-[0.3em] text-wood-accent uppercase">行程總覽</span></div>
-                        <h2 className="text-3xl font-serif italic text-wood-text">{data.tripName}</h2>
-                        <p className="text-xs text-wood-muted tracking-[0.2em] mt-2">{data.tripDate}</p>
+                    <div className="text-center pt-6 pb-2">
+                        <div className="inline-block border-y border-wood-accent/30 py-1 mb-3 px-6"><span className="text-[10px] tracking-[0.3em] text-wood-accent uppercase font-bold">行程總覽</span></div>
+                        <h2 className="text-4xl font-serif italic text-wood-text tracking-tight">{data.tripName}</h2>
+                        <p className="text-xs text-wood-muted tracking-[0.2em] mt-3 font-medium">{data.tripDate}</p>
                     </div>
+                    
                     <div className="grid grid-cols-2 gap-4">
                         {['hotel', 'prep'].map(type => (
-                            <button key={type} onClick={() => openModal(type)} className="bg-wood-card border border-wood-light p-4 hover:border-wood-accent hover:shadow-lg transition-all group relative overflow-hidden">
-                                {type === 'hotel' ? <Hotel size={24} className="text-wood-accent mb-3 group-hover:scale-110 transition-transform origin-left"/> : <CheckCircle2 size={24} className="text-wood-accent mb-3 group-hover:scale-110 transition-transform origin-left"/>}
-                                <span className="block text-sm font-medium tracking-widest text-wood-text">{type === 'hotel' ? '住宿資訊' : '行前準備'}</span>
+                            <button key={type} onClick={() => openModal(type)} className="bg-white border border-wood-light p-5 hover:border-wood-accent hover:shadow-md transition-all group relative overflow-hidden text-left rounded-sm">
+                                <div className="absolute top-2 right-2 opacity-5 text-wood-text">{type === 'hotel' ? <Hotel size={60}/> : <CheckCircle2 size={60}/>}</div>
+                                {type === 'hotel' ? <Hotel size={20} className="text-wood-accent mb-4 group-hover:scale-110 transition-transform origin-left"/> : <CheckCircle2 size={20} className="text-wood-accent mb-4 group-hover:scale-110 transition-transform origin-left"/>}
+                                <span className="block text-sm font-bold tracking-widest text-wood-text mb-1">{type === 'hotel' ? '住宿資訊' : '行前準備'}</span>
+                                <span className="text-[10px] text-wood-muted">點擊查看</span>
                             </button>
                         ))}
                     </div>
-                    <div className="bg-wood-card border border-wood-light p-6">
-                        <div className="flex items-center gap-2 mb-4 text-wood-accent"><Coins size={16}/><h3 className="font-serif italic">匯率換算</h3></div>
-                        <div className="flex items-center gap-4">
-                            <input type="number" value={yen} onChange={e=>setYen(e.target.value)} placeholder="JPY" className="w-full bg-wood-dark border border-wood-light p-2 text-center text-wood-text focus:border-wood-accent outline-none"/>
-                            <span className="text-wood-accent font-serif italic">兌</span>
-                            <div className="w-full bg-wood-dark/50 border-b border-wood-accent/50 p-2 text-center text-wood-text">${twd.toLocaleString()}</div>
+
+                    <div className="bg-white border border-wood-light p-8 shadow-sm rounded-sm relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-wood-accent"></div>
+                        <div className="flex items-center gap-2 mb-6 text-wood-accent"><Coins size={18}/><h3 className="font-serif italic text-lg text-wood-text">匯率換算</h3></div>
+                        <div className="flex items-center gap-6">
+                            <div className="flex-1">
+                                <label className="block text-[10px] text-wood-muted text-center mb-2 tracking-widest">JPY 日圓</label>
+                                <input type="number" value={yen} onChange={e=>setYen(e.target.value)} placeholder="0" className="w-full bg-wood-dark border border-wood-light p-3 text-center text-xl text-wood-text focus:border-wood-accent outline-none font-light rounded-sm transition-colors"/>
+                            </div>
+                            <span className="text-wood-accent font-serif italic text-xl pt-6">兌</span>
+                            <div className="flex-1">
+                                <label className="block text-[10px] text-wood-muted text-center mb-2 tracking-widest">TWD 台幣</label>
+                                <div className="w-full bg-wood-dark/50 border-b border-wood-accent/30 p-3 text-center text-xl text-wood-text font-medium">${twd.toLocaleString()}</div>
+                            </div>
                         </div>
                     </div>
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 px-1 text-wood-accent"><Plane size={16}/><h3 className="font-serif italic text-wood-text">航班資訊</h3></div>
+
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 px-1 text-wood-accent"><Plane size={18}/><h3 className="font-serif italic text-wood-text text-lg">航班資訊</h3></div>
                         {data.flights.map((f, i) => (
-                            <div key={i} className="bg-wood-card border border-wood-light p-4 flex justify-between items-center">
-                                <div><div className="text-xs text-wood-accent font-bold tracking-wider">{f.airline} {f.flightNo}</div><div className="text-[10px] text-wood-muted mt-1">{f.route}</div></div>
-                                <div className="text-right"><div className="text-xl font-serif text-wood-text">{f.dep} <span className="text-xs text-wood-muted">出發</span></div></div>
+                            <div key={i} className="bg-white border border-wood-light p-6 flex justify-between items-center shadow-sm hover:shadow-md transition-shadow rounded-sm">
+                                <div>
+                                    <div className="text-xs text-wood-accent font-bold tracking-widest uppercase mb-1">{f.airline}</div>
+                                    <div className="text-lg font-serif text-wood-text">{f.flightNo}</div>
+                                    <div className="text-[10px] text-wood-muted mt-1 font-mono">{f.route}</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-3xl font-serif text-wood-text">{f.dep}</div>
+                                    <div className="text-[10px] text-wood-muted mt-1 uppercase tracking-widest">出發</div>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -245,20 +331,25 @@
             }
             return (
                 <div className="pb-24 animate-fade-in">
-                    <div className="sticky top-0 z-20 py-4 bg-wood-dark/95 backdrop-blur-md border-b border-wood-light/30 mb-8 -mx-6 px-6">
-                        <span className="text-[10px] font-mono text-wood-accent block mb-1 tracking-widest">{day.date}</span>
-                        <h2 className="text-xl font-serif italic text-wood-text">{day.title}</h2>
+                    <div className="sticky top-0 z-20 py-6 bg-[#F7F5F0]/95 backdrop-blur-md border-b border-wood-light mb-8 -mx-6 px-6 shadow-sm">
+                        <span className="text-[10px] font-mono text-wood-accent block mb-2 tracking-[0.2em] uppercase font-bold">{day.date}</span>
+                        <h2 className="text-2xl font-serif italic text-wood-text tracking-wide">{day.title}</h2>
                     </div>
-                    <div className="relative pl-2 space-y-6">
+                    <div className="relative pl-2 space-y-8">
                         <div className="absolute left-[19px] top-2 bottom-0 w-[1px] bg-wood-light"></div>
                         {day.items.map((item, idx) => (
-                            <div key={idx} className="relative flex gap-4 group">
-                                <div className="relative z-10 w-10 h-10 bg-wood-dark border border-wood-light flex items-center justify-center text-wood-muted group-hover:border-wood-accent group-hover:text-wood-accent transition-colors rotate-45 shrink-0"><div className="-rotate-45">{getIcon(item.type)}</div></div>
-                                <div onClick={() => (item.mapQuery||item.type==='hotel') && onSelect(item)} className={`flex-1 bg-wood-card border border-wood-light p-4 relative transition-all ${item.mapQuery||item.type==='hotel' ? 'cursor-pointer hover:border-wood-accent hover:shadow-lg' : ''}`}>
-                                    <div className="flex justify-between mb-2"><span className="font-mono text-xs text-wood-accent/80">{item.time}</span></div>
-                                    <h3 className="font-medium text-wood-text mb-1">{item.title}</h3>
-                                    <div className="flex items-center text-wood-muted text-xs mb-2"><MapPin size={10} className="mr-1"/>{item.location}</div>
-                                    {item.description && <p className="text-xs text-wood-text/60 font-light border-t border-wood-light/50 pt-2">{item.description}</p>}
+                            <div key={idx} className="relative flex gap-5 group">
+                                <div className="relative z-10 w-10 h-10 bg-white border border-wood-light flex items-center justify-center text-wood-muted group-hover:border-wood-accent group-hover:text-wood-accent group-hover:shadow-md transition-all rotate-45 shrink-0 rounded-sm">
+                                    <div className="-rotate-45">{getIcon(item.type)}</div>
+                                </div>
+                                <div onClick={() => onSelect(item)} className="flex-1 bg-white border border-wood-light p-5 relative transition-all cursor-pointer hover:border-wood-accent hover:shadow-md rounded-sm group-hover:-translate-y-0.5">
+                                    <div className="flex justify-between items-baseline mb-2">
+                                        <span className="font-mono text-xs text-wood-accent font-bold tracking-widest">{item.time}</span>
+                                        {item.cost && <span className="text-[10px] text-wood-muted border border-wood-light px-2 py-0.5 rounded-full">{item.cost}</span>}
+                                    </div>
+                                    <h3 className="font-medium text-lg text-wood-text mb-2 tracking-wide">{item.title}</h3>
+                                    <div className="flex items-center text-wood-muted text-xs mb-3 font-light"><MapPin size={11} className="mr-1"/>{item.location}</div>
+                                    {item.description && <p className="text-xs text-wood-text/70 font-light border-t border-wood-light pt-3 leading-relaxed">{item.description}</p>}
                                 </div>
                             </div>
                         ))}
@@ -270,157 +361,124 @@
         // 4. Edit Form Component
         const EditForm = ({ data, onSave, onCancel }) => {
             const [formData, setFormData] = useState(data);
-            const [activeSection, setActiveSection] = useState('general'); // general, flight, prep, day0, day1...
-
-            const updateField = (field, val) => setFormData({...formData, [field]: val});
             
-            const handleFlightChange = (idx, field, val) => {
-                const newFlights = [...formData.flights];
-                newFlights[idx][field] = val;
-                setFormData({...formData, flights: newFlights});
-            }
+            const updateField = (field, val) => setFormData({...formData, [field]: val});
+            const handleFlightChange = (idx, field, val) => { const newF = [...formData.flights]; newF[idx][field] = val; setFormData({...formData, flights: newF}); }
             const addFlight = () => setFormData({...formData, flights: [...formData.flights, { airline: '', flightNo: '', date: '', route: '', dep: '', arr: '' }]});
             const removeFlight = (idx) => setFormData({...formData, flights: formData.flights.filter((_, i) => i !== idx)});
-
-            const handlePrepChange = (idx, field, val) => {
-                const newPrep = [...formData.preparation];
-                newPrep[idx][field] = val;
-                setFormData({...formData, preparation: newPrep});
-            }
+            const handlePrepChange = (idx, field, val) => { const newP = [...formData.preparation]; newP[idx][field] = val; setFormData({...formData, preparation: newP}); }
             const addPrep = () => setFormData({...formData, preparation: [...formData.preparation, { title: '', desc: '' }]});
             const removePrep = (idx) => setFormData({...formData, preparation: formData.preparation.filter((_, i) => i !== idx)});
-
-            const handleItineraryChange = (dayIdx, field, val) => {
-                const newItin = [...formData.itinerary];
-                newItin[dayIdx][field] = val;
-                setFormData({...formData, itinerary: newItin});
-            }
-            const addItem = (dayIdx) => {
-                const newItin = [...formData.itinerary];
-                newItin[dayIdx].items.push({ time: '00:00', title: '新行程', location: '', type: 'activity', description: '' });
-                setFormData({...formData, itinerary: newItin});
-            }
-            const updateItem = (dayIdx, itemIdx, field, val) => {
-                const newItin = [...formData.itinerary];
-                newItin[dayIdx].items[itemIdx][field] = val;
-                setFormData({...formData, itinerary: newItin});
-            }
-            const removeItem = (dayIdx, itemIdx) => {
-                const newItin = [...formData.itinerary];
-                newItin[dayIdx].items = newItin[dayIdx].items.filter((_, i) => i !== itemIdx);
-                setFormData({...formData, itinerary: newItin});
-            }
-            const addDay = () => {
-                const id = `day${formData.itinerary.length + 1}`;
-                setFormData({...formData, itinerary: [...formData.itinerary, { id, date: '日期', title: '新的一天', items: [] }]});
-            }
-            const removeDay = (idx) => {
-                if(!confirm("確定刪除這一天？")) return;
-                setFormData({...formData, itinerary: formData.itinerary.filter((_, i) => i !== idx)});
-            }
+            const handleItineraryChange = (dayIdx, field, val) => { const newI = [...formData.itinerary]; newI[dayIdx][field] = val; setFormData({...formData, itinerary: newI}); }
+            const addItem = (dayIdx) => { const newI = [...formData.itinerary]; newI[dayIdx].items.push({ time: '00:00', title: '新行程', location: '', type: 'activity', description: '' }); setFormData({...formData, itinerary: newI}); }
+            const updateItem = (dayIdx, itemIdx, field, val) => { const newI = [...formData.itinerary]; newI[dayIdx].items[itemIdx][field] = val; setFormData({...formData, itinerary: newI}); }
+            const removeItem = (dayIdx, itemIdx) => { const newI = [...formData.itinerary]; newI[dayIdx].items = newI[dayIdx].items.filter((_, i) => i !== itemIdx); setFormData({...formData, itinerary: newI}); }
+            const addDay = () => { const id = `day${formData.itinerary.length + 1}`; setFormData({...formData, itinerary: [...formData.itinerary, { id, date: '日期', title: '新的一天', items: [] }]}); }
+            const removeDay = (idx) => { if(!confirm("確定刪除這一天？")) return; setFormData({...formData, itinerary: formData.itinerary.filter((_, i) => i !== idx)}); }
 
             return (
-                <div className="bg-wood-dark min-h-screen text-wood-text p-4 pb-24 overflow-y-auto">
-                    <div className="sticky top-0 bg-wood-dark z-20 pb-4 border-b border-wood-light mb-6 flex justify-between items-center">
-                        <h2 className="text-xl font-serif italic text-wood-accent">編輯行程</h2>
+                <div className="bg-wood-dark min-h-screen text-wood-text p-4 pb-24 overflow-y-auto font-sans">
+                    <div className="sticky top-0 bg-wood-dark/95 backdrop-blur z-20 pb-4 border-b border-wood-light mb-6 flex justify-between items-center pt-2">
+                        <h2 className="text-xl font-serif italic text-wood-accent font-bold">編輯行程</h2>
                         <div className="flex gap-2">
-                            <button onClick={onCancel} className="px-3 py-1 text-xs border border-wood-muted text-wood-muted rounded hover:bg-wood-light">取消</button>
-                            <button onClick={() => onSave(formData)} className="px-3 py-1 text-xs bg-wood-accent text-wood-dark font-bold rounded flex items-center gap-1 hover:bg-[#D4AF37]"><Save size={14}/> 儲存</button>
+                            <button onClick={onCancel} className="px-3 py-1 text-xs border border-wood-muted text-wood-muted rounded hover:bg-white transition-colors">取消</button>
+                            <button onClick={() => onSave(formData)} className="px-3 py-1 text-xs bg-wood-accent text-white font-bold rounded flex items-center gap-1 hover:opacity-90 transition-opacity shadow-md"><Save size={14}/> 儲存</button>
                         </div>
                     </div>
 
-                    {/* API Key & General */}
-                    <div className="space-y-4 mb-8">
-                        <h3 className="text-wood-accent text-sm font-bold uppercase tracking-widest border-b border-wood-light pb-2">基本設定</h3>
-                        <div className="grid gap-3">
+                    {/* 基本設定 */}
+                    <div className="bg-white p-4 rounded-sm border border-wood-light mb-6 shadow-sm">
+                        <h3 className="text-wood-accent text-xs font-bold uppercase tracking-widest border-b border-wood-light pb-2 mb-4">基本設定</h3>
+                        <div className="grid gap-4">
                             <div>
-                                <label className="block text-xs text-wood-muted mb-1">API Key (Gemini)</label>
-                                <input type="text" value={formData.apiKey} onChange={e=>updateField('apiKey', e.target.value)} placeholder="AIzaSy..." className="w-full bg-wood-card border border-wood-light p-2 text-sm text-wood-text focus:border-wood-accent outline-none"/>
+                                <label className="block text-xs text-wood-muted mb-1 font-bold">API Key (Gemini)</label>
+                                <input type="text" value={formData.apiKey} onChange={e=>updateField('apiKey', e.target.value)} placeholder="AIzaSy..." className="w-full bg-wood-dark border border-wood-light p-2 text-sm text-wood-text focus:border-wood-accent outline-none rounded-sm"/>
                             </div>
                             <div>
-                                <label className="block text-xs text-wood-muted mb-1">旅遊名稱</label>
-                                <input type="text" value={formData.tripName} onChange={e=>updateField('tripName', e.target.value)} className="w-full bg-wood-card border border-wood-light p-2 text-sm text-wood-text focus:border-wood-accent outline-none"/>
+                                <label className="block text-xs text-wood-muted mb-1 font-bold">旅遊名稱</label>
+                                <input type="text" value={formData.tripName} onChange={e=>updateField('tripName', e.target.value)} className="w-full bg-wood-dark border border-wood-light p-2 text-sm text-wood-text focus:border-wood-accent outline-none rounded-sm"/>
                             </div>
                             <div>
-                                <label className="block text-xs text-wood-muted mb-1">日期範圍</label>
-                                <input type="text" value={formData.tripDate} onChange={e=>updateField('tripDate', e.target.value)} className="w-full bg-wood-card border border-wood-light p-2 text-sm text-wood-text focus:border-wood-accent outline-none"/>
+                                <label className="block text-xs text-wood-muted mb-1 font-bold">日期範圍</label>
+                                <input type="text" value={formData.tripDate} onChange={e=>updateField('tripDate', e.target.value)} className="w-full bg-wood-dark border border-wood-light p-2 text-sm text-wood-text focus:border-wood-accent outline-none rounded-sm"/>
                             </div>
                         </div>
                     </div>
 
-                    {/* Flights */}
-                    <div className="space-y-4 mb-8">
-                        <div className="flex justify-between items-center border-b border-wood-light pb-2">
-                            <h3 className="text-wood-accent text-sm font-bold uppercase tracking-widest">航班</h3>
-                            <button onClick={addFlight} className="text-wood-accent hover:text-white"><Plus size={16}/></button>
+                    {/* 航班 */}
+                    <div className="bg-white p-4 rounded-sm border border-wood-light mb-6 shadow-sm">
+                        <div className="flex justify-between items-center border-b border-wood-light pb-2 mb-4">
+                            <h3 className="text-wood-accent text-xs font-bold uppercase tracking-widest">航班</h3>
+                            <button onClick={addFlight} className="text-wood-accent hover:scale-110 transition-transform"><Plus size={16}/></button>
                         </div>
                         {formData.flights.map((f, i) => (
-                            <div key={i} className="bg-wood-card p-3 border border-wood-light relative">
+                            <div key={i} className="bg-wood-dark p-3 border border-wood-light relative mb-3 rounded-sm">
                                 <button onClick={()=>removeFlight(i)} className="absolute top-2 right-2 text-wood-muted hover:text-red-400"><Trash2 size={14}/></button>
                                 <div className="grid grid-cols-2 gap-2 mb-2">
-                                    <input value={f.airline} onChange={e=>handleFlightChange(i,'airline',e.target.value)} placeholder="航空" className="bg-wood-dark p-1 text-xs border border-wood-light"/>
-                                    <input value={f.flightNo} onChange={e=>handleFlightChange(i,'flightNo',e.target.value)} placeholder="班號" className="bg-wood-dark p-1 text-xs border border-wood-light"/>
+                                    <input value={f.airline} onChange={e=>handleFlightChange(i,'airline',e.target.value)} placeholder="航空" className="bg-white p-2 text-xs border border-wood-light rounded-sm"/>
+                                    <input value={f.flightNo} onChange={e=>handleFlightChange(i,'flightNo',e.target.value)} placeholder="班號" className="bg-white p-2 text-xs border border-wood-light rounded-sm"/>
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
-                                    <input value={f.dep} onChange={e=>handleFlightChange(i,'dep',e.target.value)} placeholder="出發" className="bg-wood-dark p-1 text-xs border border-wood-light"/>
-                                    <input value={f.arr} onChange={e=>handleFlightChange(i,'arr',e.target.value)} placeholder="抵達" className="bg-wood-dark p-1 text-xs border border-wood-light"/>
-                                    <input value={f.date} onChange={e=>handleFlightChange(i,'date',e.target.value)} placeholder="日期" className="bg-wood-dark p-1 text-xs border border-wood-light"/>
+                                    <input value={f.dep} onChange={e=>handleFlightChange(i,'dep',e.target.value)} placeholder="出發" className="bg-white p-2 text-xs border border-wood-light rounded-sm"/>
+                                    <input value={f.arr} onChange={e=>handleFlightChange(i,'arr',e.target.value)} placeholder="抵達" className="bg-white p-2 text-xs border border-wood-light rounded-sm"/>
+                                    <input value={f.date} onChange={e=>handleFlightChange(i,'date',e.target.value)} placeholder="日期" className="bg-white p-2 text-xs border border-wood-light rounded-sm"/>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    {/* Preparation */}
-                    <div className="space-y-4 mb-8">
-                        <div className="flex justify-between items-center border-b border-wood-light pb-2">
-                            <h3 className="text-wood-accent text-sm font-bold uppercase tracking-widest">行前準備</h3>
-                            <button onClick={addPrep} className="text-wood-accent hover:text-white"><Plus size={16}/></button>
+                    {/* 行前準備 */}
+                    <div className="bg-white p-4 rounded-sm border border-wood-light mb-6 shadow-sm">
+                        <div className="flex justify-between items-center border-b border-wood-light pb-2 mb-4">
+                            <h3 className="text-wood-accent text-xs font-bold uppercase tracking-widest">行前準備</h3>
+                            <button onClick={addPrep} className="text-wood-accent hover:scale-110 transition-transform"><Plus size={16}/></button>
                         </div>
                         {formData.preparation.map((p, i) => (
-                            <div key={i} className="flex gap-2 items-center">
-                                <input value={p.title} onChange={e=>handlePrepChange(i,'title',e.target.value)} placeholder="項目" className="w-1/3 bg-wood-card p-2 text-xs border border-wood-light"/>
-                                <input value={p.desc} onChange={e=>handlePrepChange(i,'desc',e.target.value)} placeholder="說明" className="flex-1 bg-wood-card p-2 text-xs border border-wood-light"/>
+                            <div key={i} className="flex gap-2 items-center mb-2">
+                                <input value={p.title} onChange={e=>handlePrepChange(i,'title',e.target.value)} placeholder="項目" className="w-1/3 bg-wood-dark p-2 text-xs border border-wood-light rounded-sm"/>
+                                <input value={p.desc} onChange={e=>handlePrepChange(i,'desc',e.target.value)} placeholder="說明" className="flex-1 bg-wood-dark p-2 text-xs border border-wood-light rounded-sm"/>
                                 <button onClick={()=>removePrep(i)} className="text-wood-muted hover:text-red-400"><Trash2 size={14}/></button>
                             </div>
                         ))}
                     </div>
 
-                    {/* Itinerary */}
+                    {/* 每日行程 */}
                     <div className="space-y-6">
-                        <div className="flex justify-between items-center border-b border-wood-light pb-2">
+                        <div className="flex justify-between items-center px-1">
                             <h3 className="text-wood-accent text-sm font-bold uppercase tracking-widest">每日行程</h3>
-                            <button onClick={addDay} className="text-wood-accent hover:text-white flex items-center text-xs gap-1"><Plus size={14}/> 新增天數</button>
+                            <button onClick={addDay} className="text-wood-accent hover:text-wood-text flex items-center text-xs gap-1 font-bold bg-white px-3 py-1 border border-wood-accent rounded-full transition-colors"><Plus size={14}/> 新增天數</button>
                         </div>
                         {formData.itinerary.map((day, dIdx) => (
-                            <div key={dIdx} className="border border-wood-light bg-wood-card/30 p-4 rounded">
-                                <div className="flex justify-between items-start mb-4">
+                            <div key={dIdx} className="border border-wood-light bg-white p-5 rounded-sm shadow-sm relative">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-wood-light"></div>
+                                <div className="flex justify-between items-start mb-4 pl-3">
                                     <div className="flex-1 space-y-2">
-                                        <input value={day.date} onChange={e=>handleItineraryChange(dIdx,'date',e.target.value)} className="bg-wood-dark p-1 text-xs text-wood-accent border border-wood-light w-full"/>
-                                        <input value={day.title} onChange={e=>handleItineraryChange(dIdx,'title',e.target.value)} className="bg-wood-dark p-1 text-sm font-bold text-wood-text border border-wood-light w-full"/>
+                                        <input value={day.date} onChange={e=>handleItineraryChange(dIdx,'date',e.target.value)} className="bg-wood-dark p-2 text-xs text-wood-accent font-bold border border-wood-light w-full rounded-sm"/>
+                                        <input value={day.title} onChange={e=>handleItineraryChange(dIdx,'title',e.target.value)} className="bg-wood-dark p-2 text-sm font-bold text-wood-text border border-wood-light w-full rounded-sm font-serif"/>
                                     </div>
-                                    <button onClick={()=>removeDay(dIdx)} className="ml-2 text-wood-muted hover:text-red-400"><Trash2 size={16}/></button>
+                                    <button onClick={()=>removeDay(dIdx)} className="ml-2 text-wood-muted hover:text-red-400 bg-wood-dark p-2 rounded-full"><Trash2 size={16}/></button>
                                 </div>
                                 
-                                <div className="space-y-3 pl-2 border-l border-wood-muted/30">
+                                <div className="space-y-3 pl-3">
                                     {day.items.map((item, iIdx) => (
-                                        <div key={iIdx} className="bg-wood-dark p-3 border border-wood-light text-xs space-y-2 relative group">
-                                            <button onClick={()=>removeItem(dIdx, iIdx)} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-wood-muted hover:text-red-400"><Trash2 size={12}/></button>
+                                        <div key={iIdx} className="bg-wood-dark p-4 border border-wood-light text-xs space-y-2 relative group rounded-sm hover:border-wood-accent transition-colors">
+                                            <button onClick={()=>removeItem(dIdx, iIdx)} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-wood-muted hover:text-red-400 transition-opacity"><Trash2 size={12}/></button>
                                             <div className="flex gap-2">
-                                                <input value={item.time} onChange={e=>updateItem(dIdx, iIdx, 'time', e.target.value)} className="w-16 bg-wood-card p-1 border border-wood-light" placeholder="時間"/>
-                                                <select value={item.type} onChange={e=>updateItem(dIdx, iIdx, 'type', e.target.value)} className="bg-wood-card p-1 border border-wood-light">
+                                                <input value={item.time} onChange={e=>updateItem(dIdx, iIdx, 'time', e.target.value)} className="w-16 bg-white p-2 border border-wood-light rounded-sm text-center font-mono" placeholder="時間"/>
+                                                <select value={item.type} onChange={e=>updateItem(dIdx, iIdx, 'type', e.target.value)} className="bg-white p-2 border border-wood-light rounded-sm">
                                                     <option value="activity">景點</option><option value="food">餐廳</option><option value="transport">交通</option><option value="hotel">住宿</option><option value="shopping">購物</option>
                                                 </select>
-                                                <input value={item.title} onChange={e=>updateItem(dIdx, iIdx, 'title', e.target.value)} className="flex-1 bg-wood-card p-1 border border-wood-light" placeholder="標題"/>
+                                                <input value={item.title} onChange={e=>updateItem(dIdx, iIdx, 'title', e.target.value)} className="flex-1 bg-white p-2 border border-wood-light rounded-sm font-bold" placeholder="標題"/>
                                             </div>
-                                            <input value={item.location} onChange={e=>updateItem(dIdx, iIdx, 'location', e.target.value)} className="w-full bg-wood-card p-1 border border-wood-light" placeholder="地點/副標"/>
-                                            <textarea value={item.description} onChange={e=>updateItem(dIdx, iIdx, 'description', e.target.value)} className="w-full bg-wood-card p-1 border border-wood-light h-16" placeholder="描述"/>
+                                            <input value={item.location} onChange={e=>updateItem(dIdx, iIdx, 'location', e.target.value)} className="w-full bg-white p-2 border border-wood-light rounded-sm" placeholder="地點/副標"/>
+                                            <textarea value={item.description} onChange={e=>updateItem(dIdx, iIdx, 'description', e.target.value)} className="w-full bg-white p-2 border border-wood-light h-16 rounded-sm" placeholder="描述"/>
                                             <div className="grid grid-cols-2 gap-2">
-                                                <input value={item.mapQuery||''} onChange={e=>updateItem(dIdx, iIdx, 'mapQuery', e.target.value)} className="bg-wood-card p-1 border border-wood-light" placeholder="Google Maps 關鍵字"/>
-                                                <input value={item.imageUrl||''} onChange={e=>updateItem(dIdx, iIdx, 'imageUrl', e.target.value)} className="bg-wood-card p-1 border border-wood-light" placeholder="圖片網址"/>
+                                                <input value={item.mapQuery||''} onChange={e=>updateItem(dIdx, iIdx, 'mapQuery', e.target.value)} className="bg-white p-2 border border-wood-light rounded-sm" placeholder="Google Maps 關鍵字"/>
+                                                <input value={item.imageUrl||''} onChange={e=>updateItem(dIdx, iIdx, 'imageUrl', e.target.value)} className="bg-white p-2 border border-wood-light rounded-sm" placeholder="圖片網址"/>
                                             </div>
                                         </div>
                                     ))}
-                                    <button onClick={()=>addItem(dIdx)} className="w-full py-2 border border-dashed border-wood-muted text-wood-muted hover:text-wood-accent hover:border-wood-accent text-xs">+ 新增行程</button>
+                                    <button onClick={()=>addItem(dIdx)} className="w-full py-3 border border-dashed border-wood-muted text-wood-muted hover:text-wood-accent hover:border-wood-accent text-xs rounded-sm transition-colors">+ 新增行程</button>
                                 </div>
                             </div>
                         ))}
@@ -433,6 +491,7 @@
         const App = () => {
             const [data, setData] = useState(() => {
                 const saved = localStorage.getItem('tripData');
+                // 優先使用 localStorage，如果沒有則使用預設
                 return saved ? JSON.parse(saved) : DEFAULT_DATA;
             });
             const [isEdit, setIsEdit] = useState(false);
@@ -444,6 +503,9 @@
             const [msg, setMsg] = useState('');
             const [loading, setLoading] = useState(false);
 
+            // 當預設資料 (DEFAULT_DATA) 改變時 (例如使用者更新了代碼)，如果不強制更新，localStorage 會留著舊的
+            // 這裡做一個簡單檢查，如果 data 是空的或是結構不對，就重置 (選用)
+            
             const saveData = (newData) => {
                 setData(newData);
                 localStorage.setItem('tripData', JSON.stringify(newData));
@@ -454,6 +516,7 @@
                 if(confirm("確定重置回預設範本？您的修改將消失。")) {
                     setData(DEFAULT_DATA);
                     localStorage.setItem('tripData', JSON.stringify(DEFAULT_DATA));
+                    setIsEdit(false);
                 }
             };
 
@@ -475,21 +538,21 @@
             return (
                 <div className="max-w-md mx-auto min-h-screen bg-wood-dark shadow-2xl relative border-x border-wood-light font-sans flex flex-col">
                     {/* Header */}
-                    <header className="bg-wood-dark/95 backdrop-blur-md sticky top-0 z-30 pt-8 border-b border-wood-light/50">
+                    <header className="bg-[#F7F5F0]/95 backdrop-blur-md sticky top-0 z-30 pt-8 border-b border-wood-light">
                         <div className="flex justify-between items-start px-6 mb-4">
                             <div>
-                                <p className="text-[10px] text-wood-accent tracking-[0.25em] uppercase mb-1">Travel Guide</p>
-                                <h1 className="text-2xl font-serif italic text-wood-text tracking-wide">{data.tripName}</h1>
+                                <p className="text-[10px] text-wood-accent tracking-[0.25em] uppercase mb-1 font-bold">Premium Guide</p>
+                                <h1 className="text-3xl font-serif italic text-wood-text tracking-wide">{data.tripName}</h1>
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={()=>setIsEdit(true)} className="p-2 rounded-full border border-wood-light text-wood-muted hover:text-wood-accent hover:bg-wood-card"><Settings size={18}/></button>
-                                <button onClick={()=>setShowChat(!showChat)} className="p-2 rounded-full border border-wood-light text-wood-muted hover:text-wood-accent hover:bg-wood-card"><MessageCircle size={18}/></button>
+                                <button onClick={()=>setIsEdit(true)} className="p-2 rounded-full border border-wood-light text-wood-muted hover:text-wood-accent hover:bg-white hover:shadow-sm transition-all"><Settings size={18}/></button>
+                                <button onClick={()=>setShowChat(!showChat)} className="p-2 rounded-full border border-wood-light text-wood-muted hover:text-wood-accent hover:bg-white hover:shadow-sm transition-all"><MessageCircle size={18}/></button>
                             </div>
                         </div>
-                        <div className="flex overflow-x-auto no-scrollbar px-6 gap-6">
-                            <button onClick={()=>setActiveTab('info')} className={`pb-3 text-xs tracking-widest whitespace-nowrap uppercase font-medium border-b-2 transition-colors ${activeTab==='info'?'text-wood-accent border-wood-accent':'text-wood-muted border-transparent'}`}>資訊</button>
+                        <div className="flex overflow-x-auto no-scrollbar px-6 gap-8">
+                            <button onClick={()=>setActiveTab('info')} className={`pb-3 text-xs tracking-widest whitespace-nowrap uppercase font-medium border-b-2 transition-all ${activeTab==='info'?'text-wood-accent border-wood-accent':'text-wood-muted border-transparent hover:text-wood-text'}`}>資訊</button>
                             {data.itinerary.map(day => (
-                                <button key={day.id} onClick={()=>setActiveTab(day.id)} className={`pb-3 text-xs tracking-widest whitespace-nowrap uppercase font-medium border-b-2 transition-colors font-serif ${activeTab===day.id?'text-wood-accent border-wood-accent':'text-wood-muted border-transparent'}`}>{day.date.split(' ')[0]}</button>
+                                <button key={day.id} onClick={()=>setActiveTab(day.id)} className={`pb-3 text-xs tracking-widest whitespace-nowrap uppercase font-medium border-b-2 transition-all font-serif ${activeTab===day.id?'text-wood-accent border-wood-accent':'text-wood-muted border-transparent hover:text-wood-text'}`}>{day.date.split(' ')[0]}</button>
                             ))}
                         </div>
                     </header>
@@ -501,19 +564,19 @@
 
                     {/* Chat Overlay */}
                     {showChat && (
-                        <div className="absolute inset-0 z-40 bg-wood-dark/95 backdrop-blur-xl flex flex-col animate-slide-up">
-                            <div className="flex justify-between p-4 border-b border-wood-light">
-                                <h3 className="text-wood-accent font-serif italic">AI 專屬管家</h3>
-                                <button onClick={()=>setShowChat(false)}><X className="text-wood-muted" size={20}/></button>
+                        <div className="absolute inset-0 z-40 bg-[#F7F5F0]/95 backdrop-blur-xl flex flex-col animate-slide-up">
+                            <div className="flex justify-between p-5 border-b border-wood-light bg-white/50">
+                                <h3 className="text-wood-accent font-serif italic font-bold text-lg">AI 專屬管家</h3>
+                                <button onClick={()=>setShowChat(false)}><X className="text-wood-muted hover:text-wood-text" size={24}/></button>
                             </div>
-                            <div className="flex-1 p-4 overflow-y-auto space-y-4">
-                                {chatHist.length===0 && <div className="text-center mt-20 text-wood-muted opacity-50"><MessageCircle size={40} className="mx-auto mb-4"/>{data.apiKey ? '請問有什麼需要幫忙？' : '請先至編輯模式設定 API Key'}</div>}
-                                {chatHist.map((m,i)=>(<div key={i} className={`flex ${m.role==='user'?'justify-end':'justify-start'}`}><div className={`max-w-[85%] p-3 text-sm rounded ${m.role==='user'?'bg-wood-accent text-wood-dark':'bg-wood-card border border-wood-light text-wood-text'}`}>{m.text}</div></div>))}
-                                {loading && <div className="text-wood-accent text-xs animate-pulse">思考中...</div>}
+                            <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                                {chatHist.length===0 && <div className="text-center mt-20 text-wood-muted opacity-50"><MessageCircle size={40} className="mx-auto mb-4 text-wood-light"/>{data.apiKey ? '請問有什麼需要幫忙？' : '請先至編輯模式設定 API Key'}</div>}
+                                {chatHist.map((m,i)=>(<div key={i} className={`flex ${m.role==='user'?'justify-end':'justify-start'}`}><div className={`max-w-[85%] p-4 text-sm rounded-sm leading-relaxed shadow-sm ${m.role==='user'?'bg-wood-accent text-white':'bg-white border border-wood-light text-wood-text'}`}>{m.text}</div></div>))}
+                                {loading && <div className="text-wood-accent text-xs animate-pulse pl-2">思考中...</div>}
                             </div>
-                            <form onSubmit={handleSend} className="p-3 border-t border-wood-light flex gap-2">
-                                <input value={msg} onChange={e=>setMsg(e.target.value)} className="flex-1 bg-wood-card border border-wood-light p-2 text-sm text-wood-text focus:border-wood-accent outline-none" placeholder="輸入訊息..."/>
-                                <button type="submit" disabled={!data.apiKey} className="bg-wood-accent text-wood-dark px-4 py-2 disabled:opacity-50"><Send size={18}/></button>
+                            <form onSubmit={handleSend} className="p-4 border-t border-wood-light flex gap-3 bg-white">
+                                <input value={msg} onChange={e=>setMsg(e.target.value)} className="flex-1 bg-wood-dark border border-wood-light p-3 text-sm text-wood-text focus:border-wood-accent outline-none rounded-sm transition-colors" placeholder="輸入訊息..."/>
+                                <button type="submit" disabled={!data.apiKey} className="bg-wood-accent text-white px-5 py-2 disabled:opacity-50 hover:opacity-90 transition-opacity rounded-sm shadow-sm"><Send size={18}/></button>
                             </form>
                         </div>
                     )}
@@ -522,14 +585,14 @@
                     {selectedItem && <AttractionModal item={selectedItem} apiKey={data.apiKey} onClose={()=>setSelectedItem(null)} />}
                     {modalType && (
                         <Modal onClose={()=>setModalType(null)}>
-                            <div className="flex justify-between p-4 border-b border-wood-light bg-wood-card">
-                                <h3 className="text-wood-accent font-serif italic">{modalType==='hotel'?'住宿列表':'準備清單'}</h3>
-                                <button onClick={()=>setModalType(null)}><X className="text-wood-muted" size={20}/></button>
+                            <div className="flex justify-between p-5 border-b border-wood-light bg-white">
+                                <h3 className="text-wood-accent font-serif italic text-xl font-bold">{modalType==='hotel'?'住宿列表':'準備清單'}</h3>
+                                <button onClick={()=>setModalType(null)}><X className="text-wood-muted hover:text-wood-text" size={24}/></button>
                             </div>
-                            <div className="p-6 overflow-y-auto custom-scrollbar space-y-4">
+                            <div className="p-8 overflow-y-auto custom-scrollbar space-y-6 bg-wood-dark">
                                 {modalType==='hotel' 
-                                    ? data.itinerary.flatMap(d=>d.items).filter(i=>i.type==='hotel').map((h,i)=>(<div key={i} className="border-l-2 border-wood-accent pl-4"><h4 className="text-wood-text font-medium">{h.title}</h4><p className="text-xs text-wood-muted mb-2">{h.location}</p><p className="text-sm text-wood-text/70 font-light">{h.description}</p></div>))
-                                    : data.preparation.map((p,i)=>(<div key={i} className="flex gap-3"><div className="mt-1 w-2 h-2 bg-wood-accent shrink-0 rotate-45"></div><div><h4 className="text-wood-text text-sm">{p.title}</h4><p className="text-xs text-wood-muted font-light">{p.desc}</p></div></div>))
+                                    ? data.itinerary.flatMap(d=>d.items).filter(i=>i.type==='hotel').map((h,i)=>(<div key={i} className="border-l-2 border-wood-accent pl-5 py-1"><h4 className="text-wood-text font-bold text-lg">{h.title}</h4><p className="text-xs text-wood-muted mb-3 font-medium tracking-wide uppercase mt-1">{h.location}</p><p className="text-sm text-wood-text/70 font-light leading-relaxed">{h.description}</p></div>))
+                                    : data.preparation.map((p,i)=>(<div key={i} className="flex gap-4 p-4 bg-white border border-wood-light rounded-sm shadow-sm"><div className="mt-1 w-2 h-2 bg-wood-accent shrink-0 rotate-45"></div><div><h4 className="text-wood-text text-sm font-bold mb-1">{p.title}</h4><p className="text-xs text-wood-muted font-light leading-relaxed">{p.desc}</p></div></div>))
                                 }
                             </div>
                         </Modal>
@@ -543,3 +606,4 @@
     </script>
 </body>
 </html>
+    
