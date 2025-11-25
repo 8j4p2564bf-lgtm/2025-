@@ -1,667 +1,775 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>關西五日遊 - 行程與記帳整合版 (深色)</title>
-   <!-- 載入 Tailwind CSS -->
-   <script src="https://cdn.tailwindcss.com"></script>
-   <!-- 載入 Inter 字體 -->
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-   <style>
-       body {
-           font-family: 'Inter', sans-serif;
-           /* 深色背景 */
-           background-color: #1a202c; /* gray-900 */
-       }
-       /* 隱藏捲軸 */
-       .scroll-hidden::-webkit-scrollbar {
-           display: none;
-       }
-       .scroll-hidden {
-           -ms-overflow-style: none;
-           scrollbar-width: none;
-       }
-       /* 提升字體清晰度 */
-       .text-shadow-sm {
-           text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-       }
-       .itinerary-item {
-           /* 深色模式下的左側邊線顏色 */
-           border-left: 3px solid #6366f1; /* indigo-500 */
-           padding-left: 1rem;
-       }
-       /* 調整輸入框的樣式以適應深色模式 */
-       input[type="text"], input[type="number"], select {
-           background-color: #2d3748; /* gray-700 */
-           color: #e2e8f0; /* gray-200 */
-           border-color: #4a5568; /* gray-600 */
-       }
-   </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>京都・大阪 5天4夜自由行</title>
+    <meta name="description" content="5-Day Kyoto & Osaka Family Trip Itinerary">
+    <meta name="theme-color" content="#ffffff">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+      body {
+        font-family: 'Noto Sans TC', sans-serif;
+        background-color: #f8fafc;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior-y: none; /* Prevent pull-to-refresh on mobile */
+      }
+      /* Hide scrollbar for Chrome, Safari and Opera */
+      .no-scrollbar::-webkit-scrollbar {
+          display: none;
+      }
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .no-scrollbar {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .safe-bottom {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+      }
+    </style>
+    
+    <!-- Import Map -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.292.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+  </head>
+  <body>
+    <div id="root"></div>
 
-   <!-- 主應用程式容器 -->
-   <div id="app" class="min-h-screen p-4 sm:p-6 md:p-8 text-gray-100">
-       
-       <!-- 頂部概覽卡片 -->
-       <div class="bg-gradient-to-r from-green-700 to-emerald-800 p-6 rounded-2xl shadow-2xl mb-6">
-           <h1 class="text-3xl font-extrabold text-shadow-sm">🍁 關西五日・秋日漫遊</h1>
-           <p class="text-gray-200 mt-1 text-sm font-medium">10/16 ~ 10/20 (5天4夜) | 4人家庭旅行</p>
-           
-           <!-- 住宿與航班快速摘要 -->
-           <div class="mt-4 flex flex-wrap gap-4 text-xs font-semibold">
-               <div class="flex items-center">
-                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1 text-yellow-300">
-                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125a3.375 3.375 0 003.375 3.375h1.5A1.5 1.5 0 0010.5 21v-3.75m-4.5-5.25v5.25c0 1.391-.84 2.55-1.95 2.55s-1.95-1.159-1.95-2.55v-5.25c0-1.391.84-2.55 1.95-2.55s1.95 1.159 1.95 2.55zM12 21.75V15m0 0a3 3 0 01-3-3V6a3 3 0 016 0v6a3 3 0 01-3 3zM15 15a3 3 0 003 3v3h-6v-3a3 3 0 003-3z" />
-                   </svg>
-                   <span>京都: M's Hotel</span>
-               </div>
-               <div class="flex items-center">
-                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1 text-yellow-300">
-                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125a3.375 3.375 0 003.375 3.375h1.5A1.5 1.5 0 0010.5 21v-3.75m-4.5-5.25v5.25c0 1.391-.84 2.55-1.95 2.55s-1.95-1.159-1.95-2.55v-5.25c0-1.391.84-2.55 1.95-2.55s1.95 1.159 1.95 2.55zM12 21.75V15m0 0a3 3 0 01-3-3V6a3 3 0 016 0v6a3 3 0 01-3 3zM15 15a3 3 0 003 3v3h-6v-3a3 3 0 003-3z" />
-                   </svg>
-                   <span>大阪: Bridge Hotel</span>
-               </div>
-               <div class="flex items-center">
-                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1 text-yellow-300">
-                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.874L5.999 12zm0 0h7.5" />
-                   </svg>
-                   <span>去程: CI0152 (TPE 09:00 → KIX 12:50)</span>
-               </div>
-           </div>
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useRef } from 'react';
+      import { createRoot } from 'react-dom/client';
+      import { 
+        MapPin, Clock, Info, X, Ticket, FileText, 
+        Plane, Train, BedDouble, Camera, Utensils, ShoppingBag, 
+        Calendar, Building, ChevronDown, ChevronUp, Map, AlertTriangle,
+        ExternalLink, Home
+      } from 'lucide-react';
 
-           <!-- 總支出概覽 -->
-           <div id="loading-status" class="text-center mt-5 p-3 bg-white bg-opacity-10 rounded-lg">
-               正在初始化 Firebase 服務...
-           </div>
-           <div id="summary-content" class="hidden mt-5">
-               <p class="text-sm opacity-90 font-light">本次旅行總支出概覽 (日圓)</p>
-               <h2 id="total-trip-expense" class="text-4xl font-bold mt-1 text-shadow-sm">¥ 0</h2>
-               <span class="inline-block text-xs mt-1 text-gray-300">使用者 ID: <span id="user-id-display">N/A</span></span>
-           </div>
-       </div>
+      // --- Constants & Data ---
 
-       <!-- 日期導航標籤 -->
-       <div class="flex overflow-x-auto scroll-hidden mb-6 p-2 bg-gray-800 rounded-xl shadow-lg">
-           <!-- 每日導航按鈕，將由 JS 填充 -->
-       </div>
+      const ActivityType = {
+        FLIGHT: 'FLIGHT',
+        HOTEL: 'HOTEL',
+        TRANSPORT: 'TRANSPORT',
+        ATTRACTION: 'ATTRACTION',
+        FOOD: 'FOOD',
+        SHOPPING: 'SHOPPING',
+        OTHER: 'OTHER'
+      };
 
-       <!-- 行程與記帳主要內容 (Grid Layout) -->
-       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      const TRIP_DATA = {
+        flights: {
+          outbound: {
+            airline: '中華航空',
+            flightNumber: 'CI0152',
+            departureTime: '09:00',
+            arrivalTime: '12:50',
+            departureAirport: 'TPE (桃園)',
+            arrivalAirport: 'KIX (關西)',
+          },
+          inbound: {
+            airline: '中華航空',
+            flightNumber: 'CI0153',
+            departureTime: '14:00',
+            arrivalTime: '15:55',
+            departureAirport: 'KIX (關西)',
+            arrivalAirport: 'TPE (桃園)',
+          },
+        },
+        hotels: {
+          kyoto: "Hotel The M’s Kyoto",
+          osaka: "The Bridge Hotel Shinsaibashi",
+        },
+        itinerary: [
+          {
+            day: 1,
+            date: '10/16 (四)',
+            title: '京都初印象：嵐山＋月燈路',
+            activities: [
+              {
+                time: '05:30',
+                title: '前往桃園機場',
+                description: '竹北出發前往桃機2航廈。',
+                price: '現金1500',
+                type: ActivityType.TRANSPORT,
+                location: '桃園國際機場第二航廈'
+              },
+              {
+                time: '09:00',
+                title: '飛往日本',
+                description: '中華航空 CI0152',
+                type: ActivityType.FLIGHT,
+              },
+              {
+                time: '13:00',
+                title: '抵達關西機場',
+                description: '入境手續、領取行李。',
+                type: ActivityType.OTHER,
+                location: 'Kansai International Airport'
+              },
+              {
+                time: '14:00',
+                title: '前往京都',
+                description: '搭乘 JR Haruka 特急列車前往京都車站。',
+                type: ActivityType.TRANSPORT,
+                location: 'Kyoto Station'
+              },
+              {
+                time: '15:30',
+                title: '飯店 Check-in',
+                description: '入住 Hotel The M’s Kyoto。',
+                type: ActivityType.HOTEL,
+                location: "Hotel The M's Kyoto"
+              },
+              {
+                time: '16:10',
+                title: '嵐山渡月橋、竹林小徑',
+                description: '嵐山地標與竹林小徑漫步。',
+                type: ActivityType.ATTRACTION,
+                location: 'Arashiyama Bamboo Grove',
+                price: '免費'
+              },
+              {
+                time: '18:00',
+                title: '嵐山月燈路',
+                description: '參加嵐山月燈路，欣賞夜間點燈。',
+                type: ActivityType.ATTRACTION,
+                location: 'Arashiyama Park'
+              },
+              {
+                time: '19:30',
+                title: '晚餐 / 休息',
+                description: '晚餐或直接回飯店休息。',
+                type: ActivityType.FOOD
+              }
+            ]
+          },
+          {
+            day: 2,
+            date: '10/17 (五)',
+            title: '古都風情：清水寺＋八坂神社',
+            activities: [
+              {
+                time: '08:30',
+                title: '出發',
+                description: '搭乘市巴士至五条坂。',
+                type: ActivityType.TRANSPORT
+              },
+              {
+                time: '09:30',
+                title: '清水寺參觀',
+                description: '參觀清水寺，散步三年坂、二年坂。',
+                price: '門票 ¥500',
+                type: ActivityType.ATTRACTION,
+                location: 'Kiyomizu-dera'
+              },
+              {
+                time: '11:40',
+                title: '八坂神社 & 花見小路',
+                description: '走訪八坂神社與花見小路。',
+                price: '免費',
+                type: ActivityType.ATTRACTION,
+                location: 'Yasaka Shrine'
+              },
+              {
+                time: '13:25',
+                title: '錦市場',
+                description: '午餐與逛街。',
+                type: ActivityType.FOOD,
+                location: 'Nishiki Market'
+              },
+              {
+                time: '15:00',
+                title: '四条河原町 / 平安神宮',
+                description: '四条河原町自由活動，或是前往平安神宮參觀。',
+                type: ActivityType.SHOPPING,
+                location: 'Heian Shrine'
+              },
+              {
+                time: '18:30',
+                title: '晚餐：壽喜燒',
+                description: '壽喜燒三條河原町店。',
+                type: ActivityType.FOOD,
+                location: 'Sukiyaki Sanjo Kawaramachi'
+              },
+              {
+                time: '傍晚',
+                title: '回飯店休息',
+                type: ActivityType.HOTEL
+              }
+            ]
+          },
+          {
+            day: 3,
+            date: '10/18 (六)',
+            title: '移動日：伏見稻荷＋大阪摩天輪',
+            activities: [
+              {
+                time: '08:30',
+                title: '伏見稻荷大社',
+                description: '參拜千本鳥居。',
+                price: '免費',
+                type: ActivityType.ATTRACTION,
+                location: 'Fushimi Inari Taisha'
+              },
+              {
+                time: '11:00',
+                title: '午餐 & 取行李',
+                description: '午餐後回飯店拿行李準備移動。',
+                type: ActivityType.FOOD
+              },
+              {
+                time: '14:20',
+                title: '前往大阪',
+                description: '搭乘 JR 新快速前往大阪。',
+                type: ActivityType.TRANSPORT
+              },
+              {
+                time: '15:30',
+                title: 'HEP FIVE 摩天輪',
+                description: '抵達梅田，搭乘紅色摩天輪。',
+                note: '維修中，請確認開放狀況',
+                type: ActivityType.ATTRACTION,
+                location: 'HEP FIVE Ferris Wheel'
+              },
+              {
+                time: '17:00',
+                title: '大阪飯店 Check-in',
+                description: '入住 The Bridge Hotel Shinsaibashi。',
+                type: ActivityType.HOTEL,
+                location: 'The Bridge Hotel Shinsaibashi'
+              },
+              {
+                time: '18:30',
+                title: '道頓堀 & 心齋橋',
+                description: '自由活動、逛街。',
+                type: ActivityType.SHOPPING,
+                location: 'Dotonbori'
+              }
+            ]
+          },
+          {
+            day: 4,
+            date: '10/19 (日)',
+            title: '大阪深度：大阪城＋今昔館',
+            activities: [
+              {
+                time: '08:30',
+                title: '前往大阪城',
+                description: '搭地鐵至大阪商務園區。',
+                type: ActivityType.TRANSPORT
+              },
+              {
+                time: '09:00',
+                title: '大阪城公園',
+                description: '參觀大阪城、御座船、海洋堂博物館 (Kaiyodo Figure Museum)。',
+                price: '周遊卷',
+                type: ActivityType.ATTRACTION,
+                location: 'Osaka Castle'
+              },
+              {
+                time: '12:00',
+                title: '大阪天滿宮',
+                description: '參拜。',
+                price: '免費',
+                type: ActivityType.ATTRACTION,
+                location: 'Ōsaka Temmangū'
+              },
+              {
+                time: '12:30',
+                title: '天神橋筋商店街',
+                description: '享用午餐。',
+                type: ActivityType.FOOD,
+                location: 'Tenjinbashisuji Shopping Street'
+              },
+              {
+                time: '13:30',
+                title: '大阪生活今昔館',
+                description: '穿越江戶時代街景，可體驗和服。',
+                price: '周遊卷',
+                type: ActivityType.ATTRACTION,
+                location: 'Osaka Museum of Housing and Living'
+              },
+              {
+                time: '15:30',
+                title: '黑門市場',
+                description: '嚐鮮海鮮、和牛串、水果大福。',
+                type: ActivityType.FOOD,
+                location: 'Kuromon Ichiba Market'
+              },
+              {
+                time: '17:00',
+                title: '逛街',
+                description: '回心齋橋／道頓堀自由逛街。',
+                type: ActivityType.SHOPPING
+              },
+              {
+                time: '20:00',
+                title: '燒肉晚餐',
+                description: '燒肉力丸 難波道頓堀店。',
+                type: ActivityType.FOOD,
+                location: 'Rikimaru Namba Dotonbori'
+              }
+            ]
+          },
+          {
+            day: 5,
+            date: '10/20 (一)',
+            title: '大鳥大社參拜＋返台',
+            activities: [
+              {
+                time: '08:30',
+                title: '前往鳳站',
+                description: '地鐵至天王寺 → 轉 JR 至鳳站。',
+                type: ActivityType.TRANSPORT
+              },
+              {
+                time: '09:20',
+                title: '大鳥大社',
+                description: '參拜。',
+                price: '免費',
+                type: ActivityType.ATTRACTION,
+                location: 'Otori Taisha'
+              },
+              {
+                time: '10:00',
+                title: '前往機場',
+                description: '搭乘 JR 或 南海電鐵前往關西機場。',
+                type: ActivityType.TRANSPORT
+              },
+              {
+                time: '11:00',
+                title: '機場報到',
+                description: '報到、退稅、午餐。',
+                type: ActivityType.OTHER,
+                location: 'Kansai International Airport'
+              },
+              {
+                time: '14:00',
+                title: '搭機返台',
+                description: '中華航空 CI0153。',
+                type: ActivityType.FLIGHT
+              }
+            ]
+          }
+        ]
+      };
 
-           <!-- 左側：每日行程大綱與明細 -->
-           <div class="lg:col-span-2 space-y-6">
-               <div class="bg-gray-800 p-6 rounded-2xl shadow-xl">
-                   <h2 class="text-2xl font-bold text-gray-100 mb-4 flex items-center">
-                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mr-2 text-green-400">
-                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5" />
-                       </svg>
-                       <span id="itinerary-day-title">Day 1</span> 行程規劃
-                   </h2>
-                   
-                   <!-- 當日行程內容 -->
-                   <div id="itinerary-content" class="text-gray-300 space-y-4">
-                       <!-- 行程內容將根據選擇的 Day 進行更新 -->
-                   </div>
-               </div>
-               
-               <!-- 支出明細列表 -->
-               <div class="bg-gray-800 p-6 rounded-2xl shadow-xl">
-                   <h2 class="text-2xl font-bold text-gray-100 mb-4 flex items-center">
-                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mr-2 text-indigo-400">
-                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.03 60.03 0 0 1 9.75-2.25v-7.5l-3 2.25m3 5.25v5.25c.571 0 1.127-.123 1.648-.351l-.317-.118m-7.648.351A59.98 59.98 0 0 1 2.25 18.75m12.012 4.409-.323-.139A39.292 39.292 0 0 0 12 21.75V19.5m0-9.75v-2.25m0 0a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" />
-                       </svg>
-                       支出明細
-                   </h2>
-                   
-                   <div class="mb-5 p-4 bg-indigo-900 rounded-xl border border-indigo-700">
-                       <p class="text-sm font-medium text-indigo-300">當日總支出</p>
-                       <p id="daily-total" class="text-3xl font-bold text-indigo-100">¥ 0</p>
-                   </div>
+      // --- Components ---
 
-                   <ul id="expense-list" class="space-y-3">
-                       <!-- 支出項目將由 JS 載入 -->
-                       <li id="empty-state" class="text-center py-8 text-gray-500">
-                           <p>點擊右側「+ 記錄支出」來記錄 Day ${currentDayIndex} 的第一筆花費。</p>
-                       </li>
-                   </ul>
-               </div>
-           </div>
+      const EventModal = ({ isOpen, onClose, activity }) => {
+        const [isClosing, setIsClosing] = useState(false);
 
-           <!-- 右側：記帳功能區塊 (Sticky for mobile) -->
-           <div class="lg:col-span-1">
-               <div class="bg-gray-800 p-6 rounded-2xl shadow-xl lg:sticky lg:top-8">
-                   <h2 class="text-2xl font-bold text-gray-100 mb-4">
-                       記帳新增
-                   </h2>
+        useEffect(() => {
+          if (isOpen) setIsClosing(false);
+        }, [isOpen]);
 
-                   <!-- 新增支出表單 -->
-                   <form id="expense-form" class="space-y-4">
-                       <input type="hidden" id="expense-day-index" value="1">
+        const handleClose = () => {
+          setIsClosing(true);
+          setTimeout(onClose, 200);
+        };
 
-                       <!-- 新增：付款人欄位 -->
-                       <div>
-                           <label for="expense-payer" class="block text-sm font-medium text-gray-300">付款人</label>
-                           <select id="expense-payer" required
-                               class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-gray-700 text-white">
-                               <option value="爸">爸</option>
-                               <option value="媽">媽</option>
-                               <option value="逸">逸</option>
-                               <option value="松">松</option>
-                           </select>
-                       </div>
-                       
-                       <div>
-                           <label for="expense-description" class="block text-sm font-medium text-gray-300">項目說明</label>
-                           <input type="text" id="expense-description" required placeholder="午餐、交通卡、紀念品"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-gray-700 text-white">
-                       </div>
-                       
-                       <div>
-                           <label for="expense-amount" class="block text-sm font-medium text-gray-300">金額 (日圓 ¥)</label>
-                           <input type="number" id="expense-amount" required min="1" placeholder="例如：2500"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-gray-700 text-white">
-                       </div>
+        if (!isOpen && !isClosing) return null;
+        if (!activity) return null;
 
-                       <div>
-                           <label for="expense-category" class="block text-sm font-medium text-gray-300">類別</label>
-                           <select id="expense-category" required
-                               class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-gray-700 text-white">
-                               <option value="餐飲">🍜 餐飲</option>
-                               <option value="交通">🚄 交通</option>
-                               <option value="住宿">🏨 住宿</option>
-                               <option value="門票">🎟️ 門票/娛樂</option>
-                               <option value="購物">🛍️ 購物/紀念品</option>
-                               <option value="其他">🏷️ 其他</option>
-                           </select>
-                       </div>
+        const googleMapsUrl = activity.location
+          ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activity.location)}`
+          : null;
 
-                       <button type="submit" id="add-expense-btn"
-                           class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:opacity-50">
-                           + 記錄支出
-                       </button>
-                   </form>
-               </div>
-           </div>
-       </div>
-   </div>
+        const getHeaderColor = () => {
+          switch(activity.type) {
+            case ActivityType.ATTRACTION: return 'bg-rose-500';
+            case ActivityType.FLIGHT: return 'bg-sky-600';
+            case ActivityType.TRANSPORT: return 'bg-indigo-500';
+            case ActivityType.FOOD: return 'bg-orange-500';
+            case ActivityType.HOTEL: return 'bg-slate-700';
+            case ActivityType.SHOPPING: return 'bg-purple-600';
+            default: return 'bg-emerald-600';
+          }
+        };
 
+        return (
+          <div className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-4 transition-opacity duration-200 ${isClosing ? 'opacity-0' : 'opacity-100'}`}>
+            <div 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+              onClick={handleClose}
+            />
+            <div className={`
+              relative w-full max-w-md bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden 
+              transform transition-transform duration-300
+              ${isClosing ? 'translate-y-full sm:scale-95' : 'translate-y-0 sm:scale-100'}
+            `}>
+              {/* Header */}
+              <div className={`${getHeaderColor()} p-6 text-white relative`}>
+                <button 
+                  onClick={handleClose}
+                  className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors"
+                >
+                  <X size={20} />
+                </button>
+                <div className="mt-1">
+                  <div className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold bg-white/20 rounded-full mb-3 backdrop-blur-sm">
+                    <Clock size={12} />
+                    {activity.time}
+                  </div>
+                  <h3 className="text-2xl font-bold leading-tight pr-8">{activity.title}</h3>
+                </div>
+              </div>
 
-   <!-- Firebase 腳本 -->
-   <script type="module">
-       // Firebase 模組載入
-       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-       import {
-           getAuth,
-           signInAnonymously,
-           signInWithCustomToken,
-           onAuthStateChanged
-       } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-       import {
-           getFirestore,
-           doc,
-           addDoc,
-           onSnapshot,
-           collection,
-           query,
-           deleteDoc,
-           orderBy,
-           serverTimestamp,
-           setLogLevel
-       } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+              {/* Body */}
+              <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto overscroll-contain">
+                {activity.description && (
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-gray-50 rounded-lg shrink-0">
+                      <Info className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <p className="text-gray-700 leading-relaxed text-sm pt-1">{activity.description}</p>
+                  </div>
+                )}
 
-       // 設定 Firebase Log Level
-       setLogLevel('debug');
-       
-       // --- 全域變數初始化 (來自 Canvas 環境) ---
-       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-       const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-       const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                {activity.price && (
+                  <div className="flex items-center gap-4">
+                     <div className="p-2 bg-gray-50 rounded-lg shrink-0">
+                      <Ticket className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <p className="text-gray-700 font-medium">費用: {activity.price}</p>
+                  </div>
+                )}
 
-       let db;
-       let auth;
-       let userId = null;
-       let isAuthReady = false;
-       
-       // Firestore Collection 路徑
-       const EXPENSES_COLLECTION_NAME = "expenses";
-       let expensesRef = null;
+                {activity.note && (
+                  <div className="flex items-start gap-3 bg-amber-50 p-4 rounded-xl border border-amber-100">
+                    <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+                    <p className="text-sm text-amber-800 font-medium leading-relaxed">{activity.note}</p>
+                  </div>
+                )}
 
-       const TOTAL_DAYS = 5;
-       let currentDayIndex = 1; // 預設顯示 Day 1
-       let allExpenses = []; // 儲存所有支出數據
+                {activity.location && (
+                  <div className="flex items-center gap-4 pt-1">
+                     <div className="p-2 bg-gray-50 rounded-lg shrink-0">
+                      <MapPin className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <span className="text-gray-600 font-medium text-sm truncate">{activity.location}</span>
+                  </div>
+                )}
+              </div>
 
-       // 元素參照
-       const loadingStatusEl = document.getElementById('loading-status');
-       const summaryContentEl = document.getElementById('summary-content');
-       const totalTripExpenseEl = document.getElementById('total-trip-expense');
-       const dayTabsContainer = document.querySelector('.flex.overflow-x-auto');
-       const itineraryDayTitleEl = document.getElementById('itinerary-day-title');
-       const dailyTotalEl = document.getElementById('daily-total');
-       const expenseForm = document.getElementById('expense-form');
-       const expenseListEl = document.getElementById('expense-list');
-       const expenseDayIndexInput = document.getElementById('expense-day-index');
-       const addExpenseBtn = document.getElementById('add-expense-btn');
-       const userIdDisplayEl = document.getElementById('user-id-display');
+              {/* Footer */}
+              <div className="p-6 pt-2 pb-8 safe-bottom bg-white border-t border-gray-50">
+                {googleMapsUrl ? (
+                  <a
+                    href={googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-blue-200"
+                  >
+                    <MapPin size={20} />
+                    開啟 Google Maps
+                  </a>
+                ) : (
+                   <button
+                    onClick={handleClose}
+                    className="flex items-center justify-center w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3.5 px-4 rounded-xl transition-all active:scale-[0.98]"
+                  >
+                    關閉
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      };
 
-       // --- 輔助函數 ---
+      const Timeline = ({ activities, onSelectActivity }) => {
+        const getIcon = (type) => {
+          switch (type) {
+            case ActivityType.FLIGHT: return <Plane size={18} />;
+            case ActivityType.TRANSPORT: return <Train size={18} />;
+            case ActivityType.HOTEL: return <BedDouble size={18} />;
+            case ActivityType.ATTRACTION: return <Camera size={18} />;
+            case ActivityType.FOOD: return <Utensils size={18} />;
+            case ActivityType.SHOPPING: return <ShoppingBag size={18} />;
+            default: return <MapPin size={18} />;
+          }
+        };
 
-       /**
-        * 將數字格式化為日圓字串
-        * @param {number} amount
-        * @returns {string}
-        */
-       const formatCurrency = (amount) => {
-           return `¥ ${Math.floor(amount).toLocaleString('ja-JP')}`;
-       };
+        const getColors = (type) => {
+          switch (type) {
+            case ActivityType.FLIGHT: return 'bg-sky-100 text-sky-600 ring-sky-100';
+            case ActivityType.TRANSPORT: return 'bg-indigo-50 text-indigo-600 ring-indigo-50';
+            case ActivityType.HOTEL: return 'bg-slate-100 text-slate-600 ring-slate-100';
+            case ActivityType.ATTRACTION: return 'bg-rose-50 text-rose-600 ring-rose-50';
+            case ActivityType.FOOD: return 'bg-orange-50 text-orange-600 ring-orange-50';
+            case ActivityType.SHOPPING: return 'bg-purple-50 text-purple-600 ring-purple-50';
+            default: return 'bg-gray-50 text-gray-600 ring-gray-100';
+          }
+        };
 
-       /**
-        * 根據類別回傳表情符號
-        * @param {string} category
-        * @returns {string}
-        */
-       const getCategoryIcon = (category) => {
-           switch (category) {
-               case '餐飲': return '🍜';
-               case '交通': return '🚄';
-               case '住宿': return '🏨';
-               case '門票': return '🎟️';
-               case '購物': return '🛍️';
-               case '其他': return '🏷️';
-               default: return '💰';
-           }
-       };
+        return (
+          <div className="relative pl-6 space-y-8 pb-32">
+            {/* Vertical Line */}
+            <div className="absolute left-[29px] top-4 bottom-0 w-0.5 bg-gray-200/60 rounded-full" />
+            
+            {activities.map((activity, index) => {
+              const colors = getColors(activity.type);
+              return (
+                <div 
+                  key={index} 
+                  className="relative flex gap-5 group cursor-pointer animate-fadeIn"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                  onClick={() => onSelectActivity(activity)}
+                >
+                  {/* Timeline Dot */}
+                  <div className={`
+                    relative z-10 flex items-center justify-center w-12 h-12 rounded-2xl shrink-0 
+                    bg-white shadow-sm ring-4 transition-transform group-active:scale-95
+                    ${colors}
+                  `}>
+                    {getIcon(activity.type)}
+                  </div>
 
-       // --- 渲染函數 ---
-       
-       /**
-        * 渲染單一支出項目
-        * @param {object} expense
-        * @returns {string} HTML
-        */
-       const renderExpenseItem = (expense) => {
-           const icon = getCategoryIcon(expense.category);
-           // 支出明細項目採用深色配色
-           return `
-               <li data-id="${expense.id}" class="flex justify-between items-center p-3 bg-gray-700 rounded-lg shadow-sm border border-gray-600 hover:bg-gray-600 transition duration-150">
-                   <div class="flex items-center">
-                       <span class="text-xl mr-3">${icon}</span>
-                       <div>
-                           <p class="font-semibold text-gray-100">${expense.description}</p>
-                           <!-- 顯示付款人和類別 -->
-                           <p class="text-xs text-gray-400">${expense.category} | 付款人: ${expense.payer || '未知'}</p>
-                       </div>
-                   </div>
-                   <div class="flex items-center space-x-2">
-                       <span class="text-lg font-bold text-red-400">${formatCurrency(expense.amount)}</span>
-                       <button onclick="deleteExpense('${expense.id}')"
-                               class="p-1 text-gray-400 hover:text-red-300 rounded-full transition duration-150"
-                               aria-label="刪除項目">
-                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                             <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.166 2.008-5.32c.162-.43.206-.867.144-1.272a.75.75 0 0 0-.96-.705L18.15 3.12l.142.378M18.15 3.12l-1.42 3.774M18.15 3.12 15.65 6.894" />
-                           </svg>
-                       </button>
-                   </div>
-               </li>
-           `;
-       };
-       
-       /**
-        * 渲染每日行程內容
-        */
-       const renderItineraryContent = (dayIndex) => {
-           const itineraryContentEl = document.getElementById('itinerary-content');
-           let content = '';
+                  {/* Card */}
+                  <div className="flex-1 bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgb(0,0,0,0.04)] border border-gray-100/50 active:scale-[0.98] transition-all">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 px-2 py-1 rounded-md">
+                        <Clock size={10} />
+                        {activity.time}
+                      </div>
+                    </div>
+                    <h3 className="font-bold text-gray-800 text-[17px] mb-1 leading-snug">{activity.title}</h3>
+                    {activity.description && (
+                      <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{activity.description}</p>
+                    )}
+                    {activity.note && (
+                      <p className="text-amber-600 text-xs mt-2 font-medium flex items-center gap-1.5 bg-amber-50 inline-block px-2 py-1 rounded">
+                         <AlertTriangle size={10} /> {activity.note}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      };
 
-           const itineraryDetails = {
-               1: {
-                   date: "10/16 (三) | 抵達日",
-                   title: "京都初體驗：機場至飯店",
-                   items: [
-                       { time: "09:00", desc: "台灣桃園機場 (TPE) 集合，搭乘 CI0152 啟程。" },
-                       { time: "12:50", desc: "抵達關西國際機場 (KIX)，辦理入境手續與領取行李。" },
-                       { time: "14:00", desc: "購買 ICOCA 或 JR Haruka 特快車票，搭乘前往京都。" },
-                       { time: "16:00", desc: "抵達 **M's Hotel (京都)**，辦理入住並稍作休息。" },
-                       { time: "18:30", desc: "晚餐：在京都車站周邊伊勢丹百貨或拉麵小路覓食。" }
-                   ]
-               },
-               2: {
-                   date: "10/17 (四) | 京都文化日",
-                   title: "清水寺與千本鳥居深度遊",
-                   items: [
-                       { time: "09:00", desc: "前往**清水寺 (Kiyomizu-dera)**，欣賞秋日楓葉景色。" },
-                       { time: "11:00", desc: "漫步**二年坂、三年坂**，享受傳統日式街道氛圍，購買紀念品。" },
-                       { time: "13:00", desc: "午餐：祇園附近，嘗試湯豆腐或蕎麥麵。" },
-                       { time: "15:00", desc: "參觀**伏見稻荷大社 (Fushimi Inari-taisha)**，挑戰千本鳥居。" },
-                       { time: "18:30", desc: "晚餐：探索先斗町或錦市場周邊的特色居酒屋。" }
-                   ]
-               },
-               3: {
-                   date: "10/18 (五) | 轉移與大阪城",
-                   title: "從京都到大阪：都會轉換",
-                   items: [
-                       { time: "09:00", desc: "辦理京都飯店退房手續，搭乘 JR 快速或新幹線前往大阪。" },
-                       { time: "11:30", desc: "抵達大阪，午餐於難波或心齋橋周邊。" },
-                       { time: "14:00", desc: "抵達 **Bridge Hotel (大阪)**，辦理入住手續。" },
-                       { time: "15:30", desc: "前往**大阪城公園**，參觀天守閣及歷史遺跡。" },
-                       { time: "19:00", desc: "晚餐：**道頓堀 (Dotonbori)**，品嚐章魚燒、大阪燒和著名的「固力果跑跑人」夜景。" }
-                   ]
-               },
-               4: {
-                   date: "10/19 (六) | 大阪深度探索",
-                   title: "美食、購物與新世界懷舊",
-                   items: [
-                       { time: "09:30", desc: "**心齋橋筋商店街 (Shinsaibashisuji)** 自由購物，享受大阪的購物樂趣。" },
-                       { time: "12:30", desc: "午餐：**黑門市場 (Kuromon Market)**，品嚐新鮮海產和在地小吃。" },
-                       { time: "15:00", desc: "前往懷舊的**新世界區**，參觀**通天閣 (Tsutenkaku)**。" },
-                       { time: "18:00", desc: "晚餐：在梅田地區或飯店附近用餐。" },
-                       { time: "20:00", desc: "夜景：**梅田空中庭園展望台 (Umeda Sky Building)**，欣賞大阪璀璨夜景。" }
-                   ]
-               },
-               5: {
-                   date: "10/20 (日) | 賦歸日",
-                   title: "最終巡禮與返程",
-                   items: [
-                       { time: "09:00", desc: "在飯店附近進行最後的購物或購買伴手禮。" },
-                       { time: "11:00", desc: "辦理退房手續，準備前往關西國際機場 (KIX)。" },
-                       { time: "12:00", desc: "午餐：機場或路途上快速用餐。" },
-                       { time: "14:00", desc: "搭乘 CI0153 航班，從 KIX 飛往台北 (TPE)。" }
-                   ]
-               }
-           };
+      const InfoSection = ({ data }) => {
+        const [isOpen, setIsOpen] = useState(false);
+        return (
+          <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden mb-8 transition-all">
+            <button 
+              onClick={() => setIsOpen(!isOpen)}
+              className="w-full flex items-center justify-between p-5 bg-gradient-to-r from-blue-50/50 to-transparent hover:bg-blue-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                  <Plane size={20} />
+                </div>
+                <div className="text-left">
+                  <span className="block font-bold text-gray-800 text-sm">航班與住宿資訊</span>
+                  <span className="text-xs text-gray-500">點擊查看詳情</span>
+                </div>
+              </div>
+              {isOpen ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+            </button>
+            
+            {isOpen && (
+              <div className="p-5 space-y-6 border-t border-gray-100 animate-fadeIn bg-white">
+                {/* Outbound */}
+                <div className="relative">
+                  <div className="absolute left-[7px] top-8 bottom-0 w-0.5 bg-gray-100"></div>
+                  <div className="flex gap-4 mb-4">
+                    <div className="w-4 h-4 rounded-full bg-blue-100 border-2 border-blue-500 shrink-0 mt-1"></div>
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase mb-1">去程 (10/16)</h4>
+                      <div className="text-sm font-bold text-gray-800">{data.flights.outbound.flightNumber}</div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        {data.flights.outbound.departureTime} {data.flights.outbound.departureAirport}
+                        <br/>
+                        ↓
+                        <br/>
+                        {data.flights.outbound.arrivalTime} {data.flights.outbound.arrivalAirport}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Inbound */}
+                   <div className="flex gap-4">
+                    <div className="w-4 h-4 rounded-full bg-blue-100 border-2 border-blue-500 shrink-0 mt-1"></div>
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase mb-1">回程 (10/20)</h4>
+                      <div className="text-sm font-bold text-gray-800">{data.flights.inbound.flightNumber}</div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        {data.flights.inbound.departureTime} {data.flights.inbound.departureAirport}
+                        <br/>
+                        ↓
+                        <br/>
+                        {data.flights.inbound.arrivalTime} {data.flights.inbound.arrivalAirport}
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-           const dayData = itineraryDetails[dayIndex];
-           
-           if (dayData) {
-               itineraryDayTitleEl.textContent = `Day ${dayIndex} - ${dayData.date}`;
-               
-               const itemsHtml = dayData.items.map(item => `
-                   <div class="itinerary-item">
-                       <p class="text-lg font-bold text-gray-50">${item.time}</p>
-                       <p class="text-base text-gray-300">${item.desc}</p>
-                   </div>
-               `).join('');
+                <div className="h-px bg-gray-100" />
 
-               content = `<p class="font-semibold text-xl text-green-400 mb-3">${dayData.title}</p>
-                          <div class="space-y-4">${itemsHtml}</div>`;
-           } else {
-               itineraryDayTitleEl.textContent = `Day ${dayIndex} - 尚未規劃`;
-               content = '<p class="text-gray-500 italic">此日尚未有詳細行程規劃。請使用上方功能新增。</p>';
-           }
+                {/* Hotels */}
+                <div>
+                  <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center gap-2">
+                    <Building size={14} /> 住宿安排
+                  </h4>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      <span className="text-xs font-semibold text-slate-400 block mb-1">京都 (Day 1-2)</span>
+                      <span className="font-bold text-slate-800 text-sm">{data.hotels.kyoto}</span>
+                    </div>
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      <span className="text-xs font-semibold text-slate-400 block mb-1">大阪 (Day 3-4)</span>
+                      <span className="font-bold text-slate-800 text-sm">{data.hotels.osaka}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      };
 
+      const App = () => {
+        const [activeDay, setActiveDay] = useState(1);
+        const [selectedActivity, setSelectedActivity] = useState(null);
+        const [isModalOpen, setIsModalOpen] = useState(false);
+        const scrollContainerRef = useRef(null);
 
-           itineraryContentEl.innerHTML = content;
-       };
+        useEffect(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, [activeDay]);
 
+        // Auto scroll tab into view
+        useEffect(() => {
+          if (scrollContainerRef.current) {
+             const activeTab = scrollContainerRef.current.children[activeDay - 1];
+             if (activeTab) {
+               const containerLeft = scrollContainerRef.current.offsetLeft;
+               const activeTabLeft = activeTab.offsetLeft;
+               const scrollAmount = activeTabLeft - containerLeft - 20; // 20px padding
+               scrollContainerRef.current.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+             }
+          }
+        }, [activeDay]);
 
-       /**
-        * 根據 currentDayIndex 渲染支出列表與總計
-        */
-       const renderExpenses = () => {
-           const dailyExpenses = allExpenses.filter(exp => exp.dayIndex === currentDayIndex);
-           
-           // 計算當日總額
-           const dailyTotal = dailyExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-           dailyTotalEl.textContent = formatCurrency(dailyTotal);
-           
-           // 渲染列表
-           if (dailyExpenses.length === 0) {
-               expenseListEl.innerHTML = `
-                   <li class="text-center py-8 text-gray-500">
-                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mx-auto mb-2 text-gray-600">
-                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.03 60.03 0 0 1 9.75-2.25v-7.5l-3 2.25m3 5.25v5.25c.571 0 1.127-.123 1.648-.351l-.317-.118m-7.648.351A59.98 59.98 0 0 1 2.25 18.75m12.012 4.409-.323-.139A39.292 39.292 0 0 0 12 21.75V19.5m0-9.75v-2.25m0 0a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z" />
-                       </svg>
-                       <p>點擊右側「+ 記錄支出」來記錄 Day ${currentDayIndex} 的第一筆花費。</p>
-                   </li>
-               `;
-           } else {
-               expenseListEl.innerHTML = dailyExpenses.map(renderExpenseItem).join('');
-           }
+        const handleActivityClick = (activity) => {
+          setSelectedActivity(activity);
+          setIsModalOpen(true);
+        };
 
-           // 更新總覽
-           const totalTrip = allExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-           totalTripExpenseEl.textContent = formatCurrency(totalTrip);
+        const closeModal = () => {
+          setIsModalOpen(false);
+        };
 
-           // 更新 Day 標題 (記帳表單的隱藏欄位)
-           expenseDayIndexInput.value = currentDayIndex;
+        const currentItinerary = TRIP_DATA.itinerary.find(d => d.day === activeDay);
 
-           // 更新導航標籤上的總額顯示
-           updateDayTabTotals();
-       };
+        return (
+          <div className="min-h-screen bg-gray-50/50 font-sans max-w-[500px] mx-auto shadow-2xl shadow-gray-200">
+            {/* Header */}
+            <header className="bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-gray-100">
+              <div className="px-5 py-4 flex items-center justify-between">
+                <div>
+                  <h1 className="text-xl font-black text-gray-800 flex items-center gap-2 tracking-tight">
+                    <Map className="text-rose-500 fill-rose-500" size={20} />
+                    京阪家族之旅
+                  </h1>
+                  <p className="text-xs text-gray-500 font-medium ml-7">2025/10/16 - 10/20</p>
+                </div>
+              </div>
 
-       /**
-        * 更新導航標籤上的總額顯示
-        */
-       const updateDayTabTotals = () => {
-           const dayTotals = {};
-           for (let i = 1; i <= TOTAL_DAYS; i++) {
-               dayTotals[i] = allExpenses
-                   .filter(exp => exp.dayIndex === i)
-                   .reduce((sum, exp) => sum + exp.amount, 0);
-           }
+              {/* Tabs */}
+              <div 
+                ref={scrollContainerRef}
+                className="overflow-x-auto no-scrollbar flex px-4 pb-0 snap-x"
+              >
+                {TRIP_DATA.itinerary.map((day) => (
+                  <button
+                    key={day.day}
+                    onClick={() => setActiveDay(day.day)}
+                    className={`
+                      flex flex-col items-center pt-3 pb-3 px-1 min-w-[72px] relative snap-start
+                      transition-colors outline-none
+                    `}
+                  >
+                    <span className={`text-[10px] font-bold uppercase mb-1 ${activeDay === day.day ? 'text-rose-500' : 'text-gray-400'}`}>
+                      Day {day.day}
+                    </span>
+                    <span className={`text-base font-bold whitespace-nowrap ${activeDay === day.day ? 'text-gray-800' : 'text-gray-400'}`}>
+                      {day.date.split(' ')[0]}
+                    </span>
+                    {activeDay === day.day && (
+                      <div className="absolute bottom-0 left-2 right-2 h-[3px] bg-rose-500 rounded-t-full" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </header>
 
-           for (let i = 1; i <= TOTAL_DAYS; i++) {
-               const dayTabEl = document.getElementById(`day-tab-${i}`);
-               if (dayTabEl) {
-                   const total = dayTotals[i];
-                   dayTabEl.innerHTML = `
-                       Day ${i}
-                       <span class="text-xs ml-1 font-normal ${total > 0 ? 'text-red-300' : 'text-gray-400'}">
-                           ${total > 0 ? formatCurrency(total) : formatCurrency(0)}
-                       </span>
-                   `;
-                   
-                   // 更新活躍狀態
-                   if (i === currentDayIndex) {
-                       dayTabEl.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
-                       dayTabEl.classList.remove('bg-gray-700', 'text-indigo-300', 'hover:bg-indigo-500/20', 'shadow-sm');
-                   } else {
-                       dayTabEl.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
-                       dayTabEl.classList.add('bg-gray-700', 'text-indigo-300', 'hover:bg-indigo-500/20', 'shadow-sm');
-                   }
-               }
-           }
-       };
+            {/* Main Content */}
+            <main className="px-5 pt-6 safe-bottom">
+              <InfoSection data={TRIP_DATA} />
+              
+              <div className="mb-6 animate-fadeIn">
+                <div className="flex items-center gap-2 text-rose-500 mb-2">
+                  <div className="bg-rose-100 p-1.5 rounded-md">
+                    <Calendar size={14} className="text-rose-600" />
+                  </div>
+                  <span className="text-xs font-bold tracking-widest uppercase text-rose-600">行程表</span>
+                </div>
+                <h2 className="text-2xl font-black text-gray-800 leading-tight mb-1">
+                  {currentItinerary?.title.split('：')[0]}
+                </h2>
+                <p className="text-gray-500 font-medium">{currentItinerary?.title.split('：')[1] || currentItinerary?.title}</p>
+              </div>
 
-       /**
-        * 渲染每日行程導航標籤
-        */
-       const renderDayTabs = () => {
-           let html = '';
-           for (let i = 1; i <= TOTAL_DAYS; i++) {
-               html += `
-                   <button id="day-tab-${i}" onclick="selectDay(${i})"
-                           class="flex-shrink-0 px-4 py-2 font-semibold rounded-lg transition duration-150 ease-in-out whitespace-nowrap text-indigo-300 bg-gray-700 hover:bg-indigo-500/20 shadow-sm border border-gray-600 mr-2 last:mr-0">
-                       Day ${i}
-                       <span class="text-xs ml-1 font-normal text-gray-400">${formatCurrency(0)}</span>
-                   </button>
-               `;
-           }
-           dayTabsContainer.innerHTML = html;
-           // 初始選中 Day 1
-           selectDay(currentDayIndex);
-       };
+              {currentItinerary && (
+                <Timeline 
+                  activities={currentItinerary.activities} 
+                  onSelectActivity={handleActivityClick}
+                />
+              )}
+            </main>
 
-       // --- 事件處理與邏輯 ---
+            <EventModal 
+              isOpen={isModalOpen} 
+              onClose={closeModal} 
+              activity={selectedActivity} 
+            />
+          </div>
+        );
+      };
 
-       /**
-        * 選擇特定的旅行日
-        * @param {number} dayIndex
-        */
-       window.selectDay = (dayIndex) => {
-           currentDayIndex = dayIndex;
-           renderExpenses(); // 重新渲染支出列表和總額
-           renderItineraryContent(dayIndex); // 重新渲染行程內容
-       };
-       
-       /**
-        * 從 Firestore 刪除支出項目
-        * @param {string} expenseId
-        */
-       window.deleteExpense = async (expenseId) => {
-           if (!isAuthReady) {
-               console.error('Firebase Auth not ready.');
-               return;
-           }
-           
-           try {
-               // 確認路徑正確
-               const expenseDocRef = doc(expensesRef, expenseId);
-               await deleteDoc(expenseDocRef);
-               // onSnapshot 會自動更新 UI
-               console.log(`Expense ${expenseId} deleted.`);
-           } catch (e) {
-               console.error("刪除支出時發生錯誤:", e);
-           }
-       };
-
-
-       /**
-        * 處理表單提交，新增支出
-        * @param {Event} e
-        */
-       const handleAddExpense = async (e) => {
-           e.preventDefault();
-           if (!isAuthReady) {
-               console.error('Firebase Auth not ready.');
-               return;
-           }
-
-           // 新增：讀取付款人
-           const payer = document.getElementById('expense-payer').value;
-           const description = document.getElementById('expense-description').value.trim();
-           const amount = parseFloat(document.getElementById('expense-amount').value);
-           const category = document.getElementById('expense-category').value;
-           const dayIndex = parseInt(document.getElementById('expense-day-index').value);
-
-           if (!description || isNaN(amount) || amount <= 0 || !category || !payer) {
-               console.warn("請填寫所有欄位並確保金額有效。");
-               return;
-           }
-           
-           addExpenseBtn.disabled = true;
-           addExpenseBtn.textContent = '記錄中...';
-
-           try {
-               await addDoc(expensesRef, {
-                   dayIndex: dayIndex,
-                   description: description,
-                   amount: amount,
-                   category: category,
-                   payer: payer, // 新增：儲存付款人
-                   createdAt: serverTimestamp(),
-                   userId: userId
-               });
-               
-               // 清空表單
-               expenseForm.reset();
-               // 確保付款人下拉選單維持在預設值
-               document.getElementById('expense-payer').value = '爸';
-           } catch (e) {
-               console.error("新增支出時發生錯誤:", e);
-           } finally {
-               addExpenseBtn.disabled = false;
-               addExpenseBtn.textContent = '+ 記錄支出';
-           }
-       };
-
-       // --- Firebase 核心函數 ---
-
-       /**
-        * 監聽 Firestore 中的支出數據
-        */
-       const subscribeToExpenses = () => {
-           // 查詢：按建立時間排序
-           const q = query(expensesRef, orderBy("createdAt", "desc"));
-
-           // 設定即時監聽器
-           onSnapshot(q, (snapshot) => {
-               allExpenses = snapshot.docs.map(doc => ({
-                   id: doc.id,
-                   ...doc.data(),
-                   // 確保 amount 是數字，dayIndex 是數字
-                   amount: parseFloat(doc.data().amount || 0),
-                   dayIndex: parseInt(doc.data().dayIndex || 1),
-                   payer: doc.data().payer || '未知' // 確保有 payer 欄位
-               }));
-               
-               // 渲染所有相關 UI
-               renderExpenses();
-           }, (error) => {
-               console.error("監聽支出數據時發生錯誤:", error);
-               loadingStatusEl.textContent = '數據載入失敗，請檢查連線。';
-           });
-       };
-
-       /**
-        * 初始化 Firebase 應用程式和認證
-        */
-       const initializeFirebase = async () => {
-           if (!firebaseConfig) {
-               console.error("Firebase Config 遺失。無法初始化應用程式。");
-               loadingStatusEl.textContent = 'Firebase 設定遺失。';
-               return;
-           }
-
-           try {
-               const app = initializeApp(firebaseConfig);
-               db = getFirestore(app);
-               auth = getAuth(app);
-
-               loadingStatusEl.textContent = '正在進行使用者認證...';
-
-               // 1. 認證流程
-               if (initialAuthToken) {
-                   await signInWithCustomToken(auth, initialAuthToken);
-               } else {
-                   await signInAnonymously(auth);
-               }
-
-               // 2. 設定認證狀態觀察者
-               onAuthStateChanged(auth, (user) => {
-                   if (user) {
-                       userId = user.uid;
-                       isAuthReady = true;
-                       
-                       // 設定 Firestore 參考
-                       // 路徑： /artifacts/{appId}/users/{userId}/expenses
-                       expensesRef = collection(db, `artifacts/${appId}/users/${userId}/${EXPENSES_COLLECTION_NAME}`);
-                       
-                       // 隱藏載入狀態，顯示總覽
-                       loadingStatusEl.classList.add('hidden');
-                       summaryContentEl.classList.remove('hidden');
-                       userIdDisplayEl.textContent = userId; // 顯示用戶 ID
-
-                       // 3. 啟動數據監聽
-                       subscribeToExpenses();
-                       console.log(`Firebase 初始化完成，使用者ID: ${userId}`);
-
-                   } else {
-                       // 使用者登出 (不太會在 Canvas 發生)
-                       userId = null;
-                       isAuthReady = false;
-                       loadingStatusEl.textContent = '使用者未登入。';
-                       summaryContentEl.classList.add('hidden');
-                   }
-               });
-           } catch (error) {
-               console.error("Firebase 初始化失敗:", error);
-               loadingStatusEl.textContent = `Firebase 錯誤: ${error.code}`;
-           }
-       };
-
-
-       // --- 應用程式啟動 ---
-
-       window.onload = function() {
-           // 渲染導航結構
-           renderDayTabs();
-           // 初始化 Firebase
-           initializeFirebase();
-           // 監聽表單提交事件
-           expenseForm.addEventListener('submit', handleAddExpense);
-       };
-   </script>
-</body>
+      const root = createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+  </body>
 </html>
