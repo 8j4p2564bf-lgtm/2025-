@@ -286,27 +286,42 @@
         };
 
         const autoSortItinerary = async (apiKey, items) => {
+             // Filter out empty items
+             const validItems = items.filter(i => i.title && i.title.trim() !== '');
+             if (validItems.length < 2) {
+                 alert("有效景點過少，無法排序。請先輸入景點名稱。");
+                 return items;
+             }
+
              try {
                 const ai = getAiService(apiKey);
-                // Simple heuristic sort via LLM
-                const prompt = `請將以下京都大阪旅遊景點重新排序，以地理位置最順路為原則。並請重新估算合理的抵達時間(從09:00開始)。
-                回傳格式必須是 JSON Array，包含原本的 title 與新的 time。
-                景點列表: ${JSON.stringify(items.map(i => ({title: i.title, location: i.location})))}`;
+                const prompt = `請將以下旅遊景點重新排序，以地理位置最順路為原則。並請重新估算合理的抵達時間(從09:00開始)。
+                回傳格式必須是純 JSON Array (不要Markdown)，包含 title 與 time。
+                景點列表: ${JSON.stringify(validItems.map(i => ({title: i.title, location: i.location})))}`;
                 
                 const response = await ai.models.generateContent({
                     model: 'gemini-2.5-flash',
                     contents: prompt,
                     config: { responseMimeType: "application/json" }
                 });
-                const sorted = JSON.parse(response.text);
+                
+                // Clean markdown if present
+                let cleanText = response.text.replace(/```json|```/g, '').trim();
+                const sorted = JSON.parse(cleanText);
+
                 // Map back to items
                 const newItems = sorted.map(s => {
-                    const original = items.find(i => i.title === s.title) || items[0];
-                    return { ...original, time: s.time };
-                });
-                return newItems.length === items.length ? newItems : items;
+                    const original = items.find(i => i.title === s.title);
+                    return original ? { ...original, time: s.time } : null;
+                }).filter(i => i !== null);
+
+                // Append any items that weren't in the sorted list (e.g. empty ones or skipped)
+                const remaining = items.filter(i => !newItems.includes(i));
+                
+                return [...newItems, ...remaining];
              } catch(e) {
-                 alert("AI 排序失敗，請稍後再試或手動調整");
+                 console.error(e);
+                 alert(`AI 排序失敗: ${e.message}。請檢查 API Key 或稍後再試。`);
                  return items;
              }
         };
