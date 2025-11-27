@@ -3,829 +3,381 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>AI 專業攝影顧問</title>
+   <title>Lexus 冠軍典藏 - 頂級車款精選</title>
    <!-- 載入 Tailwind CSS -->
    <script src="https://cdn.tailwindcss.com"></script>
-   <!-- 載入 Lucide Icons (用於簡潔的圖標) -->
-   <script src="https://unpkg.com/lucide@latest"></script>
-   <!-- Firebase 模組載入 -->
-   <script type="module">
-       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-       import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-       import { getFirestore, doc, addDoc, onSnapshot, collection, query, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-       // 全域變數定義
-       window.initializeApp = initializeApp;
-       window.getAuth = getAuth;
-       window.signInAnonymously = signInAnonymously;
-       window.signInWithCustomToken = signInWithCustomToken;
-       window.onAuthStateChanged = onAuthStateChanged;
-       window.getFirestore = getFirestore;
-       window.addDoc = addDoc;
-       window.collection = collection;
-       window.query = query;
-       window.onSnapshot = onSnapshot;
-       window.serverTimestamp = serverTimestamp;
-       window.setLogLevel = setLogLevel;
-       
-       // 確保應用程式啟動流程正確
-       window.firebaseReady = true;
-   </script>
-
    <style>
-       /* 使用 Inter 字體 */
+       /* 使用優雅的 Inter 字體 */
        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
        body {
            font-family: 'Inter', sans-serif;
-           background-color: #0d0d0d;
-           color: #f0f0f0;
-           width: 100vw;
-           height: 100vh;
-           margin: 0;
-           padding: 0;
-           overflow: hidden;
-           display: flex;
-           justify-content: center;
-           align-items: center;
+           background-color: #0d0d1a;
        }
-
-       /* App 主容器 */
-       #app-container {
-           width: 100vw;
-           height: 100vh;
-           max-width: 600px;
-           display: flex;
-           flex-direction: column;
-           background-color: #181818;
-       }
-       
-       /* 相機視圖與相簿視圖共用樣式 */
-       .view-container {
-           flex-grow: 1;
-           width: 100%;
-           display: none; /* 預設隱藏 */
-           flex-direction: column;
-       }
-
-       /* 滿版相機畫面 */
-       .camera-view {
-           flex-grow: 1;
-           width: 100%;
-           position: relative;
-           background-color: #1a1a1a;
-           overflow: hidden;
-       }
-
-       /* 視訊元素填滿容器 */
-       #camera-video {
-           position: absolute;
-           top: 0;
-           left: 0;
-           width: 100%;
-           height: 100%;
-           object-fit: cover;
-           transition: transform 0.3s ease;
-       }
-
-       /* 浮動提示區塊 */
-       .recommendation {
-           position: absolute;
-           top: 10px;
-           left: 50%;
-           transform: translateX(-50%);
-           z-index: 20;
-           padding: 8px 16px;
-           background-color: rgba(0, 0, 0, 0.6);
-           border-radius: 12px;
-           backdrop-filter: blur(5px);
-           font-size: 14px;
-           opacity: 0;
-           transition: opacity 0.5s;
-           max-width: 90%;
-           text-align: center;
-       }
-
-       .portrait-frame {
-           position: absolute;
-           width: 70%;
-           height: 85%;
-           border: 2px dashed rgba(255, 255, 255, 0.7);
-           border-radius: 10px;
-           opacity: 0;
-           transition: all 0.5s;
-           pointer-events: none;
-           z-index: 10;
-           box-shadow: 0 -10px 0 -5px rgba(255, 255, 255, 0.3) inset;
-       }
-
-       .flash-overlay {
-           position: absolute;
-           top: 0;
-           left: 0;
-           width: 100%;
-           height: 100%;
-           background-color: white;
-           opacity: 0;
-           pointer-events: none;
-           z-index: 100;
-       }
-
-       .control-panel {
-           flex-shrink: 0;
-           padding: 20px 16px;
-           background-color: #181818;
-           box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
-           display: flex;
-           justify-content: space-between;
-           align-items: center;
-       }
-
-       .shutter-ring {
-           width: 70px;
-           height: 70px;
-           border: 3px solid #f0f0f0;
-           background-color: transparent;
-           border-radius: 50%;
-           display: flex;
-           justify-content: center;
-           align-items: center;
+       .luxury-card {
+           transition: transform 0.3s ease, box-shadow 0.3s ease;
            cursor: pointer;
-           transition: all 0.2s;
-           box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+           border-left: 4px solid transparent;
        }
-       .shutter-ring:active {
-           transform: scale(0.95);
+       .luxury-card:hover {
+           transform: translateX(3px);
+           box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+           border-left-color: #00bcd4;
        }
-
-       .shutter-button {
-           width: 60px;
-           height: 60px;
-           background-color: #f0f0f0;
-           border-radius: 50%;
+       .active-card {
+            border-left-color: #00bcd4;
+            box-shadow: 2px 5px 20px rgba(0, 0, 0, 0.4);
+            background-color: #1a1a2e !important;
        }
-
-       /* 相簿頁面樣式 */
-       #album-view-container {
-           overflow-y: auto;
-           padding: 1rem;
+       .cta-button {
+           transition: background-color 0.3s, transform 0.1s;
        }
-       .photo-card {
-           aspect-ratio: 1 / 1; /* 確保照片是正方形 */
-           object-fit: cover;
-           border-radius: 8px;
-           cursor: pointer;
-           transition: transform 0.2s;
+       .cta-button:hover {
+           background-color: #0097a7;
+           transform: scale(1.02);
        }
-       .photo-card:hover {
-           transform: scale(1.03);
+       /* 隱藏原生滾動條，保持頁面乾淨 */
+       ::-webkit-scrollbar {
+           display: none;
        }
-       
-       /* 隱藏 Canvas */
-       #photo-canvas, #analysis-canvas { display: none; }
    </style>
 </head>
-<body>
+<body class="text-gray-100 min-h-screen">
 
-   <!-- App Container (滿版手機螢幕模擬) -->
-   <div id="app-container">
+   <div id="app" class="max-w-7xl mx-auto p-4 sm:p-8">
 
-       <!-- 標題與模式選擇 -->
-       <div class="header-controls sticky top-0 z-50 bg-[#181818]">
-           <h1 class="text-xl font-bold text-center mb-3 text-white">AI 專業攝影顧問</h1>
-           <div id="mode-selector" class="flex justify-center space-x-4 mb-3">
-               <button id="portrait-mode" class="mode-btn px-4 py-2 text-sm font-medium rounded-full transition-colors">
-                   <i data-lucide="user" class="inline-block w-4 h-4 mr-1"></i> 拍攝人物
-               </button>
-               <button id="landscape-mode" class="mode-btn px-4 py-2 text-sm font-medium rounded-full transition-colors">
-                   <i data-lucide="mountain" class="inline-block w-4 h-4 mr-1"></i> 拍攝風景
-               </button>
-           </div>
-           <!-- 使用者 ID 顯示 (用於協助多用戶協作) -->
-           <p id="user-id-display" class="text-center text-xs text-gray-500 mb-2">用戶ID: 載入中...</p>
-       </div>
+       <!-- 頂部標題與冠軍銷售員宣言 -->
+       <header class="text-center py-10 mb-8 border-b border-gray-700/50">
+           <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-500">
+               Lexus 冠軍典藏銷售平台
+           </h1>
+           <p class="mt-4 text-xl font-light text-gray-300">
+               — 專注完整菜單詳情，提供客戶頂級購車體驗 —
+           </p>
+       </header>
 
-
-       <!-- 1. 相機視圖 (預設顯示) -->
-       <div id="camera-view-container" class="view-container">
-           <div class="camera-view relative">
-               <video id="camera-video" autoplay playsinline></video>
-               <div id="sensor-display" class="p-2 text-center text-gray-400 absolute top-0 left-0 right-0 z-10 text-xs bg-black/30">
-                   <p class="mb-1">Focal: 50mm | ISO/Shutter: <span class="text-white">智慧調整</span></p>
-                   <p>環境光：<span id="light-level" class="text-yellow-300">正在分析...</span> | 場景：<span id="scene-text">正在推算...</span></p>
-               </div>
-               <div id="flash-overlay" class="flash-overlay"></div>
-               <div id="recommendation-box" class="recommendation">
-                   <span id="recommendation-text">正在分析光線與場景，請稍候。</span>
-               </div>
-               <div id="portrait-frame" class="portrait-frame flex flex-col justify-end items-center">
-                   <p id="pose-suggestion" class="text-xs p-2 bg-black/70 rounded-md mb-2 text-yellow-300">建議動作：</p>
-               </div>
-               <img id="capture-preview" src="" alt="拍攝預覽" class="absolute inset-0 w-full h-full object-cover hidden transition-opacity duration-500 z-50">
-           </div>
-
-           <!-- 相機控制面板 -->
-           <div class="control-panel">
-               <!-- 左側：功能按鈕組 -->
-               <div class="flex flex-col items-center">
-                   <!-- 相簿按鈕 -->
-                   <button id="album-button" class="flex flex-col items-center justify-center p-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-white hover:text-black transition-all disabled:opacity-50" disabled>
-                       <i data-lucide="image-stack" class="w-6 h-6"></i>
-                       <span class="text-xs mt-1">相簿</span>
-                   </button>
-                   
-                   <!-- 儲存按鈕 -->
-                   <button id="save-button" class="flex flex-col items-center justify-center p-2 mt-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-green-600 hover:text-white transition-all disabled:opacity-50" disabled>
-                       <i data-lucide="save" class="w-6 h-6"></i>
-                       <span class="text-xs mt-1">儲存</span>
-                   </button>
-               </div>
-
-               <!-- 中間：快門按鈕 -->
-               <div class="shutter-ring mx-4" id="shutter-ring">
-                   <div class="shutter-button"></div>
-               </div>
-
-               <!-- 右側：AI/Undo 按鈕組 -->
-               <div class="flex flex-col items-center">
-                   <!-- 前後攝像頭轉換鈕 -->
-                   <button id="flip-camera-button" class="flex flex-col items-center justify-center p-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-white hover:text-black transition-all">
-                       <i data-lucide="switch-camera" class="w-6 h-6"></i>
-                       <span class="text-xs mt-1">切換鏡頭</span>
-                   </button>
-                   
-                   <!-- AI 增強/撤銷 按鈕 -->
-                   <button id="enhance-undo-button" class="flex flex-col items-center justify-center p-2 mt-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-purple-600 hover:text-white transition-all disabled:opacity-50" disabled>
-                       <i data-lucide="sparkles" class="w-6 h-6"></i>
-                       <span class="text-xs mt-1">AI 增強</span>
-                   </button>
-               </div>
-           </div>
-       </div>
-
-       <!-- 2. 相簿視圖 (預設隱藏) -->
-       <div id="album-view-container" class="view-container hidden">
-           <div class="flex-shrink-0 flex justify-between items-center p-4 border-b border-gray-700">
-               <button id="back-to-camera-button" class="text-gray-300 hover:text-white">
-                   <i data-lucide="arrow-left" class="inline-block w-6 h-6"></i>
-                   <span class="ml-2 font-medium">返回相機</span>
-               </button>
-               <h2 class="text-lg font-semibold text-white">我的相簿</h2>
-               <div class="w-6"></div> <!-- Spacer -->
-           </div>
+       <!-- 主要內容區塊 -->
+       <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
            
-           <div id="album-grid" class="p-4 grid grid-cols-3 gap-2 overflow-y-auto">
-               <!-- 照片將透過 JS 動態載入 -->
-           </div>
-           <p id="loading-status" class="text-center text-gray-500 p-4">載入中...</p>
-       </div>
+           <!-- 左側：車款選單 -->
+           <section class="lg:col-span-1">
+               <h2 class="text-2xl font-semibold mb-4 text-teal-300 border-b border-gray-700 pb-2">Lexus 全車系精選 (台灣市場)</h2>
+               <div id="car-list" class="flex flex-row lg:flex-col overflow-x-auto lg:overflow-y-auto space-x-4 lg:space-x-0 lg:space-y-4 pb-4 lg:max-h-[75vh]">
+                   <!-- 車款卡片將由 JavaScript 渲染到此處 -->
+               </div>
+           </section>
+           
+           <!-- 右側：精選車款詳細資訊與菜單 -->
+           <section class="lg:col-span-2">
+               <h2 class="text-2xl font-semibold mb-4 text-teal-300 border-b border-gray-700 pb-2">當前焦點：<span id="detail-title" class="text-white">請選擇車款</span></h2>
+               
+               <div id="car-detail" class="bg-[#1a1a2e] p-6 rounded-2xl shadow-xl space-y-6">
+                   <!-- 預設載入訊息 -->
+                   <div id="default-message" class="text-center py-16">
+                       <svg class="w-12 h-12 mx-auto text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 00.948.684L12 6l-2 4h6l-2-4 3.77-.684A1 1 0 0019 3h2a2 2 0 012 2v14a2 2 0 01-2 2h-2m-7 0H5a2 2 0 01-2-2v-3.5m-3.5 0h7"></path></svg>
+                       <p class="mt-4 text-gray-500">請從左側選擇一款 Lexus 車型，立即查看所有版本菜單。</p>
+                   </div>
+
+                   <!-- 詳細內容區塊 (隱藏直到選定車款) -->
+                   <div id="detail-content" class="hidden">
+                       
+                       <!-- 規格速覽 (位於頂部，取代圖片區塊) -->
+                       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center bg-gray-800/50 p-4 rounded-lg mb-8">
+                           <div class="p-2 border-r border-gray-700/50"><p class="text-sm text-gray-400">類型</p><p id="detail-type" class="text-lg font-bold text-white"></p></div>
+                           <div class="p-2 border-r border-gray-700/50"><p class="text-sm text-gray-400">馬力 (PS)</p><p id="detail-hp" class="text-lg font-bold text-white"></p></div>
+                           <div class="p-2 border-r border-gray-700/50"><p class="text-sm text-gray-400">入門售價</p><p id="detail-price-min" class="text-lg font-bold text-white"></p></div>
+                           <div class="p-2"><p class="text-sm text-gray-400">動力核心</p><p id="detail-feature" class="text-lg font-bold text-white"></p></div>
+                       </div>
+
+                       <!-- 菜單及價格列表 (可點擊開啟詳情) -->
+                       <div>
+                           <p class="text-xl font-bold mb-3 text-teal-400">💸 完整版本菜單及建議售價 (點擊查看詳情)</p>
+                           <div id="package-list" class="space-y-2">
+                               <!-- 菜單內容將由 JavaScript 渲染 -->
+                           </div>
+                       </div>
 
 
-       <!-- 隱藏的 Canvas 用於捕捉畫面 -->
-       <canvas id="photo-canvas"></canvas>
-       <!-- 隱藏的 Canvas 用於實時畫面分析 -->
-       <canvas id="analysis-canvas" width="32" height="32"></canvas>
+                       <!-- 冠軍銷售員的專業推薦 -->
+                       <div class="mt-6 p-5 border-l-4 border-teal-500 bg-gray-800/70 rounded-lg">
+                           <p class="text-xl font-bold mb-2 text-teal-400">🏆 冠軍銷售員的獨家推薦 🏆</p>
+                           <p id="detail-pitch" class="text-gray-300 leading-relaxed"></p>
+                       </div>
+                       
+                       <!-- 預約試駕 CTA -->
+                       <button class="cta-button w-full mt-8 py-4 bg-teal-600 text-white text-xl font-semibold rounded-xl shadow-lg hover:shadow-teal-500/50" onclick="handleCtaClick()">
+                           立即預約專屬賞車體驗
+                       </button>
+                   </div>
+               </div>
+           </section>
+       </main>
 
-       <!-- 模態框用於照片放大預覽 -->
-       <div id="modal-preview" class="fixed inset-0 bg-black bg-opacity-90 z-[1000] hidden flex items-center justify-center p-4">
-           <div class="relative w-full h-full max-w-lg max-h-4/5">
-               <img id="modal-image" src="" alt="Photo Preview" class="w-full h-full object-contain rounded-lg">
-               <button id="close-modal-button" class="absolute top-4 right-4 text-white bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors">
-                   <i data-lucide="x" class="w-6 h-6"></i>
-               </button>
-           </div>
-       </div>
+       <!-- 底部版權/服務訊息 -->
+       <footer class="text-center mt-16 pt-8 border-t border-gray-700/50 text-gray-500">
+           <p>Lexus 服務承諾 | 細節成就完美</p>
+           <p class="mt-2 text-xs">此為冠軍銷售模擬應用程式，所有規格和價格為模擬數據，實際交易價格以現場合約為準。</p>
+       </footer>
 
    </div>
 
+   <!-- 彈出訊息框 (取代 alert - 預約成功) -->
+   <div id="modal-cta" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+       <div class="bg-[#1a1a2e] p-8 rounded-xl shadow-2xl max-w-sm w-full border-t-4 border-teal-500">
+           <h3 class="text-2xl font-bold mb-4 text-teal-400">恭喜您！</h3>
+           <p id="modal-cta-message" class="text-gray-200 mb-6">您已成功預約賞車！我將盡快與您聯繫，為您準備最完美的體驗。</p>
+           <button onclick="closeModal('modal-cta')" class="w-full py-3 bg-teal-600 rounded-lg font-semibold hover:bg-teal-700">確認</button>
+       </div>
+   </div>
+   
+   <!-- 菜單詳情彈窗 (NEW) -->
+   <div id="modal-package-detail" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+       <div class="bg-[#1a1a2e] p-8 rounded-xl shadow-2xl max-w-2xl w-full border-t-4 border-teal-500 max-h-[90vh] overflow-y-auto">
+           <h3 id="package-modal-title" class="text-3xl font-bold mb-4 text-teal-300 border-b border-gray-700 pb-2"></h3>
+           <p id="package-modal-price" class="text-2xl font-extrabold text-white mb-6"></p>
+           
+           <p class="text-xl font-bold mb-2 text-teal-400">💎 主要配置與功能</p>
+           <ul id="package-modal-features" class="list-none space-y-2 mb-6 text-gray-200 text-lg">
+               <!-- 特色清單將由 JS 渲染 -->
+           </ul>
 
-   <script>
-       // 初始化 Lucide Icons
-       lucide.createIcons();
+           <p class="text-xl font-bold mb-2 text-teal-400">🛡️ 安全科技升級</p>
+           <p id="package-modal-safety" class="text-gray-300 mb-6"></p>
+
+           <p class="text-xl font-bold mb-2 text-teal-400">🔗 尊榮內外觀</p>
+           <p id="package-modal-exterior" class="text-gray-300 mb-8"></p>
+
+           <button onclick="closeModal('modal-package-detail')" class="w-full py-3 bg-teal-600 rounded-lg font-semibold hover:bg-teal-700">關閉詳情</button>
+       </div>
+   </div>
+
+
+<script type="text/javascript">
+   // 冠軍銷售員的車款數據庫 (已移除顏色數據，但保留擴充菜單)
+   const cars = [
+       {
+           id: 'LBX',
+           name: 'LBX',
+           type: '都會時尚跨界休旅 (Crossover)',
+           price: '約 NT$ 129.9 萬起',
+           hp: '136',
+           feature: '1.5L HEV 油電混合',
+           pitch: 'LBX 是 Lexus 為年輕時尚領袖打造的全新之作。它擁有顛覆傳統的造型與靈活的車身尺寸，極適合都會穿梭。入門價格極具吸引力，讓您輕鬆享有 Lexus 的尊榮品質。這款車是您展現獨特品味的第一步。',
+           packages: [
+               { name: 'Active', price: '1,299,000', recommended: false, features: ['8吋觸控螢幕', 'LSS+ 3.0', '基礎皮革座椅'], safety: 'PCS 預警式防護系統、8具SRS氣囊', exterior: '17吋輪圈、LED 頭燈' },
+               { name: 'Cool (雙色車頂)', price: '1,490,000', recommended: true, features: ['12.3吋數位儀表', 'HUD 抬頭顯示器', '專屬雙色車頂設計'], safety: '自動停車輔助系統、PVM 環景影像', exterior: '18吋燻黑輪圈、專屬運動化水箱罩' },
+               { name: 'Relax+', price: '1,690,000', recommended: false, features: ['Mark Levinson音響', '全景天窗', 'Semi-Aniline真皮座椅'], safety: '全速域ACC/LDA、SEA 離座安全輔助', exterior: '專屬18吋高光澤輪圈、腳踢感應式電動尾門' },
+           ]
+       },
+       {
+           id: 'NX',
+           name: 'NX',
+           type: '中型豪華休旅車 (SUV)',
+           price: '約 NT$ 171 萬起',
+           hp: '173 - 307',
+           feature: '提供純油/HEV/PHEV 多種動力',
+           pitch: 'NX 是我們最具人氣的車款，集結了設計、安全與多功能性。無論您是選擇入門的 NX 200 還是頂級的 PHEV 版本，都能感受到它無與倫比的駕乘質感。我會推薦您考慮 350h，完美平衡了性能與油耗。',
+           packages: [
+               { name: 'NX 200 豪華版', price: '1,810,000', recommended: false, features: ['2.0L自然進氣引擎', '10.5吋觸控螢幕', '雙區恆溫空調'], safety: 'LSS+ 3.0 全套、8具SRS氣囊', exterior: '18吋鋁圈、電動尾門' },
+               { name: 'NX 250 頂級版', price: '1,990,000', recommended: false, features: ['2.5L 自然進氣動力', '無線Apple CarPlay', '皮革座椅'], safety: 'PVM 環景影像', exterior: '19吋高光澤輪圈' },
+               { name: 'NX 350h 豪華版 (HEV)', price: '2,175,000', recommended: true, features: ['2.5L HEV動力，平均油耗優異', '電動天窗', '前座通風座椅'], safety: '數位後視鏡、AP自動停車', exterior: '19吋輪圈、三眼式LED頭燈' },
+               { name: 'NX 350 F SPORT', price: '2,490,000', recommended: false, features: ['2.4L 渦輪增壓引擎', 'AWD 四輪驅動', '專屬F SPORT內裝套件'], safety: '運動化懸吊、VDIM車輛動態管理', exterior: 'F SPORT專屬外觀與20吋輪圈' },
+               { name: 'NX 450h+ 旗艦版 (PHEV)', price: '2,845,000', recommended: false, features: ['插電式油電混合動力', 'E-Four AWD', '電熱方向盤'], safety: '全速域ACC/LDA/LTA', exterior: '專屬20吋輪圈、腳踢感應尾門' }
+           ]
+       },
+       {
+           id: 'RX',
+           name: 'RX',
+           type: '豪華旗艦休旅 (SUV)',
+           price: '約 NT$ 246 萬起',
+           hp: '275 - 366',
+           feature: '新世代GA-K平台，極致舒適',
+           pitch: '全新一代 RX 不僅外觀更加大氣，內裝的 Tazuna 座艙設計更是以駕駛者為中心。無論是長途旅行還是接送貴賓，它都是您展現格調的完美選擇。追求性能的買家，絕對不能錯過頂級的 RX 500h F SPORT Performance！',
+           packages: [
+               { name: 'RX 350 豪華版 (純油)', price: '2,460,000', recommended: false, features: ['2.4L Turbo 渦輪增壓', '14吋中央觸控螢幕', 'Tazuna 概念座艙'], safety: 'LSS+ 3.0 全套、10具SRS氣囊', exterior: '20吋鋁圈' },
+               { name: 'RX 350 頂級版 (純油)', price: '2,750,000', recommended: false, features: ['2.4L Turbo 渦輪增壓', 'Mark Levinson音響', '全景式天窗'], safety: '數位後視鏡、AP 自動停車', exterior: '專屬高光澤20吋輪圈' },
+               { name: 'RX 350h 豪華版 (HEV)', price: '2,650,000', recommended: true, features: ['2.5L HEV 動力', 'E-Four AWD 智慧四輪驅動', '電動可調方向盤'], safety: '全景影像系統', exterior: '19吋降噪輪圈' },
+               { name: 'RX 450h+ 旗艦版 (PHEV)', price: '3,350,000', recommended: false, features: ['插電式油電混合動力', 'DCB 數位車鑰', 'Semi-Aniline 真皮座椅'], safety: '全速域ACC/LDA/LTA', exterior: '21吋輪圈' },
+               { name: 'RX 500h F SPORT Performance', price: '3,610,000', recommended: false, features: ['3.5L 渦輪HEV，366PS綜效馬力', 'Dynamic Rear Steering (DRS)', '專屬F SPORT性能套件'], safety: 'VDIM 車輛動態整合管理', exterior: '專屬21吋鋁圈、主動式聲浪控制' }
+           ]
+       },
+       {
+           id: 'ES',
+           name: 'ES',
+           type: '中大型豪華房車 (Sedan)',
+           price: '約 NT$ 177 萬起',
+           hp: '173 - 218',
+           feature: '極靜座艙與卓越後座空間',
+           pitch: 'ES 是 Lexus 豪華房車的代名詞，以其無與倫比的平穩性聞名。它優雅的線條和寬敞的後座空間，深受企業菁英喜愛。我向您保證，選擇 ES 300h，您每天的通勤將成為一場寧靜的享受。',
+           packages: [
+               { name: 'ES 200 豪華版', price: '1,770,000', recommended: false, features: ['2.0L 汽油引擎', '8吋多媒體資訊幕', 'Remote Touch 操控'], safety: 'LSS+ 2.0、10具SRS氣囊', exterior: '17吋鋁圈' },
+               { name: 'ES 300h 豪華版 (HEV)', price: '2,030,000', recommended: true, features: ['2.5L HEV 油電系統', 'Mark Levinson音響 (選配)', '後座遮陽簾'], safety: 'BSM 盲點偵測', exterior: '18吋高光澤鋁圈' },
+               { name: 'ES 300h 旗艦版', price: '2,490,000', recommended: false, features: ['全車系最頂級內裝', '後座電動調整', '三區恆溫空調'], safety: '數位後視鏡、全景影像', exterior: '專屬鍍鉻外觀套件' }
+           ]
+       },
+       {
+           id: 'IS',
+           name: 'IS',
+           type: '運動化轎跑 (Sedan)',
+           price: '約 NT$ 199 萬起',
+           hp: '223',
+           feature: '後輪驅動 FR 平台，駕駛樂趣',
+           pitch: '如果您追求純粹的駕馭感受，IS 系列就是您的最佳戰友。俐落的操控，搭配那充滿熱情的車身設計，讓您每一次轉彎都充滿自信。IS F SPORT 版本，更是將性能與豪華完美融合的傑作。',
+           packages: [
+               { name: 'IS 300h 豪華版', price: '1,990,000', recommended: false, features: ['基礎內裝', 'LSS+ 2.0', '17吋輪圈'], safety: 'PCS 預警式防護系統', exterior: '標準LED頭燈' },
+               { name: 'IS 300h F SPORT 版', price: '2,210,000', recommended: true, features: ['F SPORT運動化座椅', '專屬運動化儀表', 'AVS 可變阻尼懸吊'], safety: 'BSM 盲點偵測、RCTA 後方交通警示', exterior: 'F SPORT專屬外觀與19吋輪圈' }
+           ]
+       },
+       {
+           id: 'LM',
+           name: 'LM',
+           type: '頂級豪華旗艦 MPV',
+           price: '約 NT$ 429 萬起',
+           hp: '250 - 370',
+           feature: '私密豪華座艙，48 吋影音螢幕',
+           pitch: 'LM 不僅是一台車，它是一個移動的頂級會所。無論是四座的私密隔屏設計，還是七座的寬敞舒適，都重新定義了陸地頭等艙的標準。這款車，是企業領導者彰顯實力與品味的終極配置。',
+           packages: [
+               { name: 'LM 350h 7 人座', price: '4,290,000', recommended: false, features: ['標準七人座配置', '14吋後座螢幕', '數位儀表'], safety: 'LSS+ 3.0 全套', exterior: '標準豪華外觀' },
+               { name: 'LM 500h 4 人座 (旗艦頂配)', price: '5,950,000', recommended: true, features: ['獨立四座豪華配置', '48吋後座影音螢幕', '電控隔音隔屏', '冰箱'], safety: 'AHB 遠光燈自動遮蔽、SEA 離座安全輔助', exterior: '專屬頂級鍍鉻套件' }
+           ]
+       },
+   ];
+
+   let currentActiveCarId = null;
+   let currentCarName = '';
+
+   /**
+    * 渲染左側的車款列表卡片。
+    */
+   function renderCarList() {
+       const carListContainer = document.getElementById('car-list');
+       carListContainer.innerHTML = '';
+
+       cars.forEach(car => {
+           const card = document.createElement('div');
+           card.id = `card-${car.id}`;
+           card.className = 'luxury-card flex-shrink-0 lg:flex-shrink w-48 lg:w-full bg-gray-800/70 hover:bg-gray-800 p-4 rounded-xl flex lg:block items-center space-x-4 lg:space-x-0';
+           card.setAttribute('onclick', `showCarDetails('${car.id}')`);
+           
+           card.innerHTML = `
+               <div class="flex-grow">
+                   <p class="text-xl font-extrabold text-white">${car.id}</p>
+                   <p class="text-sm font-semibold text-teal-400">${car.name}</p>
+                   <p class="text-xs text-gray-400 mt-1">${car.type.split('(')[0].trim()}</p>
+               </div>
+           `;
+           carListContainer.appendChild(card);
+       });
+
+       // 預設選擇第一輛車
+       if (cars.length > 0) {
+           showCarDetails(cars[0].id);
+       }
+   }
+
+   /**
+    * 顯示選定車款的詳細資訊、規格和所有版本菜單。
+    * @param {string} carId - 選定車款的 ID
+    */
+   function showCarDetails(carId) {
+       const selectedCar = cars.find(c => c.id === carId);
+       if (!selectedCar) return;
+
+       // 隱藏預設訊息，顯示詳細內容
+       document.getElementById('default-message').classList.add('hidden');
+       document.getElementById('detail-content').classList.remove('hidden');
        
-       // --- Firebase 全域實例 ---
-       let db, auth;
-       let userId = null;
-       let isAuthReady = false;
-       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-       const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-       const photosCollectionPath = (uid) => `artifacts/${appId}/users/${uid}/photos`;
+       currentCarName = selectedCar.name; // 更新全域車型名稱
+
+       // 1. 更新右側靜態資訊面板
+       document.getElementById('detail-title').textContent = selectedCar.name;
+       document.getElementById('detail-type').textContent = selectedCar.type.split('(')[0].trim();
+       document.getElementById('detail-price-min').textContent = selectedCar.price.replace('約 NT$', '');
+       document.getElementById('detail-hp').textContent = selectedCar.hp;
+       document.getElementById('detail-feature').textContent = selectedCar.feature;
+       document.getElementById('detail-pitch').textContent = selectedCar.pitch;
+
+       // 2. 渲染菜單及價格列表 (可點擊)
+       const packageListContainer = document.getElementById('package-list');
+       packageListContainer.innerHTML = '';
+
+       selectedCar.packages.forEach((pkg, index) => {
+           const packageElement = document.createElement('div');
+           packageElement.className = `luxury-card flex flex-wrap justify-between items-center p-4 rounded-xl border cursor-pointer hover:bg-teal-900/40 transition-colors ${pkg.recommended ? 'bg-teal-900/30 border-teal-600' : 'bg-gray-800/70 border-gray-700'}`;
+           packageElement.setAttribute('onclick', `showPackageDetail('${carId}', ${index})`); // 新增點擊事件
+
+           packageElement.innerHTML = `
+               <div class="flex items-center space-x-3 mb-1 sm:mb-0">
+                   <span class="font-bold text-lg ${pkg.recommended ? 'text-teal-300' : 'text-white'}">${pkg.name}</span>
+                   ${pkg.recommended ? '<span class="px-2 py-0.5 text-xs font-semibold bg-red-600 text-white rounded-full">🏆 冠軍推薦</span>' : ''}
+               </div>
+               <span class="text-xl font-extrabold text-white">NT$ ${pkg.price.toLocaleString('en-US')} <span class="text-sm text-gray-400"> (點擊詳情)</span></span>
+           `;
+           packageListContainer.appendChild(packageElement);
+       });
+
+       // 3. 更新左側卡片狀態 (樣式切換)
+       if (currentActiveCarId) {
+           document.getElementById(`card-${currentActiveCarId}`).classList.remove('active-card');
+       }
+       document.getElementById(`card-${carId}`).classList.add('active-card');
+       currentActiveCarId = carId;
+   }
 
 
-       // --- DOM 元素及狀態變數 ---
-       const cameraContainer = document.getElementById('camera-view-container');
-       const albumContainer = document.getElementById('album-view-container');
-       const albumGrid = document.getElementById('album-grid');
-       const enhanceUndoButton = document.getElementById('enhance-undo-button');
-       const albumButton = document.getElementById('album-button');
-       const saveButton = document.getElementById('save-button');
-       const portraitModeBtn = document.getElementById('portrait-mode');
-       const landscapeModeBtn = document.getElementById('landscape-mode');
-       const cameraVideo = document.getElementById('camera-video');
-       const capturePreview = document.getElementById('capture-preview');
-       const photoCanvas = document.getElementById('photo-canvas');
-       const recommendationBox = document.getElementById('recommendation-box');
-       const portraitFrame = document.getElementById('portrait-frame');
-       const modalPreview = document.getElementById('modal-preview');
-       const modalImage = document.getElementById('modal-image');
-       const loadingStatus = document.getElementById('loading-status');
-       const userIdDisplay = document.getElementById('user-id-display');
+   /**
+    * 顯示選定菜單的詳細內容彈窗。
+    * @param {string} carId - 車款 ID
+    * @param {number} packageIndex - 菜單在陣列中的索引
+    */
+   function showPackageDetail(carId, packageIndex) {
+       const selectedCar = cars.find(c => c.id === carId);
+       const selectedPackage = selectedCar.packages[packageIndex];
+
+       if (!selectedPackage) return;
+
+       // 1. 更新 Modal 內容
+       document.getElementById('package-modal-title').textContent = `${selectedCar.name} - ${selectedPackage.name} 版本`;
+       // 格式化價格顯示千位分隔符
+       document.getElementById('package-modal-price').textContent = `建議售價: NT$ ${selectedPackage.price.toLocaleString('en-US')} 萬`;
+
+       // 2. 渲染特色清單
+       const featuresList = document.getElementById('package-modal-features');
+       featuresList.innerHTML = selectedPackage.features.map(feature =>
+           `<li class="flex items-start"><span class="text-teal-400 text-2xl leading-none mr-2">·</span>${feature}</li>`
+       ).join('');
+
+       // 3. 更新安全與外觀
+       document.getElementById('package-modal-safety').textContent = selectedPackage.safety;
+       document.getElementById('package-modal-exterior').textContent = selectedPackage.exterior;
+
+       // 4. 顯示 Modal
+       document.getElementById('modal-package-detail').classList.remove('hidden');
+   }
+
+   /**
+    * 處理預約試駕按鈕點擊事件 (使用自定義 Modal 取代 alert)
+    */
+   function handleCtaClick() {
+       const modal = document.getElementById('modal-cta');
+       const modalMessage = document.getElementById('modal-cta-message');
        
+       modalMessage.innerHTML = `您已成功預約 **${currentCarName}** 專屬賞車體驗！<br>作為您的冠軍銷售員，我將會親自為您聯繫與安排，期待您的蒞臨。`;
+       modal.classList.remove('hidden');
+   }
 
-       let currentMode = 'portrait';
-       let currentView = 'camera';
-       let isCaptured = false;
-       let isEnhanced = false;
-       let videoStream = null;
-       let facingMode = 'user'; // 預設使用前置鏡頭
-       let originalCapturedDataURL = null; // 儲存原始捕捉的 DataURL
+   /**
+    * 關閉指定的 Modal 訊息框。
+    * @param {string} modalId - 要關閉的 Modal ID
+    */
+   function closeModal(modalId) {
+       document.getElementById(modalId).classList.add('hidden');
+   }
 
-       let photos = []; // 儲存從 Firestore 載入的照片列表
+   // 頁面載入完成後初始化
+   window.onload = function() {
+       renderCarList();
+   };
+</script>
 
-       // 亮度臨界值 (0-255) 和場景數據保持不變
-       const BRIGHTNESS_THRESHOLDS = {
-           '極暗': 30, '低光': 70, '中等': 150, '高亮': 255
-       };
-       const sensorData = { /* ... 保持不變 ... */
-           sceneTypes: {
-               portrait: {'極暗': '夜間人像','低光': '室內柔光','中等': '清晨側光','高亮': '戶外背光'},
-               landscape: {'極暗': '夜間城市','低光': '陰天多雲','中等': '黃昏光影','高亮': '晴空萬里'}
-           },
-       };
-
-
-       // --- Firebase 初始化及認證 ---
-       function initFirebase() {
-           if (!window.firebaseReady || Object.keys(firebaseConfig).length === 0) {
-               console.error("Firebase 模組未載入或配置錯誤。");
-               return;
-           }
-
-           const app = initializeApp(firebaseConfig);
-           db = getFirestore(app);
-           auth = getAuth(app);
-           setLogLevel('Debug'); // 開啟 Firebase 偵錯日誌
-
-           window.onAuthStateChanged(auth, async (user) => {
-               if (!user) {
-                   try {
-                       if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                           await signInWithCustomToken(auth, __initial_auth_token);
-                       } else {
-                           await signInAnonymously(auth);
-                       }
-                   } catch (e) {
-                       console.error("Firebase 認證失敗:", e);
-                   }
-               }
-               
-               // 認證完成
-               userId = auth.currentUser?.uid || 'anonymous';
-               isAuthReady = true;
-               userIdDisplay.textContent = `用戶ID: ${userId}`;
-               albumButton.disabled = false;
-               console.log("Firebase Auth Ready. User ID:", userId);
-               
-               // 開始監聽照片
-               setupPhotoListener();
-           });
-       }
-
-       /**
-        * 監聽 Firestore 上的照片資料
-        */
-       function setupPhotoListener() {
-           if (!isAuthReady || !db) return;
-
-           const q = query(collection(db, photosCollectionPath(userId)));
-           
-           window.onSnapshot(q, (snapshot) => {
-               photos = [];
-               snapshot.forEach((doc) => {
-                   // 將照片資料加入列表，並加入 Firestore ID
-                   photos.push({ id: doc.id, ...doc.data() });
-               });
-               // 根據時間戳記排序 (最新在前面)
-               photos.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-               renderAlbum();
-           }, (error) => {
-               console.error("監聽照片失敗:", error);
-               loadingStatus.textContent = "載入相簿失敗。";
-           });
-       }
-
-
-       // --- 視圖與 UI 函數 ---
-
-       /**
-        * 切換視圖 (相機 <-> 相簿)
-        */
-       function switchView(viewName) {
-           currentView = viewName;
-           
-           if (viewName === 'camera') {
-               cameraContainer.classList.remove('hidden');
-               cameraContainer.style.display = 'flex';
-               albumContainer.classList.add('hidden');
-               
-               // 確保相機串流在切換回來時仍然運行
-               if (!videoStream) startCamera();
-           } else { // album
-               cameraContainer.classList.add('hidden');
-               cameraContainer.style.display = 'none';
-               albumContainer.classList.remove('hidden');
-               albumContainer.style.display = 'flex';
-               
-               // 停止相機串流以節省資源 (可選)
-               if (videoStream) videoStream.getTracks().forEach(track => track.stop());
-               videoStream = null;
-               
-               // 重新渲染相簿 (onSnapshot會自動處理，這裡只是手動觸發一下)
-               renderAlbum();
-           }
-           // 確保所有 Lucide 圖標重新渲染
-           lucide.createIcons();
-       }
-
-       /**
-        * 動態渲染相簿中的照片縮圖
-        */
-       function renderAlbum() {
-           albumGrid.innerHTML = ''; // 清空現有內容
-
-           if (photos.length === 0) {
-               loadingStatus.textContent = '相簿中還沒有照片，快去拍攝吧！';
-               return;
-           }
-           loadingStatus.textContent = '';
-
-           photos.forEach(photo => {
-               const img = document.createElement('img');
-               img.src = photo.dataURL;
-               img.className = 'photo-card shadow-md hover:shadow-xl transition-all';
-               img.alt = `Photo taken on ${new Date(photo.timestamp?.toDate()).toLocaleDateString()}`;
-               img.onclick = () => showPhotoModal(photo.dataURL);
-               albumGrid.appendChild(img);
-           });
-       }
-
-       /**
-        * 顯示照片放大預覽模態框
-        */
-       function showPhotoModal(dataURL) {
-           modalImage.src = dataURL;
-           modalPreview.classList.remove('hidden');
-       }
-
-       // --- 相機與 AI 處理函數 (大部分邏輯不變，略作精簡) ---
-
-       /**
-        * 啟動相機視訊流
-        */
-       async function startCamera() {
-           if (videoStream) { videoStream.getTracks().forEach(track => track.stop()); }
-           try {
-               const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode } });
-               videoStream = stream;
-               cameraVideo.srcObject = stream;
-               cameraVideo.style.transform = (facingMode === 'user') ? 'scaleX(-1)' : 'scaleX(1)';
-               cameraVideo.play();
-           } catch (error) { console.error("無法存取相機：", error); }
-       }
-
-       /**
-        * 處理模式切換
-        */
-       function setMode(mode) {
-           if (currentMode === mode) return;
-           currentMode = mode;
-           // ... (UI 和狀態重置邏輯，保持與前一次提交一致)
-           const buttons = document.querySelectorAll('.mode-btn');
-           buttons.forEach(btn => {
-               btn.classList.remove('bg-blue-600', 'text-white');
-               btn.classList.add('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600');
-           });
-           const activeBtn = mode === 'portrait' ? portraitModeBtn : landscapeModeBtn;
-           activeBtn.classList.replace('bg-gray-700', 'bg-blue-600');
-           activeBtn.classList.replace('text-gray-300', 'text-white');
-           activeBtn.classList.remove('hover:bg-gray-600');
-           
-           resetCaptureState();
-           updateApp();
-       }
-       
-       /**
-        * 重置拍攝預覽狀態
-        */
-       function resetCaptureState() {
-           isCaptured = false;
-           isEnhanced = false;
-           originalCapturedDataURL = null;
-
-           capturePreview.classList.add('hidden');
-           cameraVideo.classList.remove('hidden');
-           saveButton.disabled = true;
-           saveButton.classList.replace('bg-green-600', 'bg-gray-700');
-           
-           enhanceUndoButton.disabled = true;
-           enhanceUndoButton.classList.replace('hover:bg-red-600', 'hover:bg-purple-600');
-           enhanceUndoButton.innerHTML = `<i data-lucide="sparkles" class="w-6 h-6"></i><span class="text-xs mt-1">AI 增強</span>`;
-           lucide.createIcons();
-       }
-
-       /**
-        * 拍攝按鈕點擊處理
-        */
-       function handleCapture() {
-           // ... (快門動畫和 Canvas 捕捉邏輯)
-           if (!videoStream) { return; }
-           
-           // 1. 捕捉實時畫面到 Canvas
-           const videoWidth = cameraVideo.videoWidth;
-           const videoHeight = cameraVideo.videoHeight;
-           photoCanvas.width = videoWidth;
-           photoCanvas.height = videoHeight;
-           const context = photoCanvas.getContext('2d');
-           
-           context.save();
-           if (facingMode === 'user') { context.scale(-1, 1); context.drawImage(cameraVideo, -videoWidth, 0, videoWidth, videoHeight); }
-           else { context.drawImage(cameraVideo, 0, 0, videoWidth, videoHeight); }
-           context.restore();
-
-           // 2. 儲存原始 DataURL 到記憶體
-           originalCapturedDataURL = photoCanvas.toDataURL('image/png');
-           capturePreview.src = originalCapturedDataURL;
-           capturePreview.classList.remove('hidden');
-           cameraVideo.classList.add('hidden');
-           
-           // 3. 更新狀態和按鈕
-           isCaptured = true;
-           isEnhanced = false;
-           saveButton.disabled = false;
-           saveButton.classList.replace('bg-gray-700', 'bg-green-600');
-           enhanceUndoButton.disabled = false;
-           enhanceUndoButton.classList.replace('bg-gray-700', 'bg-purple-600');
-
-           // 隱藏建議框和人像框
-           recommendationBox.style.opacity = 0;
-           portraitFrame.style.opacity = 0;
-       }
-
-       /**
-        * 處理 AI 增強或撤銷
-        */
-       function handleEnhanceOrUndo() {
-           if (isEnhanced) {
-               handleUndoEnhance();
-           } else {
-               handleEnhance();
-           }
-       }
-       
-       /**
-        * 執行 AI 增強 (新增: 增強後改變按鈕為撤銷)
-        */
-       async function handleEnhance() {
-           if (!isCaptured || isEnhanced) return;
-
-           enhanceUndoButton.disabled = true;
-           enhanceUndoButton.classList.replace('bg-purple-600', 'bg-gray-500');
-           enhanceUndoButton.innerHTML = `<i data-lucide="loader-circle" class="w-6 h-6 animate-spin"></i><span class="text-xs mt-1">AI 處理中...</span>`;
-           lucide.createIcons();
-
-           await new Promise(resolve => setTimeout(resolve, 1500));
-           const { lightLevel } = simulateSensorData();
-           
-           const tempCanvas = document.createElement('canvas');
-           tempCanvas.width = photoCanvas.width;
-           tempCanvas.height = photoCanvas.height;
-           const ctx = tempCanvas.getContext('2d');
-           
-           // 繪製原圖
-           ctx.drawImage(photoCanvas, 0, 0);
-
-           // 應用 AI 濾鏡 (此函數內容保持與前一次提交一致)
-           applyEnhancementFilter(ctx, tempCanvas.width, tempCanvas.height, currentMode, lightLevel);
-           
-           const enhancedUrl = tempCanvas.toDataURL('image/png');
-           capturePreview.src = enhancedUrl;
-
-           // 更新狀態和按鈕到 [撤銷] 狀態
-           isEnhanced = true;
-           enhanceUndoButton.disabled = false;
-           enhanceUndoButton.classList.replace('bg-gray-500', 'bg-red-600'); // 撤銷使用紅色
-           enhanceUndoButton.classList.remove('hover:bg-purple-600');
-           enhanceUndoButton.classList.add('hover:bg-red-700');
-           enhanceUndoButton.innerHTML = `<i data-lucide="undo-2" class="w-6 h-6"></i><span class="text-xs mt-1">撤銷 AI 調色</span>`;
-           lucide.createIcons();
-       }
-       
-       /**
-        * 撤銷 AI 增強 (新增功能)
-        */
-       function handleUndoEnhance() {
-           if (!isCaptured || !isEnhanced || !originalCapturedDataURL) return;
-
-           // 恢復為原始捕捉的圖片
-           capturePreview.src = originalCapturedDataURL;
-
-           // 更新狀態和按鈕到 [AI 增強] 狀態
-           isEnhanced = false;
-           enhanceUndoButton.classList.replace('bg-red-600', 'bg-purple-600');
-           enhanceUndoButton.classList.remove('hover:bg-red-700');
-           enhanceUndoButton.classList.add('hover:bg-purple-600');
-           enhanceUndoButton.innerHTML = `<i data-lucide="sparkles" class="w-6 h-6"></i><span class="text-xs mt-1">AI 增強</span>`;
-           lucide.createIcons();
-       }
-
-       /**
-        * 儲存相片到 Firestore (新增功能)
-        */
-       async function handleSave() {
-           if (!isAuthReady || !db || !isCaptured) {
-               console.error("Firebase/認證未準備好或未捕捉照片。");
-               return;
-           }
-
-           saveButton.disabled = true;
-           saveButton.innerHTML = `<i data-lucide="loader-circle" class="w-6 h-6 animate-spin"></i><span class="text-xs mt-1">儲存中...</span>`;
-           saveButton.classList.replace('bg-green-600', 'bg-gray-500');
-           lucide.createIcons();
-           
-           try {
-               // 儲存當前預覽的 DataURL
-               await addDoc(collection(db, photosCollectionPath(userId)), {
-                   dataURL: capturePreview.src, // 可能是原圖或增強圖
-                   isEnhanced: isEnhanced,
-                   timestamp: serverTimestamp(),
-                   mode: currentMode
-               });
-
-               // 儲存成功，觸發下載模擬
-               const link = document.createElement('a');
-               link.href = capturePreview.src;
-               link.download = `AI_Photo_${Date.now()}_${isEnhanced ? 'Enhanced' : 'Original'}.png`;
-               document.body.appendChild(link);
-               link.click();
-               document.body.removeChild(link);
-
-
-               saveButton.innerHTML = `<i data-lucide="check-circle" class="w-6 h-6"></i><span class="text-xs mt-1">已存入手機!</span>`;
-               saveButton.classList.replace('bg-gray-500', 'bg-green-600');
-
-           } catch (error) {
-               console.error("儲存到 Firestore 失敗:", error);
-               saveButton.innerHTML = `<i data-lucide="alert-triangle" class="w-6 h-6"></i><span class="text-xs mt-1">儲存失敗</span>`;
-           } finally {
-               lucide.createIcons();
-               setTimeout(() => {
-                   if (isCaptured) {
-                       saveButton.innerHTML = `<i data-lucide="save" class="w-6 h-6"></i><span class="text-xs mt-1">儲存</span>`;
-                       saveButton.disabled = false;
-                   } else {
-                       resetCaptureState();
-                   }
-                   lucide.createIcons();
-               }, 1500);
-           }
-       }
-
-
-       // --- 主要應用程式流程 ---
-
-       // 實時分析函數 (與前次提交一致)
-       function simulateSensorData() { /* ... 保持不變 ... */
-           const analysisCanvas = document.getElementById('analysis-canvas');
-           const analysisContext = analysisCanvas.getContext('2d');
-           const lightLevelEl = document.getElementById('light-level');
-           const sceneTextEl = document.getElementById('scene-text');
-
-           if (!videoStream || cameraVideo.paused || cameraVideo.ended || cameraVideo.videoWidth === 0) {
-               return { lightLevel: '正在分析...', rawBrightness: 0 };
-           }
-           // 繪製與分析邏輯... (略過細節以保持簡潔)
-           try {
-               analysisContext.drawImage(cameraVideo, 0, 0, analysisCanvas.width, analysisCanvas.height);
-               const imageData = analysisContext.getImageData(0, 0, analysisCanvas.width, analysisCanvas.height);
-               const data = imageData.data;
-               let totalLuminance = 0;
-               for (let i = 0; i < data.length; i += 4) {
-                   const r = data[i], g = data[i + 1], b = data[i + 2];
-                   totalLuminance += 0.2126 * r + 0.7152 * g + 0.0722 * b;
-               }
-               const averageBrightness = totalLuminance / (data.length / 4);
-
-               let lightLevel = '極暗';
-               if (averageBrightness > BRIGHTNESS_THRESHOLDS['中等']) { lightLevel = '高亮'; }
-               else if (averageBrightness > BRIGHTNESS_THRESHOLDS['低光']) { lightLevel = '中等'; }
-               else if (averageBrightness > BRIGHTNESS_THRESHOLDS['極暗']) { lightLevel = '低光'; }
-               
-               const sceneType = sensorData.sceneTypes[currentMode][lightLevel] || '未知場景';
-               lightLevelEl.textContent = lightLevel;
-               sceneTextEl.textContent = sceneType;
-               
-               return { lightLevel, sceneType, rawBrightness: averageBrightness };
-
-           } catch (error) {
-               return { lightLevel: '錯誤', rawBrightness: 0 };
-           }
-       }
-       
-       // AI 濾鏡函數 (與前次提交一致)
-       function applyEnhancementFilter(ctx, width, height, mode, lightLevel) {
-           const imageData = ctx.getImageData(0, 0, width, height);
-           const data = imageData.data;
-           let contrast = 1.0, saturation = 1.0, warmth = 0, midtoneBoost = 0;
-           // ... (AI 增強參數計算邏輯)
-           if (mode === 'portrait') {
-               warmth = 15; contrast = 1.05;
-               if (lightLevel === '極暗' || lightLevel === '低光') { midtoneBoost = 35; contrast = 1.15; warmth = 30; }
-               else if (lightLevel === '高亮') { contrast = 0.95; warmth = -10; }
-           } else {
-               saturation = 1.35; contrast = 1.15;
-               if (lightLevel === '極暗' || lightLevel === '低光') { midtoneBoost = 40; contrast = 1.25; saturation = 1.1; warmth = -10; }
-               else if (lightLevel === '高亮') { saturation = 1.45; warmth = -5; }
-           }
-           
-           const factor = (259 * (contrast * 100 + 255)) / (255 * (259 - (contrast * 100)));
-
-           for (let i = 0; i < data.length; i += 4) {
-               let r = data[i], g = data[i + 1], b = data[i + 2];
-               // 1. 對比度
-               r = factor * (r - 128) + 128; g = factor * (g - 128) + 128; b = factor * (b - 128) + 128;
-               // 2. 陰影/亮度提升
-               r = Math.min(255, Math.max(0, r + midtoneBoost));
-               g = Math.min(255, Math.max(0, g + midtoneBoost));
-               b = Math.min(255, Math.max(0, b + midtoneBoost));
-               // 3. 色溫
-               r = Math.min(255, Math.max(0, r + (warmth * 0.8)));
-               g = Math.min(255, Math.max(0, g + (warmth * 0.3)));
-               b = Math.min(255, Math.max(0, b - (warmth * 0.6)));
-               // 4. 飽和度
-               const avg = (r + g + b) / 3;
-               r = Math.min(255, Math.max(0, avg + (r - avg) * saturation));
-               g = Math.min(255, Math.max(0, avg + (g - avg) * saturation));
-               b = Math.min(255, Math.max(0, avg + (b - avg) * saturation));
-
-               data[i] = Math.min(255, Math.max(0, r));
-               data[i + 1] = Math.min(255, Math.max(0, g));
-               data[i + 2] = Math.min(255, Math.max(0, b));
-           }
-
-           ctx.putImageData(imageData, 0, 0);
-           ctx.font = 'bold 40px Inter, sans-serif';
-           ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
-           ctx.textAlign = 'center';
-           ctx.shadowColor = 'rgba(0,0,0,0.8)';
-           ctx.shadowBlur = 8;
-           ctx.fillText('AI MASTERED', width / 2, height / 10);
-       }
-
-       // 建議函數 (與前次提交一致)
-       function provideRecommendation(data) {
-           // ... (建議邏輯)
-       }
-
-       function updateApp() {
-           if (currentView === 'camera' && !isCaptured) {
-               const data = simulateSensorData();
-               provideRecommendation(data);
-           }
-       }
-
-
-       // --- 事件監聽器 ---
-
-       document.getElementById('album-button').addEventListener('click', () => switchView('album'));
-       document.getElementById('back-to-camera-button').addEventListener('click', () => switchView('camera'));
-       document.getElementById('shutter-ring').addEventListener('click', handleCapture);
-       enhanceUndoButton.addEventListener('click', handleEnhanceOrUndo);
-       saveButton.addEventListener('click', handleSave);
-       document.getElementById('flip-camera-button').addEventListener('click', () => { resetCaptureState(); facingMode = (facingMode === 'user') ? 'environment' : 'user'; startCamera(); });
-       portraitModeBtn.addEventListener('click', () => setMode('portrait'));
-       landscapeModeBtn.addEventListener('click', () => setMode('landscape'));
-       
-       document.getElementById('close-modal-button').addEventListener('click', () => modalPreview.classList.add('hidden'));
-
-
-       // --- 應用程式啟動 ---
-       window.onload = function() {
-           initFirebase(); // 初始化 Firebase
-           startCamera();
-           setMode('portrait');
-           
-           // 確保視訊流載入完成後才開始分析
-           let updateInterval;
-           cameraVideo.addEventListener('loadedmetadata', () => {
-               if (updateInterval) clearInterval(updateInterval);
-               updateInterval = setInterval(updateApp, 1000);
-               updateApp();
-           });
-
-           // 確保初始只顯示相機視圖
-           switchView('camera');
-           console.log("專業攝影 App 啟動完成。");
-       };
-
-   </script>
 </body>
 </html>
