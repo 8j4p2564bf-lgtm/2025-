@@ -120,12 +120,16 @@
 
    </div>
 
-   <!-- 彈出訊息框 (取代 alert - 預約成功) -->
+   <!-- 彈出訊息框 (取代 alert - 顯示顧問聯繫方式) -->
    <div id="modal-cta" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
        <div class="bg-[#1a1a2e] p-8 rounded-xl shadow-2xl max-w-sm w-full border-t-4 border-teal-500">
-           <h3 class="text-2xl font-bold mb-4 text-teal-400">恭喜您！</h3>
-           <p id="modal-cta-message" class="text-gray-200 mb-6">您已成功預約賞車！我將盡快與您聯繫，為您準備最完美的體驗。</p>
-           <button onclick="closeModal('modal-cta')" class="w-full py-3 bg-teal-600 rounded-lg font-semibold hover:bg-teal-700">確認</button>
+           <!-- 標題修改為顯示聯繫方式 -->
+           <h3 class="text-2xl font-bold mb-4 text-teal-400">專屬顧問聯繫方式</h3>
+           <!-- 訊息內容將由 JS 填充聯繫資訊 -->
+           <div id="modal-cta-message" class="text-gray-200 mb-6">
+               <!-- 聯繫資訊將在此處渲染 -->
+           </div>
+           <button onclick="closeModal('modal-cta')" class="w-full py-3 bg-teal-600 rounded-lg font-semibold hover:bg-teal-700">確認並關閉</button>
        </div>
    </div>
    
@@ -152,7 +156,7 @@
 
 
 <script type="text/javascript">
-   // 冠軍銷售員的車款數據庫 (已移除顏色數據，但保留擴充菜單)
+   // 冠軍銷售員的車款數據庫
    const cars = [
        {
            id: 'LBX',
@@ -241,6 +245,13 @@
            ]
        },
    ];
+
+   // 冠軍銷售顧問的專屬資料
+   const SALES_CONSULTANT = {
+       name: '李冠軍 (Leo)',
+       phone: '0988-888-888',
+       lineId: 'LexusChampion88',
+   };
 
    let currentActiveCarId = null;
    let currentCarName = '';
@@ -355,13 +366,36 @@
    }
 
    /**
-    * 處理預約試駕按鈕點擊事件 (使用自定義 Modal 取代 alert)
+    * 處理預約試駕按鈕點擊事件 (顯示顧問聯繫資訊)
     */
    function handleCtaClick() {
        const modal = document.getElementById('modal-cta');
        const modalMessage = document.getElementById('modal-cta-message');
-       
-       modalMessage.innerHTML = `您已成功預約 **${currentCarName}** 專屬賞車體驗！<br>作為您的冠軍銷售員，我將會親自為您聯繫與安排，期待您的蒞臨。`;
+
+       // 創建聯繫資訊的 HTML 內容
+       const contactHtml = `
+           <p class="text-gray-300 mb-4 font-semibold">
+               感謝您對 ${currentCarName || 'Lexus 精選車款'} 的預約意願！<br>
+               請直接聯繫您的冠軍銷售顧問：
+           </p>
+           <div class="space-y-3 p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
+               <div class="flex items-center">
+                   <span class="text-teal-400 w-20 font-semibold">姓名:</span>
+                   <span class="text-white">${SALES_CONSULTANT.name}</span>
+               </div>
+               <div class="flex items-center">
+                   <span class="text-teal-400 w-20 font-semibold">電話:</span>
+                   <span class="text-white">${SALES_CONSULTANT.phone}</span>
+               </div>
+               <div class="flex items-center">
+                   <span class="text-teal-400 w-20 font-semibold">Line ID:</span>
+                   <span class="text-white">${SALES_CONSULTANT.lineId}</span>
+               </div>
+           </div>
+           <p class="mt-4 text-sm text-gray-500 text-center">掃描 Line ID 或撥打手機，我們將為您提供最尊榮的服務。</p>
+       `;
+
+       modalMessage.innerHTML = contactHtml;
        modal.classList.remove('hidden');
    }
 
