@@ -222,9 +222,30 @@
                         { time: '13:25', title: '錦市場午餐', location: '錦市場', type: 'food', mapQuery: 'Nishiki Market', description: '「京都的廚房」，品嚐玉子燒、豆乳甜甜圈等小吃。' },
                     ]
                 },
-                { id: 'day3', date: '10/18 (六)', title: '第三天：移動至大阪', items: [] },
-                { id: 'day4', date: '10/19 (日)', title: '第四天：大阪深度遊', items: [] },
-                { id: 'day5', date: '10/20 (一)', title: '第五天：參拜與返台', items: [] }
+                {
+                    id: 'day3', date: '10/18 (六)', title: '第三天：移動至大阪',
+                    items: [
+                        { time: '08:30', title: '伏見稻荷大社', location: '伏見稻荷大社', type: 'activity', cost: '免費', mapQuery: 'Fushimi Inari Taisha', description: '壯觀的千本鳥居，狐狸使者的守護地。' },
+                        { time: '14:20', title: '移動往大阪', location: '京都 -> 大阪', type: 'transport', cost: '¥570' },
+                        { time: '15:30', title: '梅田 HEP FIVE 摩天輪', location: 'HEP FIVE', type: 'activity', description: '大阪地標紅色摩天輪。', cost: '¥600' },
+                        { time: '18:30', title: '道頓堀 & 心齋橋', location: '道頓堀', type: 'shopping', description: '跑跑人看板打卡，藥妝店採購。' },
+                    ]
+                },
+                {
+                    id: 'day4', date: '10/19 (日)', title: '第四天：大阪深度遊',
+                    items: [
+                        { time: '09:00', title: '大阪城', location: '大阪城天守閣', type: 'activity', description: '大阪象徵，豐臣秀吉的居城。', cost: '¥600' },
+                        { time: '12:00', title: '大阪天滿宮', location: '大阪天滿宮', type: 'activity', cost: '免費', description: '學問之神菅原道真。' },
+                        { time: '15:30', title: '黑門市場', location: '黑門市場', type: 'food', description: '「大阪的廚房」，必吃海鮮。' },
+                    ]
+                },
+                {
+                    id: 'day5', date: '10/20 (一)', title: '第五天：參拜與返台',
+                    items: [
+                        { time: '09:20', title: '大鳥大社參拜', location: '大鳥大社', type: 'activity', cost: '免費', description: '和泉國一之宮，歷史悠久的神社。' },
+                        { time: '11:00', title: '機場報到', location: 'KIX 第一航廈', type: 'flight', description: '辦理登機、託運。' },
+                    ]
+                }
             ],
             expenses: [] // { id, item, amount, payer, date }
         };
@@ -364,13 +385,11 @@
 
                     <div className="bg-white border border-wood-border p-6 rounded-sm shadow-sm">
                         <h3 className="text-sm font-bold text-wood-text mb-4">新增記帳</h3>
-                        <div className="grid grid-cols-3 gap-2 mb-2">
-                            <input value={newItem.item} onChange={e=>setNewItem({...newItem, item: e.target.value})} placeholder="項目 (如: 晚餐)" className="col-span-2 bg-wood-bg p-2 text-sm border border-wood-border rounded-sm"/>
-                            <input type="number" value={newItem.amount} onChange={e=>setNewItem({...newItem, amount: e.target.value})} placeholder="金額" className="bg-wood-bg p-2 text-sm border border-wood-border rounded-sm"/>
-                        </div>
-                        <div className="flex gap-2">
-                            <input value={newItem.payer} onChange={e=>setNewItem({...newItem, payer: e.target.value})} placeholder="付款人" className="flex-1 bg-wood-bg p-2 text-sm border border-wood-border rounded-sm"/>
-                            <button onClick={addExpense} className="bg-wood-accent text-white px-6 py-2 text-sm font-bold rounded-sm shadow-sm">新增</button>
+                        <div className="flex flex-col gap-3">
+                            <input value={newItem.item} onChange={e=>setNewItem({...newItem, item: e.target.value})} placeholder="項目 (如: 晚餐)" className="w-full bg-wood-bg p-3 text-sm border border-wood-border rounded-sm"/>
+                            <input type="number" value={newItem.amount} onChange={e=>setNewItem({...newItem, amount: e.target.value})} placeholder="金額" className="w-full bg-wood-bg p-3 text-sm border border-wood-border rounded-sm"/>
+                            <input value={newItem.payer} onChange={e=>setNewItem({...newItem, payer: e.target.value})} placeholder="付款人 (預設: 我)" className="w-full bg-wood-bg p-3 text-sm border border-wood-border rounded-sm"/>
+                            <button onClick={addExpense} className="w-full bg-wood-accent text-white py-3 text-sm font-bold rounded-sm shadow-sm hover:opacity-90 transition-opacity">新增支出</button>
                         </div>
                     </div>
 
@@ -553,6 +572,12 @@
                 setFormData({ ...formData, itinerary: newItin });
                 setGenerating(null);
             };
+
+            const handleReset = () => {
+                if(confirm("確定重置？這將覆蓋目前的行程設定。")) {
+                    setFormData(DEFAULT_DATA);
+                }
+            };
             
             const handleFlightChange = (idx, field, val) => { const newF = [...formData.flights]; newF[idx][field] = val; setFormData({...formData, flights: newF}); }
             const addFlight = () => setFormData({...formData, flights: [...formData.flights, { airline: '', flightNo: '', date: '', route: '', dep: '', arr: '' }]});
@@ -575,10 +600,15 @@
                     </div>
 
                     <div className="px-4 pb-12 space-y-6">
-                        {/* API Config */}
-                        <div className="bg-white p-4 rounded-sm border border-wood-border shadow-sm">
-                            <h3 className="text-wood-accent text-xs font-bold uppercase tracking-widest border-b border-wood-border pb-2 mb-3">API 設定</h3>
-                            <input type="text" value={formData.apiKey || ''} onChange={e=>setFormData({...formData, apiKey: e.target.value})} placeholder="Google Gemini API Key" className="w-full bg-wood-bg border border-wood-border p-2 text-sm text-wood-text rounded-sm"/>
+                        {/* API Config & Reset */}
+                        <div className="bg-white p-4 rounded-sm border border-wood-border shadow-sm space-y-4">
+                            <div>
+                                <h3 className="text-wood-accent text-xs font-bold uppercase tracking-widest border-b border-wood-border pb-2 mb-3">API 設定</h3>
+                                <input type="text" value={formData.apiKey || ''} onChange={e=>setFormData({...formData, apiKey: e.target.value})} placeholder="Google Gemini API Key" className="w-full bg-wood-bg border border-wood-border p-2 text-sm text-wood-text rounded-sm"/>
+                            </div>
+                            <div className="border-t border-wood-border pt-3 text-center">
+                                <button onClick={handleReset} className="text-xs text-wood-muted hover:text-red-500 flex items-center justify-center gap-1 w-full py-2 border border-dashed border-wood-muted rounded-sm"><RotateCcw size={14}/> 重置回預設範本 (修復行程遺失)</button>
+                            </div>
                         </div>
 
                          {/* Theme Selection */}
