@@ -129,7 +129,8 @@
             CloudSun, Plane, Hotel, Coins, CheckCircle2, MapPin, X, 
             Utensils, Train, Camera, ShoppingBag, Home, Info, 
             MessageCircle, Send, Sparkles, Map, Loader2, Settings, Plus, Trash2, Save, RotateCcw,
-            Cloud, CloudOff, Users, Palette, Receipt, Calculator, Minus, Calendar, Wand2, GripVertical
+            Cloud, CloudOff, Users, Palette, Receipt, Calculator, Minus, Calendar, Wand2, GripVertical,
+            Languages, ExternalLink
         } from 'lucide-react';
         import { GoogleGenAI } from "@google/genai";
         
@@ -335,8 +336,18 @@
         };
 
         const InfoTab = ({ data, openModal }) => {
-            const [yen, setYen] = useState('');
-            const twd = yen ? Math.round(parseFloat(yen) * 0.215) : 0;
+            const [amount, setAmount] = useState('');
+            const [currency, setCurrency] = useState('JPY');
+
+            // 匯率設定 (TWD)
+            const RATES = {
+                'JPY': { rate: 0.215, name: '日幣' },
+                'KRW': { rate: 0.024, name: '韓幣' },
+                'CNY': { rate: 4.50,  name: '人民幣' }
+            };
+
+            const twd = amount ? Math.round(parseFloat(amount) * RATES[currency].rate) : 0;
+
             return (
                 <div className="space-y-8 animate-fade-in pb-12">
                     <div className="text-center pt-6 pb-2">
@@ -344,23 +355,66 @@
                         <h2 className="text-4xl font-serif italic text-wood-text tracking-tight">{data.tripName}</h2>
                         <p className="text-xs text-wood-muted tracking-[0.2em] mt-3 font-medium">{data.tripDate}</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        {['hotel', 'prep'].map(type => (
-                            <button key={type} onClick={() => openModal(type)} className="bg-wood-hl border border-wood-border p-5 hover:border-wood-accent hover:shadow-md transition-all group relative overflow-hidden text-left rounded-sm">
-                                {type === 'hotel' ? <Hotel size={24} className="text-wood-accent mb-3"/> : <CheckCircle2 size={24} className="text-wood-accent mb-3"/>}
-                                <span className="block text-sm font-bold tracking-widest text-wood-text mb-1">{type === 'hotel' ? '住宿' : '準備'}</span>
-                            </button>
+
+                    {/* 功能按鈕區 */}
+                    <div className="grid grid-cols-3 gap-3">
+                        {['hotel', 'prep', 'translate'].map(type => (
+                            type === 'translate' ? (
+                                <a 
+                                    key={type} 
+                                    href="https://translate.google.com.tw/?sl=auto&tl=zh-TW" 
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-wood-hl border border-wood-border p-4 hover:border-wood-accent hover:shadow-md transition-all group flex flex-col items-center justify-center gap-2 rounded-sm text-center"
+                                >
+                                    <Languages size={24} className="text-wood-accent"/>
+                                    <span className="text-xs font-bold tracking-widest text-wood-text">翻譯</span>
+                                </a>
+                            ) : (
+                                <button key={type} onClick={() => openModal(type)} className="bg-wood-hl border border-wood-border p-4 hover:border-wood-accent hover:shadow-md transition-all group flex flex-col items-center justify-center gap-2 rounded-sm text-center">
+                                    {type === 'hotel' ? <Hotel size={24} className="text-wood-accent"/> : <CheckCircle2 size={24} className="text-wood-accent"/>}
+                                    <span className="text-xs font-bold tracking-widest text-wood-text">{type === 'hotel' ? '住宿' : '準備'}</span>
+                                </button>
+                            )
                         ))}
                     </div>
+
+                    {/* 匯率換算區 */}
                     <div className="bg-wood-hl border border-wood-border p-8 shadow-sm rounded-sm relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-1 h-full bg-wood-accent"></div>
                         <div className="flex items-center gap-2 mb-6 text-wood-accent"><Coins size={18}/><h3 className="font-serif italic text-lg text-wood-text">匯率換算</h3></div>
-                        <div className="flex items-center gap-6">
-                            <div className="flex-1"><input type="number" value={yen} onChange={e=>setYen(e.target.value)} placeholder="JPY" className="w-full bg-wood-bg border border-wood-border p-3 text-center text-xl text-wood-text focus:border-wood-accent outline-none font-light rounded-sm"/></div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex-[2] flex flex-col gap-2">
+                                <div className="flex border border-wood-border rounded-sm bg-wood-bg overflow-hidden">
+                                    <select 
+                                        value={currency} 
+                                        onChange={(e) => setCurrency(e.target.value)} 
+                                        className="bg-wood-bg text-xs font-bold text-wood-muted p-2 outline-none border-r border-wood-border w-16 text-center appearance-none"
+                                        style={{textAlignLast: 'center'}}
+                                    >
+                                        <option value="JPY">JPY</option>
+                                        <option value="KRW">KRW</option>
+                                        <option value="CNY">CNY</option>
+                                    </select>
+                                    <input 
+                                        type="number" 
+                                        value={amount} 
+                                        onChange={e=>setAmount(e.target.value)} 
+                                        placeholder="輸入金額" 
+                                        className="w-full bg-transparent p-3 text-lg text-wood-text outline-none font-light"
+                                    />
+                                </div>
+                                <span className="text-[10px] text-wood-muted text-right tracking-wider">{RATES[currency].name}</span>
+                            </div>
                             <span className="text-wood-accent">=</span>
-                            <div className="flex-1 text-center text-xl font-medium">${twd}</div>
+                            <div className="flex-[1.5] text-right">
+                                <div className="text-xl font-medium text-wood-text">${twd.toLocaleString()}</div>
+                                <span className="text-[10px] text-wood-muted tracking-wider">台幣 (約)</span>
+                            </div>
                         </div>
                     </div>
+
+                    {/* 航班資訊 */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 px-1 text-wood-accent"><Plane size={18}/><h3 className="font-serif italic text-wood-text text-lg">航班資訊</h3></div>
                         {data.flights.map((f, i) => (
