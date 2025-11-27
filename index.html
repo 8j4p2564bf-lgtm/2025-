@@ -189,7 +189,7 @@
             console.error("Firebase init failed:", e);
         }
 
-        // 預設資料
+        // 預設資料 (完整版)
         const DEFAULT_DATA = {
             theme: 'default',
             tripName: "京都・大阪",
@@ -205,45 +205,65 @@
                 { title: "日幣現金", desc: "建議攜帶約 ¥50,000 - ¥80,000 / 人 (視購物需求)。" },
                 { title: "網卡 / Roaming", desc: "確認 SIM 卡或漫遊已開通。" },
                 { title: "交通卡 (ICOCA/Suica)", desc: "加入 Apple Pay 或準備實體卡。" },
+                { title: "充電設備", desc: "行動電源、充電線 (日本電壓 100V，插座與台灣相同)。" },
+                { title: "常備藥品", desc: "感冒藥、腸胃藥、止痛藥、OK繃。" }
             ],
             itinerary: [
                 {
                     id: 'day1', date: '10/16 (四)', title: '第一天：京都初印象',
                     items: [
-                        { time: '14:00', title: '搭乘 Haruka 特急', location: '關西機場 -> 京都車站', type: 'transport', description: '使用 JR Pass 或預購票券，約 75 分鐘車程。', cost: '¥2,200' },
+                        { time: '05:30', title: '出發前往機場', location: '竹北 -> 桃機2航廈', type: 'transport', cost: '現金 1500', description: '準時出發，檢查護照、日幣、網卡。' },
+                        { time: '09:00', title: '搭乘班機 CI0152', location: '桃園國際機場', type: 'flight', description: '飛往關西國際機場 (KIX)。' },
+                        { time: '13:00', title: '抵達關西機場', location: 'KIX', type: 'transport', description: '辦理入境手續，領取行李。' },
+                        { time: '14:00', title: '搭乘 Haruka 特急', location: '關西機場 -> 京都車站', type: 'transport', cost: '¥2,200', description: '使用 JR Pass 或預購票券，約 75 分鐘車程。' },
                         { time: '15:30', title: '飯店 Check-in', location: "Hotel The M’s Kyoto", type: 'hotel', mapQuery: "Hotel The M’s Kyoto", description: '時尚設計風格飯店，位於京都車站附近，交通便利。' },
-                        { time: '16:10', title: '嵐山渡月橋', location: '嵐山', type: 'activity', mapQuery: 'Arashiyama Bamboo Grove', description: '京都必訪景點，感受竹林幽靜與渡月橋的開闊。', cost: '免費' },
+                        { time: '16:10', title: '嵐山渡月橋、竹林小徑', location: '嵐山', type: 'activity', cost: '免費', mapQuery: 'Arashiyama Bamboo Grove', description: '京都必訪景點，感受竹林幽靜與渡月橋的開闊。' },
+                        { time: '18:00', title: '嵐山月燈路', location: '嵐山', type: 'activity', description: '欣賞夜晚的燈光藝術（季節限定活動）。' },
+                        { time: '19:30', title: '晚餐 / 休息', location: '京都車站周邊', type: 'food', description: '返回飯店附近享用晚餐。' }
                     ]
                 },
                 {
                     id: 'day2', date: '10/17 (五)', title: '第二天：古都風情',
                     items: [
-                        { time: '09:30', title: '清水寺', location: '清水寺', type: 'activity', cost: '門票 ¥500', mapQuery: 'Kiyomizu-dera', description: '世界遺產清水舞台，求姻緣的地主神社，漫步古色古香的坂道。' },
+                        { time: '08:30', title: '飯店出發', location: '前往五条坂', type: 'transport', description: '搭乘市巴士前往清水寺區域。' },
+                        { time: '09:30', title: '清水寺 & 二三年坂', location: '清水寺', type: 'activity', cost: '門票 ¥500', mapQuery: 'Kiyomizu-dera', description: '世界遺產清水舞台，求姻緣的地主神社，漫步古色古香的坂道。' },
+                        { time: '11:40', title: '八坂神社 & 花見小路', location: '八坂神社', type: 'activity', cost: '免費', mapQuery: 'Yasaka Shrine', description: '京都祇園的守護神社，接著漫步花見小路尋找藝妓身影。' },
                         { time: '13:25', title: '錦市場午餐', location: '錦市場', type: 'food', mapQuery: 'Nishiki Market', description: '「京都的廚房」，品嚐玉子燒、豆乳甜甜圈等小吃。' },
+                        { time: '15:00', title: '四条河原町 / 平安神宮', location: '四条河原町', type: 'shopping', description: '自由逛街購物，或前往平安神宮參觀（本殿免費）。', mapQuery: 'Heian Shrine' },
+                        { time: '18:30', title: '壽喜燒晚餐', location: '壽喜燒三條河原町店', type: 'food', description: '享受道地的關西壽喜燒。' },
                     ]
                 },
                 {
                     id: 'day3', date: '10/18 (六)', title: '第三天：移動至大阪',
                     items: [
                         { time: '08:30', title: '伏見稻荷大社', location: '伏見稻荷大社', type: 'activity', cost: '免費', mapQuery: 'Fushimi Inari Taisha', description: '壯觀的千本鳥居，狐狸使者的守護地。' },
-                        { time: '14:20', title: '移動往大阪', location: '京都 -> 大阪', type: 'transport', cost: '¥570' },
-                        { time: '15:30', title: '梅田 HEP FIVE 摩天輪', location: 'HEP FIVE', type: 'activity', description: '大阪地標紅色摩天輪。', cost: '¥600' },
-                        { time: '18:30', title: '道頓堀 & 心齋橋', location: '道頓堀', type: 'shopping', description: '跑跑人看板打卡，藥妝店採購。' },
+                        { time: '11:00', title: '午餐 & 取行李', location: '京都', type: 'food' },
+                        { time: '14:20', title: '搭 JR 新快速往大阪', location: '京都 -> 大阪', type: 'transport', cost: '¥570' },
+                        { time: '15:30', title: '梅田 HEP FIVE 摩天輪', location: 'HEP FIVE', type: 'activity', description: '大阪地標紅色摩天輪（注意：行程表註記維修中，請確認現場狀況）。', mapQuery: 'HEP FIVE Ferris Wheel', cost: '¥600' },
+                        { time: '17:00', title: '飯店 Check-in', location: 'The Bridge Hotel Shinsaibashi', type: 'hotel', mapQuery: 'The Bridge Hotel Shinsaibashi', description: '位於心齋橋中心，每晚提供免費拉麵宵夜與啤酒暢飲。' },
+                        { time: '18:30', title: '道頓堀 & 心齋橋', location: '道頓堀', type: 'shopping', mapQuery: 'Dotonbori', description: '跑跑人看板打卡，藥妝店採購，章魚燒、拉麵吃到飽。' },
                     ]
                 },
                 {
                     id: 'day4', date: '10/19 (日)', title: '第四天：大阪深度遊',
                     items: [
-                        { time: '09:00', title: '大阪城', location: '大阪城天守閣', type: 'activity', description: '大阪象徵，豐臣秀吉的居城。', cost: '¥600' },
-                        { time: '12:00', title: '大阪天滿宮', location: '大阪天滿宮', type: 'activity', cost: '免費', description: '學問之神菅原道真。' },
-                        { time: '15:30', title: '黑門市場', location: '黑門市場', type: 'food', description: '「大阪的廚房」，必吃海鮮。' },
+                        { time: '08:30', title: '前往大阪城', location: '地鐵至大阪商務園區', type: 'transport' },
+                        { time: '09:00', title: '大阪城 & 御座船', location: '大阪城天守閣', type: 'activity', description: '大阪象徵，豐臣秀吉的居城。', mapQuery: 'Osaka Castle', cost: '¥600' },
+                        { time: '12:00', title: '大阪天滿宮', location: '大阪天滿宮', type: 'activity', cost: '免費', mapQuery: 'Osaka Tenmangu', description: '學問之神菅原道真，祈求學業進步。' },
+                        { time: '12:30', title: '天神橋筋商店街', location: '天神橋筋', type: 'food', mapQuery: 'Tenjinbashi-suji Shopping Street', description: '日本最長的商店街，充滿庶民美食。' },
+                        { time: '13:30', title: '大阪生活今昔館', location: '大阪生活今昔館', type: 'activity', description: '穿越時空回到江戶時代的大阪街道，可體驗和服。', mapQuery: 'Osaka Museum of Housing and Living' },
+                        { time: '15:30', title: '黑門市場', location: '黑門市場', type: 'food', mapQuery: 'Kuromon Ichiba Market', description: '「大阪的廚房」，必吃海鮮、和牛串、水果大福。' },
+                        { time: '20:00', title: '燒肉晚餐', location: '燒肉力丸難波道頓堀店', type: 'food', description: '日式燒肉吃到飽。' }
                     ]
                 },
                 {
                     id: 'day5', date: '10/20 (一)', title: '第五天：參拜與返台',
                     items: [
-                        { time: '09:20', title: '大鳥大社參拜', location: '大鳥大社', type: 'activity', cost: '免費', description: '和泉國一之宮，歷史悠久的神社。' },
-                        { time: '11:00', title: '機場報到', location: 'KIX 第一航廈', type: 'flight', description: '辦理登機、託運。' },
+                        { time: '08:30', title: '前往大鳥大社', location: '天王寺 -> JR 鳳站', type: 'transport' },
+                        { time: '09:20', title: '大鳥大社參拜', location: '大鳥大社', type: 'activity', cost: '免費', mapQuery: 'Otori Taisha', description: '和泉國一之宮，歷史悠久的神社。' },
+                        { time: '10:00', title: '前往關西機場', location: '鳳站 -> KIX', type: 'transport', description: '搭乘 JR 或南海電鐵前往機場。' },
+                        { time: '11:00', title: '機場報到', location: 'KIX 第一航廈', type: 'flight', description: '辦理登機、託運、最後免稅品採購。' },
+                        { time: '14:00', title: '搭乘班機 CI0153', location: 'KIX -> TPE', type: 'flight', description: '帶著滿滿的回憶飛往溫暖的家。' },
                     ]
                 }
             ],
@@ -266,7 +286,6 @@
         };
 
         const autoSortItinerary = async (apiKey, items) => {
-             if (!apiKey) return items;
              try {
                 const ai = getAiService(apiKey);
                 // Simple heuristic sort via LLM
@@ -287,7 +306,7 @@
                 });
                 return newItems.length === items.length ? newItems : items;
              } catch(e) {
-                 alert("AI 排序失敗，請檢查 Key 或稍後再試");
+                 alert("AI 排序失敗，請稍後再試或手動調整");
                  return items;
              }
         };
@@ -429,7 +448,7 @@
                     
                     <div className="grid grid-cols-3 gap-2">
                         {['hotel', 'prep', 'translate'].map(type => (
-                            <button key={type} onClick={() => type === 'translate' ? window.open('https://translate.google.com/?sl=auto&tl=zh-TW&op=images', '_blank') : openModal(type)} className="bg-white border border-wood-border p-3 hover:border-wood-accent hover:shadow-md transition-all group relative overflow-hidden text-center rounded-sm flex flex-col items-center justify-center h-24">
+                            <button key={type} onClick={() => type === 'translate' ? window.open('https://translate.google.com/?sl=auto&tl=zh-TW&op=translate', '_blank') : openModal(type)} className="bg-white border border-wood-border p-3 hover:border-wood-accent hover:shadow-md transition-all group relative overflow-hidden text-center rounded-sm flex flex-col items-center justify-center h-24">
                                 {type === 'hotel' ? <Hotel size={20} className="text-wood-accent mb-2"/> : type === 'prep' ? <CheckCircle2 size={20} className="text-wood-accent mb-2"/> : <Languages size={20} className="text-wood-accent mb-2"/>}
                                 <span className="block text-xs font-bold text-wood-text">{type === 'hotel' ? '住宿' : type === 'prep' ? '準備' : '翻譯'}</span>
                             </button>
@@ -565,6 +584,9 @@
             };
 
             const handleAiSort = async (dIdx) => {
+                if(!formData.apiKey) { alert("請先設定 API Key 才能使用 AI 排序"); return; }
+                if(formData.itinerary[dIdx].items.length < 2) { alert("至少需要兩個景點才能進行排序"); return; }
+
                 setGenerating(`${dIdx}-sort`);
                 const newItems = await autoSortItinerary(formData.apiKey, formData.itinerary[dIdx].items);
                 const newItin = [...formData.itinerary];
@@ -667,7 +689,9 @@
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <button onClick={()=>removeDay(dIdx)} className="text-wood-muted hover:text-red-500 bg-wood-bg p-2 rounded-full border border-wood-border z-20 relative"><Trash2 size={16}/></button>
-                                            <button onClick={()=>handleAiSort(dIdx)} disabled={generating} className="text-wood-accent hover:bg-wood-accent hover:text-white bg-wood-bg p-2 rounded-full border border-wood-border transition-colors"><Wand2 size={16}/></button>
+                                            <button onClick={()=>handleAiSort(dIdx)} disabled={generating} className="text-wood-accent hover:bg-wood-accent hover:text-white bg-wood-bg p-2 rounded-full border border-wood-border transition-colors">
+                                                {generating === `${dIdx}-sort` ? <Loader2 className="animate-spin" size={16}/> : <Wand2 size={16}/>}
+                                            </button>
                                         </div>
                                     </div>
                                     
