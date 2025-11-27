@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -79,6 +78,11 @@
       }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       input, select, textarea { font-size: 16px !important; }
+      
+      /* Drag and Drop Styles */
+      .item-dragging { opacity: 0.5; border: 2px dashed var(--color-accent); background: #fafafa; }
+      .day-droppable { min-height: 50px; transition: background 0.3s; }
+      .day-dragover { background-color: rgba(0,0,0,0.03); border-radius: 4px; }
     </style>
 
     <!-- React & Babel -->
@@ -125,7 +129,7 @@
             CloudSun, Plane, Hotel, Coins, CheckCircle2, MapPin, X, 
             Utensils, Train, Camera, ShoppingBag, Home, Info, 
             MessageCircle, Send, Sparkles, Map, Loader2, Settings, Plus, Trash2, Save, RotateCcw,
-            Cloud, CloudOff, Users, Palette, Receipt, Calculator, Minus, Calendar
+            Cloud, CloudOff, Users, Palette, Receipt, Calculator, Minus, Calendar, Wand2, GripVertical
         } from 'lucide-react';
         import { GoogleGenAI } from "@google/genai";
         
@@ -228,7 +232,7 @@
                         { time: '09:30', title: '清水寺 & 二三年坂', location: '清水寺', type: 'activity', cost: '門票 ¥500', mapQuery: 'Kiyomizu-dera', description: '世界遺產清水舞台，求姻緣的地主神社，漫步古色古香的坂道。' },
                         { time: '11:40', title: '八坂神社 & 花見小路', location: '八坂神社', type: 'activity', cost: '免費', mapQuery: 'Yasaka Shrine', description: '京都祇園的守護神社，接著漫步花見小路尋找藝妓身影。' },
                         { time: '13:25', title: '錦市場午餐', location: '錦市場', type: 'food', mapQuery: 'Nishiki Market', description: '「京都的廚房」，品嚐玉子燒、豆乳甜甜圈等小吃。' },
-                        { time: '15:00', title: '四条河河原町 / 平安神宮', location: '四条河原町', type: 'shopping', description: '自由逛街購物，或前往平安神宮參觀（本殿免費）。', mapQuery: 'Heian Shrine' },
+                        { time: '15:00', title: '四条河原町 / 平安神宮', location: '四条河原町', type: 'shopping', description: '自由逛街購物，或前往平安神宮參觀（本殿免費）。', mapQuery: 'Heian Shrine' },
                         { time: '18:30', title: '壽喜燒晚餐', location: '壽喜燒三條河原町店', type: 'food', description: '享受道地的關西壽喜燒。' },
                     ]
                 },
@@ -270,22 +274,6 @@
 
         // --- 服務與邏輯 ---
         const getAiService = (key) => key ? new GoogleGenAI({ apiKey: key }) : null;
-        const descriptionCache = {};
-
-        const getPlaceDescription = async (ai, placeName, location) => {
-            if (!ai) return "AI 服務未啟用";
-            const cacheKey = `${placeName}-${location}`;
-            if (descriptionCache[cacheKey]) return descriptionCache[cacheKey];
-            try {
-                const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
-                    contents: `用繁體中文介紹「${location} ${placeName}」，60字內，強調氛圍。`,
-                });
-                const text = response.text || "暫無介紹。";
-                descriptionCache[cacheKey] = text;
-                return text;
-            } catch (error) { return "無法連線至 AI 服務。"; }
-        };
 
         const getTravelAssistantResponse = async (ai, userMessage, context) => {
             if (!ai) return "請先輸入 API Key";
@@ -315,20 +303,6 @@
         );
 
         const AttractionModal = ({ item, apiKey, onClose }) => {
-            const [aiDesc, setAiDesc] = useState(null);
-            const [loading, setLoading] = useState(false);
-            useEffect(() => {
-                const fetchDesc = async () => {
-                    if ((item.mapQuery || item.title) && apiKey) {
-                        setLoading(true);
-                        const ai = getAiService(apiKey);
-                        const desc = await getPlaceDescription(ai, item.title, item.location);
-                        setAiDesc(desc);
-                        setLoading(false);
-                    }
-                };
-                fetchDesc();
-            }, [item, apiKey]);
             const mapLink = item.mapQuery 
                 ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}` 
                 : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location + ' ' + item.title)}`;
@@ -350,12 +324,7 @@
                                 </p>
                             </div>
                             {item.cost && <div className="text-center"><div className="inline-block text-xs text-wood-accent border border-wood-accent/30 px-6 py-2 tracking-widest uppercase">費用：{item.cost}</div></div>}
-                            <div className="bg-wood-bg border border-wood-border p-6 relative rounded-sm">
-                                <div className="flex gap-2 text-wood-accent mb-3 items-center">
-                                    <Sparkles size={16}/> <span className="text-xs font-serif italic font-bold tracking-wider">AI 導覽</span>
-                                </div>
-                                {loading ? <div className="text-xs text-wood-muted py-2">正在撰寫...</div> : <p className="text-xs text-wood-text/80 leading-relaxed font-light">{aiDesc || '...'}</p>}
-                            </div>
+                            
                             <a href={mapLink} target="_blank" className="block w-full text-center bg-wood-text text-white py-4 text-xs tracking-[0.25em] hover:bg-wood-accent uppercase font-medium transition-colors shadow-md">
                                 <div className="flex items-center justify-center gap-2"><Map size={14}/> 開啟地圖</div>
                             </a>
@@ -414,7 +383,7 @@
 
         const ExpenseTab = ({ expenses, onUpdate }) => {
             const [newItem, setNewItem] = useState({ item: '', cost: '', payer: '' });
-            const [splitCount, setSplitCount] = useState(2); // 預設 2 人平分
+            const [splitCount, setSplitCount] = useState(2); 
 
             const handleAdd = () => {
                 if(!newItem.item || !newItem.cost) return;
@@ -522,7 +491,6 @@
         };
 
         const EditForm = ({ data, onSave, onCancel, status }) => {
-            // 安全防護：確保 items 陣列存在，防止 Firebase 空陣列 Bug
             const safeData = {
                 ...data,
                 itinerary: (data.itinerary || []).map(day => ({
@@ -532,17 +500,22 @@
             };
 
             const [formData, setFormData] = useState(safeData);
+            const [generating, setGenerating] = useState({}); 
+            const [sorting, setSorting] = useState({});
             
+            // Drag and Drop State
+            const [draggedItem, setDraggedItem] = useState(null); // { dayIdx, itemIdx }
+            const [dragOverItem, setDragOverItem] = useState(null); // { dayIdx, itemIdx }
+
             const updateField = (field, val) => setFormData({...formData, [field]: val});
             const handleFlightChange = (idx, field, val) => { const newF = [...formData.flights]; newF[idx][field] = val; setFormData({...formData, flights: newF}); }
             const addFlight = () => setFormData({...formData, flights: [...formData.flights, { airline: '', flightNo: '', date: '', route: '', dep: '', arr: '' }]});
             const removeFlight = (idx) => setFormData({...formData, flights: formData.flights.filter((_, i) => i !== idx)});
             const handleItineraryChange = (dayIdx, field, val) => { const newI = [...formData.itinerary]; newI[dayIdx][field] = val; setFormData({...formData, itinerary: newI}); }
-            const addItem = (dayIdx) => { const newI = [...formData.itinerary]; newI[dayIdx].items.push({ time: '00:00', title: '新行程', location: '', type: 'activity', description: '' }); setFormData({...formData, itinerary: newI}); }
+            const addItem = (dayIdx) => { const newI = [...formData.itinerary]; newI[dayIdx].items.push({ time: '09:00', title: '新行程', location: '', type: 'activity', description: '' }); setFormData({...formData, itinerary: newI}); }
             const updateItem = (dayIdx, itemIdx, field, val) => { const newI = [...formData.itinerary]; newI[dayIdx].items[itemIdx][field] = val; setFormData({...formData, itinerary: newI}); }
             const removeItem = (dayIdx, itemIdx) => { const newI = [...formData.itinerary]; newI[dayIdx].items = newI[dayIdx].items.filter((_, i) => i !== itemIdx); setFormData({...formData, itinerary: newI}); }
             
-            // 使用 Date.now() 確保 ID 唯一，並預設 items 為空陣列
             const addDay = () => { 
                 const id = `day_${Date.now()}`; 
                 setFormData({...formData, itinerary: [...formData.itinerary, { id, date: '請選擇日期', title: '自由探索', items: [] }]}); 
@@ -550,7 +523,6 @@
             const removeDay = (idx) => { if(!confirm("確定刪除這一天？")) return; setFormData({...formData, itinerary: formData.itinerary.filter((_, i) => i !== idx)}); }
             const handleReset = () => { if(confirm("確定重置回預設範本？")) setFormData(DEFAULT_DATA); }
 
-            // 日期選擇處理器
             const handleDateSelect = (dayIdx, dateStr) => {
                 if(!dateStr) return;
                 const d = new Date(dateStr);
@@ -560,6 +532,152 @@
                 const dayName = days[d.getDay()];
                 const formatted = `${month}/${date} (${dayName})`;
                 handleItineraryChange(dayIdx, 'date', formatted);
+            };
+
+            // AI 自動生成描述與費用
+            const handleAutoGenerateDesc = async (dayIdx, itemIdx) => {
+                const item = formData.itinerary[dayIdx].items[itemIdx];
+                if (!item.title) {
+                    alert("請先輸入標題才能生成介紹！");
+                    return;
+                }
+                
+                const key = `${dayIdx}-${itemIdx}`;
+                setGenerating(prev => ({ ...prev, [key]: true }));
+                
+                try {
+                    const ai = getAiService(formData.apiKey);
+                    if (!ai) throw new Error("無 API Key");
+
+                    // 請求 JSON 格式
+                    const prompt = `請針對景點「${item.location} ${item.title}」提供繁體中文介紹(80字內)以及預估門票或餐費(例如: "門票 ¥500", "免費", "約 ¥1500")。
+                    請務必回傳純 JSON 格式，不要包含 Markdown 代碼區塊(例如 \`\`\`json)，格式如下：
+                    { "description": "...", "cost": "..." }`;
+                    
+                    const response = await ai.models.generateContent({
+                        model: 'gemini-2.5-flash',
+                        contents: prompt,
+                    });
+                    
+                    let text = response.text.trim();
+                    // 移除可能的 Markdown 包裝
+                    if (text.startsWith('```')) text = text.replace(/```json|```/g, '').trim();
+
+                    try {
+                        const json = JSON.parse(text);
+                        const newI = [...formData.itinerary];
+                        newI[dayIdx].items[itemIdx].description = json.description;
+                        newI[dayIdx].items[itemIdx].cost = json.cost;
+                        setFormData({...formData, itinerary: newI});
+                    } catch (parseError) {
+                        // 如果解析失敗，回退到純文字
+                         updateItem(dayIdx, itemIdx, 'description', text);
+                    }
+                } catch (e) {
+                    alert("生成失敗，請檢查 API Key 或網路連線。");
+                    console.error(e);
+                } finally {
+                    setGenerating(prev => ({ ...prev, [key]: false }));
+                }
+            };
+
+            // AI 智慧排序
+            const handleSmartSort = async (dayIdx) => {
+                const day = formData.itinerary[dayIdx];
+                if (day.items.length < 2) return;
+                
+                setSorting(prev => ({ ...prev, [dayIdx]: true }));
+                
+                try {
+                    const ai = getAiService(formData.apiKey);
+                    const itemsJson = JSON.stringify(day.items.map((it, idx) => ({ id: idx, title: it.title, location: it.location })));
+                    const prompt = `你是專業導遊。請將以下景點重新排序，規劃成最順路的行程，並從 09:00 開始估算合理的抵達時間。
+                    景點列表：${itemsJson}。
+                    請務必回傳純 JSON 陣列，不要包含 Markdown 代碼，格式如下：
+                    [ { "id": 原始ID(數字), "time": "HH:MM" } ]
+                    請依新順序排列陣列。`;
+
+                    const response = await ai.models.generateContent({
+                        model: 'gemini-2.5-flash',
+                        contents: prompt,
+                    });
+
+                    let text = response.text.trim();
+                    if (text.startsWith('```')) text = text.replace(/```json|```/g, '').trim();
+                    
+                    const sortedPlan = JSON.parse(text);
+                    
+                    // 根據回傳的 ID 重新建立 items 陣列
+                    const newItems = sortedPlan.map(plan => {
+                        const original = day.items[plan.id];
+                        return { ...original, time: plan.time };
+                    });
+
+                    if (newItems.length === day.items.length) {
+                         const newI = [...formData.itinerary];
+                         newI[dayIdx].items = newItems;
+                         setFormData({...formData, itinerary: newI});
+                    }
+                } catch (e) {
+                    alert("排序失敗，請稍後再試。");
+                    console.error(e);
+                } finally {
+                    setSorting(prev => ({ ...prev, [dayIdx]: false }));
+                }
+            };
+
+            // Drag and Drop Handlers
+            const onDragStart = (e, dayIdx, itemIdx) => {
+                setDraggedItem({ dayIdx, itemIdx });
+                // Firefox requires setData
+                e.dataTransfer.setData("text/plain", "");
+                e.dataTransfer.effectAllowed = "move";
+            };
+
+            const onDragEnter = (e, dayIdx, itemIdx) => {
+                e.preventDefault();
+                // 只在位置改變時更新，減少 render
+                if (!dragOverItem || dragOverItem.dayIdx !== dayIdx || dragOverItem.itemIdx !== itemIdx) {
+                    setDragOverItem({ dayIdx, itemIdx });
+                }
+            };
+
+            const onDragEnd = () => {
+                setDraggedItem(null);
+                setDragOverItem(null);
+            };
+
+            const onDrop = (e, targetDayIdx, targetItemIdx) => {
+                e.preventDefault();
+                if (!draggedItem) return;
+
+                const { dayIdx: sourceDayIdx, itemIdx: sourceItemIdx } = draggedItem;
+
+                // 複製整個行程資料
+                const newItinerary = [...formData.itinerary];
+                
+                // 取出被拖曳的項目
+                const [movedItem] = newItinerary[sourceDayIdx].items.splice(sourceItemIdx, 1);
+                
+                // 插入到新位置
+                // 如果 targetItemIdx 是 -1 (代表拖到該天的空白處)，則加到最後
+                if (targetItemIdx === -1) {
+                    newItinerary[targetDayIdx].items.push(movedItem);
+                } else {
+                    newItinerary[targetDayIdx].items.splice(targetItemIdx, 0, movedItem);
+                }
+
+                setFormData({ ...formData, itinerary: newItinerary });
+                onDragEnd();
+            };
+
+            // 用於處理拖曳到該天但沒有特定項目上的情況 (加到最後)
+            const onDropToDay = (e, dayIdx) => {
+                // 如果已經在 item 上觸發 drop，stopPropagation 會阻止這裡
+                // 但為了保險，我們只在 dragOverItem 為 null 或者指向該天時處理
+                if (draggedItem && (!dragOverItem || dragOverItem.dayIdx === dayIdx)) {
+                     // 邏輯合併到 onDrop 處理
+                }
             };
 
             return (
@@ -596,11 +714,20 @@
                                 <button onClick={addDay} className="text-wood-accent hover:text-wood-text flex items-center text-xs gap-1 font-bold bg-white px-4 py-2 border border-wood-accent rounded-full transition-colors"><Plus size={14}/> 新增天數</button>
                             </div>
                             {formData.itinerary.map((day, dIdx) => (
-                                <div key={dIdx} className="border border-wood-border bg-white p-5 rounded-sm shadow-sm relative">
+                                <div 
+                                    key={dIdx} 
+                                    className={`border border-wood-border bg-white p-5 rounded-sm shadow-sm relative transition-colors ${dragOverItem?.dayIdx === dIdx && !dragOverItem?.itemIdx ? 'day-dragover' : ''}`}
+                                    onDragOver={(e) => { e.preventDefault(); }}
+                                    onDrop={(e) => { 
+                                        // 如果直接放開在 Day 容器上（而不是 Item 上），則視為加到最後
+                                        if (e.target === e.currentTarget || e.target.classList.contains('day-droppable')) {
+                                            onDrop(e, dIdx, -1);
+                                        }
+                                    }}
+                                >
                                     <div className="absolute top-0 left-0 w-1 h-full bg-wood-border"></div>
                                     <div className="flex justify-between items-start mb-4 pl-3 gap-2 relative z-0">
                                         <div className="flex-1 space-y-2">
-                                            {/* 日期選擇器 */}
                                             <div className="flex gap-2 items-center relative z-10">
                                                 <input value={day.date} onChange={e=>handleItineraryChange(dIdx,'date',e.target.value)} className="bg-wood-bg p-3 text-sm text-wood-accent font-bold border border-wood-border w-full rounded-sm"/>
                                                 <div className="relative shrink-0">
@@ -608,25 +735,71 @@
                                                     <input type="date" onChange={(e) => handleDateSelect(dIdx, e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" />
                                                 </div>
                                             </div>
-                                            <input value={day.title} onChange={e=>handleItineraryChange(dIdx,'title',e.target.value)} className="bg-wood-bg p-3 text-base font-bold text-wood-text border border-wood-border w-full rounded-sm font-serif"/>
+                                            <div className="flex gap-2 items-center">
+                                                <input value={day.title} onChange={e=>handleItineraryChange(dIdx,'title',e.target.value)} className="bg-wood-bg p-3 text-base font-bold text-wood-text border border-wood-border w-full rounded-sm font-serif"/>
+                                                <button 
+                                                    onClick={() => handleSmartSort(dIdx)} 
+                                                    className="p-3 bg-wood-accent/10 border border-wood-accent text-wood-accent rounded-sm hover:bg-wood-accent hover:text-white transition-colors flex gap-1 items-center shrink-0 whitespace-nowrap text-xs font-bold"
+                                                    title="AI 智慧排序 (最佳路徑)"
+                                                >
+                                                    {sorting[dIdx] ? <Loader2 size={16} className="animate-spin"/> : <Wand2 size={16}/>}
+                                                    {sorting[dIdx] ? '計算中' : '最佳路徑'}
+                                                </button>
+                                            </div>
                                         </div>
                                         <button onClick={()=>removeDay(dIdx)} className="ml-2 text-wood-muted bg-wood-bg p-3 rounded-full shrink-0 relative z-20 hover:bg-red-50 hover:text-red-500 transition-colors border border-transparent hover:border-red-200"><Trash2 size={18}/></button>
                                     </div>
-                                    <div className="space-y-4 pl-3">
-                                        {day.items.map((item, iIdx) => (
-                                            <div key={iIdx} className="bg-wood-bg p-4 border border-wood-border text-sm space-y-3 relative group rounded-sm">
-                                                <button onClick={()=>removeItem(dIdx, iIdx)} className="absolute top-2 right-2 text-wood-muted p-2"><Trash2 size={16}/></button>
-                                                <div className="flex gap-2 flex-wrap">
-                                                    <input value={item.time} onChange={e=>updateItem(dIdx, iIdx, 'time', e.target.value)} className="w-20 bg-white p-3 border border-wood-border rounded-sm text-center font-mono" placeholder="時間"/>
-                                                    <select value={item.type} onChange={e=>updateItem(dIdx, iIdx, 'type', e.target.value)} className="bg-white p-3 border border-wood-border rounded-sm flex-1 min-w-[100px]">
-                                                        <option value="activity">景點</option><option value="food">餐廳</option><option value="transport">交通</option><option value="hotel">住宿</option><option value="shopping">購物</option>
-                                                    </select>
+                                    
+                                    <div className="space-y-4 pl-3 day-droppable min-h-[50px]">
+                                        {day.items.map((item, iIdx) => {
+                                            const isDragging = draggedItem?.dayIdx === dIdx && draggedItem?.itemIdx === iIdx;
+                                            const isOver = dragOverItem?.dayIdx === dIdx && dragOverItem?.itemIdx === iIdx;
+                                            
+                                            return (
+                                                <div 
+                                                    key={iIdx} 
+                                                    draggable
+                                                    onDragStart={(e) => onDragStart(e, dIdx, iIdx)}
+                                                    onDragEnter={(e) => onDragEnter(e, dIdx, iIdx)}
+                                                    onDragEnd={onDragEnd}
+                                                    onDragOver={(e) => e.preventDefault()}
+                                                    onDrop={(e) => { e.stopPropagation(); onDrop(e, dIdx, iIdx); }}
+                                                    className={`bg-wood-bg p-4 border border-wood-border text-sm space-y-3 relative group rounded-sm transition-all ${isDragging ? 'item-dragging' : ''} ${isOver ? 'border-wood-accent border-2' : ''}`}
+                                                >
+                                                    <div className="absolute top-2 left-2 text-wood-muted cursor-move opacity-50 hover:opacity-100 p-1">
+                                                        <GripVertical size={16}/>
+                                                    </div>
+                                                    <button onClick={()=>removeItem(dIdx, iIdx)} className="absolute top-2 right-2 text-wood-muted p-2 hover:text-red-500"><Trash2 size={16}/></button>
+                                                    
+                                                    <div className="flex gap-2 flex-wrap pl-6">
+                                                        <input type="time" value={item.time} onChange={e=>updateItem(dIdx, iIdx, 'time', e.target.value)} className="w-24 bg-white p-3 border border-wood-border rounded-sm text-center font-mono cursor-pointer" />
+                                                        <select value={item.type} onChange={e=>updateItem(dIdx, iIdx, 'type', e.target.value)} className="bg-white p-3 border border-wood-border rounded-sm flex-1 min-w-[100px]">
+                                                            <option value="activity">景點</option><option value="food">餐廳</option><option value="transport">交通</option><option value="hotel">住宿</option><option value="shopping">購物</option>
+                                                        </select>
+                                                    </div>
+                                                    <input value={item.title} onChange={e=>updateItem(dIdx, iIdx, 'title', e.target.value)} className="w-full bg-white p-3 border border-wood-border rounded-sm font-bold" placeholder="標題 (例如: 金閣寺)"/>
+                                                    
+                                                    <div className="flex gap-2">
+                                                        <input value={item.location} onChange={e=>updateItem(dIdx, iIdx, 'location', e.target.value)} className="flex-1 bg-white p-3 border border-wood-border rounded-sm" placeholder="地點"/>
+                                                        <input value={item.cost||''} onChange={e=>updateItem(dIdx, iIdx, 'cost', e.target.value)} className="w-28 bg-white p-3 border border-wood-border rounded-sm text-center" placeholder="費用 (AI自動填)"/>
+                                                    </div>
+                                                    
+                                                    <div className="relative">
+                                                        <textarea value={item.description} onChange={e=>updateItem(dIdx, iIdx, 'description', e.target.value)} className="w-full bg-white p-3 border border-wood-border h-24 rounded-sm" placeholder="描述 (關於這裡...)"/>
+                                                        <button 
+                                                            onClick={() => handleAutoGenerateDesc(dIdx, iIdx)}
+                                                            className="absolute bottom-3 right-3 bg-wood-accent/10 hover:bg-wood-accent hover:text-white text-wood-accent border border-wood-accent p-1.5 rounded-sm transition-all flex items-center gap-1 text-xs"
+                                                            title="AI 自動撰寫介紹與估價"
+                                                        >
+                                                            {generating[`${dIdx}-${iIdx}`] ? <Loader2 size={14} className="animate-spin"/> : <Sparkles size={14}/>}
+                                                            {generating[`${dIdx}-${iIdx}`] ? '估算中...' : 'AI 介紹 & 估價'}
+                                                        </button>
+                                                    </div>
+
+                                                    <input value={item.mapQuery||''} onChange={e=>updateItem(dIdx, iIdx, 'mapQuery', e.target.value)} className="w-full bg-white p-3 border border-wood-border rounded-sm" placeholder="Google Maps 關鍵字"/>
                                                 </div>
-                                                <input value={item.title} onChange={e=>updateItem(dIdx, iIdx, 'title', e.target.value)} className="w-full bg-white p-3 border border-wood-border rounded-sm font-bold" placeholder="標題"/>
-                                                <input value={item.location} onChange={e=>updateItem(dIdx, iIdx, 'location', e.target.value)} className="w-full bg-white p-3 border border-wood-border rounded-sm" placeholder="地點"/>
-                                                <input value={item.mapQuery||''} onChange={e=>updateItem(dIdx, iIdx, 'mapQuery', e.target.value)} className="w-full bg-white p-3 border border-wood-border rounded-sm" placeholder="Google Maps 關鍵字"/>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                         <button onClick={()=>addItem(dIdx)} className="w-full py-4 border border-dashed border-wood-muted text-wood-muted hover:text-wood-accent hover:border-wood-accent text-sm rounded-sm transition-colors">+ 新增行程</button>
                                     </div>
                                 </div>
