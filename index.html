@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -78,6 +79,10 @@
       }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       input, select, textarea { font-size: 16px !important; }
+      
+      /* Hide date input native icon to use custom one */
+      .date-input-wrapper { position: relative; display: flex; align-items: center; }
+      .date-input-trigger { position: absolute; right: 0; top: 0; bottom: 0; width: 40px; opacity: 0; cursor: pointer; }
     </style>
 
     <!-- React & Babel -->
@@ -124,7 +129,7 @@
             CloudSun, Plane, Hotel, Coins, CheckCircle2, MapPin, X, 
             Utensils, Train, Camera, ShoppingBag, Home, Info, 
             MessageCircle, Send, Sparkles, Map, Loader2, Settings, Plus, Trash2, Save, RotateCcw,
-            Cloud, CloudOff, Users, Palette, Receipt, Calculator, Minus
+            Cloud, CloudOff, Users, Palette, Receipt, Calculator, Minus, Calendar
         } from 'lucide-react';
         import { GoogleGenAI } from "@google/genai";
         
@@ -186,13 +191,13 @@
             }
         };
 
-        // --- 預設資料 (完整版 + 新增欄位) ---
+        // --- 預設資料 ---
         const DEFAULT_DATA = {
             tripName: "京都・大阪",
             tripDate: "2024.10.16 — 10.20",
             apiKey: GEMINI_API_KEY,
-            theme: 'wood', // 預設主題
-            expenses: [], // 記帳資料 { id, item, cost, payer, date }
+            theme: 'wood', 
+            expenses: [], 
             flights: [
                 { airline: '中華航空', flightNo: 'CI0152', date: '10/16 (四)', route: 'TPE -> KIX', dep: '09:00', arr: '12:50' },
                 { airline: '中華航空', flightNo: 'CI0153', date: '10/20 (一)', route: 'KIX -> TPE', dep: '14:00', arr: '15:55' }
@@ -521,8 +526,17 @@
         };
 
         const EditForm = ({ data, onSave, onCancel, status }) => {
-            const [formData, setFormData] = useState(data);
-            const safeUpdate = (newData) => setFormData(JSON.parse(JSON.stringify(newData)));
+            // 安全防護：確保 items 陣列存在，防止 Firebase 空陣列 Bug
+            const safeData = {
+                ...data,
+                itinerary: (data.itinerary || []).map(day => ({
+                    ...day,
+                    items: day.items || []
+                }))
+            };
+
+            const [formData, setFormData] = useState(safeData);
+            
             const updateField = (field, val) => setFormData({...formData, [field]: val});
             const handleFlightChange = (idx, field, val) => { const newF = [...formData.flights]; newF[idx][field] = val; setFormData({...formData, flights: newF}); }
             const addFlight = () => setFormData({...formData, flights: [...formData.flights, { airline: '', flightNo: '', date: '', route: '', dep: '', arr: '' }]});
@@ -531,9 +545,26 @@
             const addItem = (dayIdx) => { const newI = [...formData.itinerary]; newI[dayIdx].items.push({ time: '00:00', title: '新行程', location: '', type: 'activity', description: '' }); setFormData({...formData, itinerary: newI}); }
             const updateItem = (dayIdx, itemIdx, field, val) => { const newI = [...formData.itinerary]; newI[dayIdx].items[itemIdx][field] = val; setFormData({...formData, itinerary: newI}); }
             const removeItem = (dayIdx, itemIdx) => { const newI = [...formData.itinerary]; newI[dayIdx].items = newI[dayIdx].items.filter((_, i) => i !== itemIdx); setFormData({...formData, itinerary: newI}); }
-            const addDay = () => { const id = `day${formData.itinerary.length + 1}`; setFormData({...formData, itinerary: [...formData.itinerary, { id, date: '日期', title: '新的一天', items: [] }]}); }
+            
+            // 使用 Date.now() 確保 ID 唯一，並預設 items 為空陣列
+            const addDay = () => { 
+                const id = `day_${Date.now()}`; 
+                setFormData({...formData, itinerary: [...formData.itinerary, { id, date: '請選擇日期', title: '自由探索', items: [] }]}); 
+            }
             const removeDay = (idx) => { if(!confirm("確定刪除這一天？")) return; setFormData({...formData, itinerary: formData.itinerary.filter((_, i) => i !== idx)}); }
             const handleReset = () => { if(confirm("確定重置回預設範本？")) setFormData(DEFAULT_DATA); }
+
+            // 日期選擇處理器
+            const handleDateSelect = (dayIdx, dateStr) => {
+                if(!dateStr) return;
+                const d = new Date(dateStr);
+                const month = d.getMonth() + 1;
+                const date = d.getDate();
+                const days = ['日', '一', '二', '三', '四', '五', '六'];
+                const dayName = days[d.getDay()];
+                const formatted = `${month}/${date} (${dayName})`;
+                handleItineraryChange(dayIdx, 'date', formatted);
+            };
 
             return (
                 <div className="bg-wood-bg min-h-screen text-wood-text pb-24 font-sans absolute inset-0 z-50 overflow-y-auto">
@@ -573,7 +604,14 @@
                                     <div className="absolute top-0 left-0 w-1 h-full bg-wood-border"></div>
                                     <div className="flex justify-between items-start mb-4 pl-3 gap-2">
                                         <div className="flex-1 space-y-2">
-                                            <input value={day.date} onChange={e=>handleItineraryChange(dIdx,'date',e.target.value)} className="bg-wood-bg p-3 text-sm text-wood-accent font-bold border border-wood-border w-full rounded-sm"/>
+                                            {/* 日期選擇器 */}
+                                            <div className="flex gap-2 items-center">
+                                                <input value={day.date} onChange={e=>handleItineraryChange(dIdx,'date',e.target.value)} className="bg-wood-bg p-3 text-sm text-wood-accent font-bold border border-wood-border w-full rounded-sm"/>
+                                                <div className="relative">
+                                                    <button className="p-3 bg-wood-hl border border-wood-border rounded-sm text-wood-accent hover:bg-wood-border transition-colors"><Calendar size={20}/></button>
+                                                    <input type="date" onChange={(e) => handleDateSelect(dIdx, e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                                                </div>
+                                            </div>
                                             <input value={day.title} onChange={e=>handleItineraryChange(dIdx,'title',e.target.value)} className="bg-wood-bg p-3 text-base font-bold text-wood-text border border-wood-border w-full rounded-sm font-serif"/>
                                         </div>
                                         <button onClick={()=>removeDay(dIdx)} className="ml-2 text-wood-muted bg-wood-bg p-3 rounded-full"><Trash2 size={18}/></button>
@@ -623,10 +661,16 @@
                     const unsubscribe = onValue(dbRef, (snapshot) => {
                         const val = snapshot.val();
                         if (val) {
-                            // 合併預設值，防止新欄位(expenses/theme)缺失
+                            // 關鍵修復：Firebase 會自動刪除空陣列，這裡必須手動補回 items: []
+                            const sanitizedItinerary = (val.itinerary || []).map(day => ({
+                                ...day,
+                                items: day.items || [] 
+                            }));
+
                             setData(prev => ({
                                 ...DEFAULT_DATA,
                                 ...val,
+                                itinerary: sanitizedItinerary,
                                 expenses: val.expenses || [],
                                 theme: val.theme || 'wood'
                             }));
@@ -662,18 +706,27 @@
             }, [data.theme]);
 
             const saveData = async (newData) => {
+                // 再次確保儲存前 items 不是 undefined
+                const cleanData = {
+                    ...newData,
+                    itinerary: newData.itinerary.map(day => ({
+                        ...day,
+                        items: day.items || []
+                    }))
+                };
+
                 if (dbRef) {
                     setSyncStatus('syncing');
                     try {
-                        await set(dbRef, newData);
+                        await set(dbRef, cleanData);
                         setIsEdit(false);
                     } catch (e) {
                         alert("同步失敗：" + e.message);
                         setSyncStatus('error');
                     }
                 } else {
-                    setData(newData);
-                    localStorage.setItem('tripData_v3', JSON.stringify(newData));
+                    setData(cleanData);
+                    localStorage.setItem('tripData_v3', JSON.stringify(cleanData));
                     setIsEdit(false);
                 }
             };
