@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iPhone 照片一鍵調色</title>
+    <title>iPhone 照片一鍵調色 (可儲存)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/camanjs/4.1.2/caman.full.min.js"></script>
     <style>
-        /* 基礎樣式 */
+        /* (CSS 樣式與之前版本相同，請參考前一次回覆的 CSS 部分) */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
             background-color: #f0f0f5;
@@ -13,13 +14,11 @@
             text-align: center;
         }
 
-        /* 標題樣式 */
         h1 {
             color: #1c1c1e;
             margin-bottom: 20px;
         }
 
-        /* 檔案上傳樣式 */
         #upload-container {
             margin-bottom: 20px;
             padding: 15px;
@@ -29,7 +28,6 @@
             cursor: pointer;
         }
 
-        /* 按鈕容器樣式 */
         #controls-container {
             display: flex;
             flex-wrap: wrap;
@@ -38,7 +36,6 @@
             margin-bottom: 20px;
         }
 
-        /* 按鈕樣式 (Vibe Coding 按鈕) */
         .vibe-button {
             background-color: #007aff;
             color: white;
@@ -59,7 +56,6 @@
             transform: scale(0.98);
         }
 
-        /* 圖片和畫布容器 */
         #image-container {
             max-width: 100%;
             margin: 0 auto 20px;
@@ -68,15 +64,13 @@
             overflow: hidden;
         }
         
-        /* 圖片和畫布本身 */
         #photo-canvas {
-            display: none; /* 預設隱藏，直到圖片載入 */
+            display: none;
             max-width: 100%;
             height: auto;
             border-radius: 12px;
         }
 
-        /* 儲存按鈕 */
         #save-button {
             background-color: #34c759;
             color: white;
@@ -86,7 +80,7 @@
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            display: none; /* 預設隱藏 */
+            display: none;
             transition: background-color 0.2s;
         }
 
@@ -94,7 +88,6 @@
             background-color: #28a745;
         }
 
-        /* 提示文字 */
         .instruction {
             color: #8e8e93;
             margin-top: 10px;
@@ -103,7 +96,7 @@
 </head>
 <body>
 
-    <h1>✨ iPhone 照片一鍵調色 ✨</h1>
+    <h1>✨ iPhone 照片一鍵調色 (可儲存) ✨</h1>
     
     <div id="upload-container">
         <label for="photo-upload">點擊此處選擇照片（手機相簿/檔案）</label>
@@ -120,7 +113,7 @@
         <button class="vibe-button" data-filter="filter6">6. 落日氛圍感</button>
         <button class="vibe-button" data-filter="filter7">7. 日常街拍濾鏡</button>
         <button class="vibe-button" data-filter="filter8">8. 絕美日落濾鏡</button>
-        <button class="vibe-button" data-filter-name="filter9">9. 靜謐暗調</button>
+        <button class="vibe-button" data-filter="filter9">9. 靜謐暗調</button>
         <button class="vibe-button" data-filter="reset">🔄 重置</button>
     </div>
 
@@ -132,29 +125,31 @@
 
     <script>
         // ----------------------------------------------------
-        // 1. 定義調色參數 (根據您提供的圖片)
+        // 1. 定義調色參數 (使用 CamanJS 支援的屬性)
         // ----------------------------------------------------
-        const FILTERS = {
-            // 曝光(Exposure), 鮮明度(Vibrance/Clarity), 高光(Highlights), 陰影(Shadows), 對比(Contrast), 
-            // 亮度(Brightness), 飽和度(Saturation), 自然飽和度(Vibrance), 色溫(Temperature), 色調(Tint),
-            // 銳度(Sharpness), 黑點(Black Point), 清晰度(Clarity), 雜色(Noise Reduction), 暈影(Vignette)
-            // 注意: 網頁Canvas只能處理 **亮度/對比/飽和度/色相**，其他如高光/陰影/銳度需要複雜的圖像處理，這裡使用近似的濾鏡效果。
-            // 我們主要使用 CSS filter 屬性來模擬大多數效果，CSS filter **無法**單獨調整高光/陰影/黑點，只能近似。
+        // CamanJS 支援的參數：brightness, contrast, saturation, hue, exposure, 
+        // clip, sepia, vintage, sunrise, lomo (可以模擬高光/陰影/色溫)
+        
+        // 原始參數對應 CamanJS 屬性:
+        // 曝光 -> exposure
+        // 鮮明度 (Clarity) -> clarity (CamanJS 內建效果, 較複雜) / 對比 (contrast)
+        // 高光 -> clip (正值), shadows (負值)
+        // 陰影 -> shadows
+        // 對比 -> contrast
+        // 飽和度 -> saturation
+        // 色溫/色調 -> hue/channels.red/green/blue (調整 RGB 三色通道)
 
-            // 為了簡化和網頁相容性，我們使用以下參數：
-            // brightness(亮度), contrast(對比), saturate(飽和度), hue-rotate(色相旋轉, 模擬色調), 
-            // sepia/grayscale (模擬色溫/濾鏡), blur (模擬清晰度)
-            
-            // 網頁調色公式 (近似)
-            'filter1': { brightness: 1.10, contrast: 1.05, saturate: 1.00, sepia: 0.10, hueRotate: 0 }, // 冷白皮濾鏡 (微亮, 微對比, 略冷)
-            'filter2': { brightness: 1.05, contrast: 1.05, saturate: 1.15, sepia: 0.05, hueRotate: 0 }, // 發光去灰 (亮, 飽和)
-            'filter3': { brightness: 1.10, contrast: 1.15, saturate: 1.20, sepia: 0.05, hueRotate: 0 }, // 美食調 (高亮, 高飽和, 高對比)
-            'filter4': { brightness: 1.10, contrast: 0.90, saturate: 0.85, sepia: 0.15, hueRotate: 0 }, // 奶油ins風 (柔和, 低飽和, 略暖)
-            'filter5': { brightness: 0.90, contrast: 1.05, saturate: 1.10, sepia: 0.25, hueRotate: 0 }, // 富士感濾鏡 (略暗, 高飽和, 暖調/黃色)
-            'filter6': { brightness: 1.15, contrast: 1.10, saturate: 1.25, sepia: 0.30, hueRotate: -5 }, // 落日氛圍感 (非常暖, 高亮, 高飽和)
-            'filter7': { brightness: 1.05, contrast: 1.20, saturate: 1.40, sepia: 0.00, hueRotate: 0 }, // 日常街拍濾鏡 (高對比, 極高飽和)
-            'filter8': { brightness: 1.10, contrast: 1.20, saturate: 1.50, sepia: 0.40, hueRotate: 10 }, // 絕美日落濾鏡 (極致暖調, 高對比, 高飽和)
-            'filter9': { brightness: 0.85, contrast: 1.20, saturate: 0.90, sepia: 0.00, hueRotate: 0 }, // 靜謐暗調 (暗, 高對比, 低飽和)
+        const FILTERS = {
+            // 參數來自您的圖片，映射到 CamanJS 支援的屬性
+            'filter1': { exposure: 40, contrast: 35, saturation: 10, vibrance: -10, clarity: 20 }, // 冷白皮濾鏡
+            'filter2': { exposure: 5, contrast: 17, saturation: 12, vibrance: 12, hue: 0 }, // 發光去灰
+            'filter3': { exposure: 30, contrast: 20, saturation: 10, vibrance: 10, hue: 10, clip: 0 }, // 美食調
+            'filter4': { exposure: 10, contrast: -21, saturation: -15, vibrance: -15, hue: 0 }, // 奶油ins風
+            'filter5': { exposure: -10, contrast: 10, saturation: 6, vibrance: 6, hue: 10 }, // 富士感濾鏡
+            'filter6': { exposure: 55, contrast: 25, saturation: 25, vibrance: 25, hue: 0 }, // 落日氛圍感
+            'filter7': { exposure: 59, contrast: 41, saturation: 41, vibrance: 41, hue: 30 }, // 日常街拍濾鏡
+            'filter8': { exposure: -60, contrast: 50, saturation: 50, vibrance: 50, hue: 35 }, // 絕美日落濾鏡
+            'filter9': { exposure: -10, contrast: 0, saturation: -10, vibrance: -15, hue: -20 }, // 靜謐暗調
         };
         
         // ----------------------------------------------------
@@ -162,13 +157,12 @@
         // ----------------------------------------------------
         const fileInput = document.getElementById('photo-upload');
         const canvas = document.getElementById('photo-canvas');
-        const ctx = canvas.getContext('2d');
-        const controlsContainer = document.getElementById('controls-container');
         const saveButton = document.getElementById('save-button');
-        let originalImage = null; // 儲存原始圖片物件
+        let camanInstance = null; // 儲存 Caman 實例
+        let originalImageURL = null; // 儲存原始圖片的 DataURL
 
         /**
-         * 讀取用戶選擇的圖片並繪製到 Canvas
+         * 讀取用戶選擇的圖片並初始化 CamanJS
          */
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -176,96 +170,89 @@
 
             const reader = new FileReader();
             reader.onload = function(event) {
-                originalImage = new Image();
-                originalImage.onload = function() {
-                    // 設置 Canvas 尺寸與圖片相同
-                    canvas.width = originalImage.width;
-                    canvas.height = originalImage.height;
-
-                    // 繪製原始圖片
-                    ctx.drawImage(originalImage, 0, 0);
-
-                    // 顯示 Canvas 和儲存按鈕
+                originalImageURL = event.target.result;
+                
+                // 必須先設置圖片屬性讓 CamanJS 知道要讀取哪個圖片
+                const img = new Image();
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
                     canvas.style.display = 'block';
                     saveButton.style.display = 'block';
-                    
-                    // 清除所有濾鏡，顯示原始圖片
-                    applyCssFilter('reset');
-                };
-                originalImage.src = event.target.result;
+
+                    // 初始化 Caman 實例
+                    camanInstance = Caman('#photo-canvas', originalImageURL, function () {
+                        // 初始化後立即重置
+                        this.revert(true);
+                    });
+                }
+                img.src = originalImageURL;
             };
             reader.readAsDataURL(file);
         });
 
         /**
-         * 應用 CSS 濾鏡到 Canvas 元素
+         * 應用 CamanJS 濾鏡效果
          * @param {string} filterKey - 濾鏡的鍵名 (e.g., 'filter1', 'reset')
          */
-        function applyCssFilter(filterKey) {
-            if (!originalImage) {
+        function applyFilter(filterKey) {
+            if (!camanInstance) {
                 alert('請先上傳照片！');
                 return;
             }
 
-            let filterStyle = '';
-            if (filterKey === 'reset') {
-                filterStyle = ''; // 清空濾鏡
-            } else if (FILTERS[filterKey]) {
-                const f = FILTERS[filterKey];
-                // 組合 CSS filter 字串
-                filterStyle = `
-                    brightness(${f.brightness}) 
-                    contrast(${f.contrast}) 
-                    saturate(${f.saturate}) 
-                    hue-rotate(${f.hueRotate}deg) 
-                    sepia(${f.sepia})
-                `.replace(/\s+/g, ' ').trim(); // 移除多餘空白
-            } else {
-                return; // 無效濾鏡名稱
-            }
+            // 1. 重置為原始圖片
+            camanInstance.revert(false); // 保持當前圖像數據，但移除濾鏡歷史
             
-            // 應用 CSS 濾鏡到 Canvas
-            canvas.style.filter = filterStyle;
+            if (filterKey === 'reset') {
+                camanInstance.render(); // 重新渲染 (即顯示原始圖片)
+                return;
+            }
+
+            const f = FILTERS[filterKey];
+            if (!f) return;
+
+            // 2. 應用濾鏡參數
+            camanInstance.process('vibe_filter', function() {
+                // 將所有調整應用於 this
+                this.exposure(f.exposure || 0);
+                this.contrast(f.contrast || 0);
+                this.saturation(f.saturation || 0);
+                this.vibrance(f.vibrance || 0);
+                this.clarity(f.clarity || 0); 
+                this.hue(f.hue || 0);
+                // 為了模擬更複雜的影調，我們可以使用 sepia 或其他效果
+                // this.sepia(f.sepia || 0); 
+            });
+
+            // 3. 渲染最終效果
+            camanInstance.render();
         }
 
         /**
          * 處理按鈕點擊事件
          */
-        controlsContainer.addEventListener('click', (e) => {
+        document.getElementById('controls-container').addEventListener('click', (e) => {
             const button = e.target.closest('.vibe-button');
             if (button) {
                 const filter = button.dataset.filter;
-                applyCssFilter(filter);
+                applyFilter(filter);
             }
         });
 
         /**
-         * 儲存圖片功能
+         * 儲存圖片功能 (使用 CamanJS 內建的 save 函式)
          */
         saveButton.addEventListener('click', () => {
-            if (!originalImage) {
+            if (!camanInstance) {
                 alert('沒有可儲存的照片！請先上傳並編輯。');
                 return;
             }
 
-            // 為了儲存帶有 CSS filter 的圖片，我們需要使用外部函式庫或將 Canvas 繪製到一個新的 Canvas。
-            // 最簡單的方式是：直接下載當前 Canvas 顯示的內容（如果瀏覽器支援）。
-            
-            // **注意：** CSS filter 應用在 Canvas 元素上，但不會影響 Canvas 的實際像素資料。
-            // 為了下載**編輯後**的圖片，你需要使用一個 WebGL/WASM 函式庫來在像素級別應用濾鏡，這超出了純 HTML/JS 的範圍。
-            // **這裡提供的是下載原始圖片的快速方案，使用者需手動截圖編輯後的圖片。**
-            
-            // 由於純 JS 無法將 CSS filter 內嵌到圖片數據，
-            // 這裡的做法是將當前 Canvas 導出（導出的是應用濾鏡前的像素數據，但對於簡單應用夠用），
-            // 更好的方式是引導用戶長按或右鍵點擊圖片進行保存。
-            
-            const dataURL = canvas.toDataURL('image/png'); // 導出為 PNG 格式
-            const a = document.createElement('a');
-            a.href = dataURL;
-            a.download = 'iPhone_Vibe_Edit.png';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            // 使用 CamanJS 的 save 函式，它將 Canvas 轉換為圖片並觸發下載
+            camanInstance.save({
+                name: "iPhone_Vibe_Edit.png" 
+            });
             alert('照片已開始下載！');
         });
 
