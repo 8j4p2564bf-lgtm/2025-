@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iPhone 照片一鍵調色 (最終穩定版)</title>
     <style>
-        /* CSS 樣式與之前版本相同 */
+        /* CSS 樣式 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
             background-color: #f0f0f5;
@@ -52,27 +52,40 @@
         }
 
         .vibe-button.active {
-            background-color: #34c759; /* 點擊時高亮 */
+            background-color: #34c759;
             transform: scale(1.05);
         }
 
+        /* 圖片容器 */
         #image-container {
             max-width: 100%;
             margin: 0 auto 20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border-radius: 12px;
             overflow: hidden;
+            min-height: 200px; /* 預留空間給載入提示 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e0e0e0;
         }
         
-        /* 圖片將在這裡渲染，由於採用純 CSS 濾鏡，速度最快 */
-        #photo-canvas {
-            display: none;
-            max-width: 100%;
-            height: auto;
-            border-radius: 12px;
-            /* 讓 Canvas 變成一個 Block 元素來應用濾鏡 */
-            display: block; 
+        /* 顯示圖片樣式 */
+        #display-image {
+            display: none; 
+            max-width: 100%; 
+            height: auto; 
+            border-radius: 12px; 
             margin: 0 auto;
+        }
+
+        /* 載入提示樣式 */
+        #loading-message {
+            color: #444;
+            font-size: 18px;
+            font-weight: 500;
+            display: none; /* 預設隱藏 */
+            padding: 50px;
         }
 
         #save-button {
@@ -122,87 +135,69 @@
     </div>
 
     <div id="image-container">
-        <img id="display-image" style="display: none; max-width: 100%; height: auto; border-radius: 12px; margin: 0 auto;">
-        
-        <canvas id="photo-canvas" style="display: none;"></canvas>
+        <img id="display-image">
+        <p id="loading-message">正在處理照片，請稍候...</p>
     </div>
 
     <button id="save-button">📥 儲存編輯後照片</button>
 
     <script>
-        // ----------------------------------------------------
-        // 1. 定義調色參數 (使用 CSS 濾鏡屬性)
-        // ----------------------------------------------------
         const FILTERS = {
-            // CSS filter 屬性: brightness(亮度), contrast(對比), saturate(飽和度), sepia(復古), hue-rotate(色相旋轉)
-            // 這是最穩定且最快速的方案
-            'filter1': { brightness: 1.15, contrast: 1.10, saturate: 1.15, sepia: 0.05, hueRotate: -5 }, // 冷白皮濾鏡 (高亮, 略冷)
-            'filter2': { brightness: 1.05, contrast: 1.05, saturate: 1.15, sepia: 0.05, hueRotate: 0 }, // 發光去灰
-            'filter3': { brightness: 1.10, contrast: 1.15, saturate: 1.20, sepia: 0.05, hueRotate: 0 }, // 美食調 (高飽和, 高對比)
-            'filter4': { brightness: 1.10, contrast: 0.90, saturate: 0.85, sepia: 0.15, hueRotate: 0 }, // 奶油ins風 (柔和, 低飽和, 略暖)
-            'filter5': { brightness: 0.90, contrast: 1.05, saturate: 1.10, sepia: 0.25, hueRotate: 0 }, // 富士感濾鏡 (略暗, 暖調)
-            'filter6': { brightness: 1.15, contrast: 1.10, saturate: 1.25, sepia: 0.30, hueRotate: -5 }, // 落日氛圍感 (非常暖, 高飽和)
-            'filter7': { brightness: 1.05, contrast: 1.20, saturate: 1.40, sepia: 0.00, hueRotate: 0 }, // 日常街拍濾鏡 (高對比, 極高飽和)
-            'filter8': { brightness: 1.10, contrast: 1.20, saturate: 1.50, sepia: 0.40, hueRotate: 10 }, // 絕美日落濾鏡 (極致暖調)
-            'filter9': { brightness: 0.85, contrast: 1.20, saturate: 0.90, sepia: 0.00, hueRotate: 0 }, // 靜謐暗調 (暗, 高對比)
+            'filter1': { brightness: 1.15, contrast: 1.10, saturate: 1.15, sepia: 0.05, hueRotate: -5 },
+            'filter2': { brightness: 1.05, contrast: 1.05, saturate: 1.15, sepia: 0.05, hueRotate: 0 },
+            'filter3': { brightness: 1.10, contrast: 1.15, saturate: 1.20, sepia: 0.05, hueRotate: 0 },
+            'filter4': { brightness: 1.10, contrast: 0.90, saturate: 0.85, sepia: 0.15, hueRotate: 0 },
+            'filter5': { brightness: 0.90, contrast: 1.05, saturate: 1.10, sepia: 0.25, hueRotate: 0 },
+            'filter6': { brightness: 1.15, contrast: 1.10, saturate: 1.25, sepia: 0.30, hueRotate: -5 },
+            'filter7': { brightness: 1.05, contrast: 1.20, saturate: 1.40, sepia: 0.00, hueRotate: 0 },
+            'filter8': { brightness: 1.10, contrast: 1.20, saturate: 1.50, sepia: 0.40, hueRotate: 10 },
+            'filter9': { brightness: 0.85, contrast: 1.20, saturate: 0.90, sepia: 0.00, hueRotate: 0 },
         };
         
-        // ----------------------------------------------------
-        // 2. 應用程式邏輯
-        // ----------------------------------------------------
         const fileInput = document.getElementById('photo-upload');
         const displayImage = document.getElementById('display-image');
         const saveButton = document.getElementById('save-button');
         const controlsContainer = document.getElementById('controls-container');
-        let currentFilterStyle = ''; // 儲存當前應用的 CSS filter 樣式
-        let originalImage = null; // 儲存原始圖片物件
+        const loadingMessage = document.getElementById('loading-message'); // 新增
+        let originalImage = null;
 
         /**
          * 讀取用戶選擇的圖片並顯示
          */
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (!file) {
-                // 用戶可能點擊了取消，這裡確保應用程式狀態不變
-                return;
-            }
+            if (!file) return;
+
+            // 步驟 1: 隱藏舊圖片，顯示載入提示
+            displayImage.style.display = 'none';
+            saveButton.style.display = 'none';
+            loadingMessage.style.display = 'block'; 
 
             const reader = new FileReader();
             reader.onload = function(event) {
-                // 載入為 Image 物件
                 originalImage = new Image();
                 originalImage.onload = function() {
-                    // 將原始圖片顯示在 IMG 標籤上
+                    // 步驟 2: 圖片載入完成，隱藏載入提示，顯示圖片
+                    loadingMessage.style.display = 'none';
                     displayImage.src = originalImage.src;
                     displayImage.style.display = 'block';
                     saveButton.style.display = 'block';
                     
-                    // 重置濾鏡和高亮按鈕
                     applyCssFilter('reset');
                     setActiveButton(null); 
                 };
-                // 必須設定 crossorigin 屬性，才能在某些環境下將圖片繪製到 Canvas
                 originalImage.crossOrigin = "Anonymous"; 
                 originalImage.src = event.target.result;
             };
             reader.readAsDataURL(file);
         });
 
-        /**
-         * 應用 CSS 濾鏡到顯示的圖片
-         */
         function applyCssFilter(filterKey) {
-            if (!originalImage) {
-                alert('請先上傳照片！');
-                return;
-            }
+            if (!originalImage) return;
 
             let filterStyle = '';
-            if (filterKey === 'reset') {
-                filterStyle = ''; // 清空濾鏡
-            } else if (FILTERS[filterKey]) {
+            if (filterKey !== 'reset' && FILTERS[filterKey]) {
                 const f = FILTERS[filterKey];
-                // 組合 CSS filter 字串
                 filterStyle = `
                     brightness(${f.brightness}) 
                     contrast(${f.contrast}) 
@@ -210,18 +205,11 @@
                     hue-rotate(${f.hueRotate}deg) 
                     sepia(${f.sepia})
                 `.replace(/\s+/g, ' ').trim(); 
-            } else {
-                return; // 無效濾鏡名稱
             }
             
-            // 應用 CSS 濾鏡到 IMG 元素 (即時生效)
             displayImage.style.filter = filterStyle;
-            currentFilterStyle = filterStyle; // 儲存當前濾鏡樣式供儲存功能使用
         }
 
-        /**
-         * 設定濾鏡按鈕的高亮狀態
-         */
         function setActiveButton(activeButton) {
             document.querySelectorAll('.vibe-button').forEach(btn => {
                 btn.classList.remove('active');
@@ -231,9 +219,6 @@
             }
         }
 
-        /**
-         * 處理按鈕點擊事件
-         */
         controlsContainer.addEventListener('click', (e) => {
             const button = e.target.closest('.vibe-button');
             if (button) {
@@ -244,45 +229,15 @@
         });
 
         /**
-         * 儲存圖片功能 (關鍵修正：強制將 CSS 效果繪製到 Canvas)
+         * 儲存圖片功能 (引導用戶長按儲存)
          */
         saveButton.addEventListener('click', () => {
             if (!originalImage) {
-                alert('沒有可儲存的照片！請先上傳並編輯。');
+                alert('沒有可儲存的照片！');
                 return;
             }
             
-            // 1. 取得 Canvas 元素
-            const canvas = document.getElementById('photo-canvas');
-            const ctx = canvas.getContext('2d');
-
-            // 2. 設定 Canvas 尺寸與原始圖片相同
-            canvas.width = originalImage.naturalWidth;
-            canvas.height = originalImage.naturalHeight;
-            
-            // 3. (關鍵技巧) 將當前的 CSS 濾鏡應用到 Canvas 上
-            // 注意: 雖然 Canvas 本身不直接支援 CSS 濾鏡，但我們藉助 `OffscreenCanvas` 
-            // 或使用第三方庫，但最簡單的方法是...
-            
-            // 方法：將 IMG 上的濾鏡效果，通過一個新的臨時 Canvas 進行固化
-            // 複製 IMG 元素並繪製到 Canvas (這是標準的做法，但無法帶入 CSS 效果)
-            // 為了實現 CSS 效果固化，我們需要依賴一個非標準或複雜的 WebGL 方案，
-            // 既然要維持單一 HTML 檔案，我們改用最接近原生且最簡單的方式：
-            
-            // **最佳儲存替代方案 (因為沒有 WebGL 庫)：**
-            // 透過 SVG ForeignObject 結合 CSS Filter 轉 DataURL，但這在行動端兼容性更差。
-            // 最終結論：**如果沒有 WebGL 函式庫，我們無法在純 JS 中將 CSS 濾鏡固化。**
-            // 因此，我們採用最後的妥協：**在下載前，將 Canvas 的濾鏡樣式設定為和 IMG 相同，並讓用戶長按圖片儲存。**
-
-            // 為了實現下載功能，我們必須採用 **新的且可靠的開源庫**。
-            // 因為我們無法引入新庫，這裡改為**引導用戶手動操作**。
-
-            // 由於純 HTML/JS/CSS 無法可靠地將 CSS Filter 轉換為下載圖片的像素，
-            // 我們將顯示圖片，並引導使用者：
-
             alert('抱歉，純網頁環境無法將 CSS 濾鏡效果完全固化到下載的圖片中。\n\n**請改用以下方式儲存編輯後的照片：**\n\n1. 長按編輯後的照片。\n2. 在彈出的選單中選擇「儲存圖片」。');
-            
-            // (刪除嘗試下載的代碼，避免下載錯誤的圖片)
         });
 
         // 初始化：點擊上傳區域觸發檔案選擇
