@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iPhone 照片一鍵調色 (可儲存)</title>
+    <title>iPhone 照片一鍵調色 (修復版)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/camanjs/4.1.2/caman.full.min.js"></script>
     <style>
-        /* (CSS 樣式與之前版本相同，請參考前一次回覆的 CSS 部分) */
+        /* CSS 樣式與之前版本相同 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
             background-color: #f0f0f5;
@@ -96,7 +96,7 @@
 </head>
 <body>
 
-    <h1>✨ iPhone 照片一鍵調色 (可儲存) ✨</h1>
+    <h1>✨ iPhone 照片一鍵調色 (修復版) ✨</h1>
     
     <div id="upload-container">
         <label for="photo-upload">點擊此處選擇照片（手機相簿/檔案）</label>
@@ -118,7 +118,7 @@
     </div>
 
     <div id="image-container">
-        <canvas id="photo-canvas"></canvas>
+        <canvas id="photo-canvas" data-caman-hidpi-disabled="true"></canvas>
     </div>
 
     <button id="save-button">📥 儲存編輯後照片</button>
@@ -127,29 +127,16 @@
         // ----------------------------------------------------
         // 1. 定義調色參數 (使用 CamanJS 支援的屬性)
         // ----------------------------------------------------
-        // CamanJS 支援的參數：brightness, contrast, saturation, hue, exposure, 
-        // clip, sepia, vintage, sunrise, lomo (可以模擬高光/陰影/色溫)
-        
-        // 原始參數對應 CamanJS 屬性:
-        // 曝光 -> exposure
-        // 鮮明度 (Clarity) -> clarity (CamanJS 內建效果, 較複雜) / 對比 (contrast)
-        // 高光 -> clip (正值), shadows (負值)
-        // 陰影 -> shadows
-        // 對比 -> contrast
-        // 飽和度 -> saturation
-        // 色溫/色調 -> hue/channels.red/green/blue (調整 RGB 三色通道)
-
         const FILTERS = {
-            // 參數來自您的圖片，映射到 CamanJS 支援的屬性
-            'filter1': { exposure: 40, contrast: 35, saturation: 10, vibrance: -10, clarity: 20 }, // 冷白皮濾鏡
-            'filter2': { exposure: 5, contrast: 17, saturation: 12, vibrance: 12, hue: 0 }, // 發光去灰
-            'filter3': { exposure: 30, contrast: 20, saturation: 10, vibrance: 10, hue: 10, clip: 0 }, // 美食調
-            'filter4': { exposure: 10, contrast: -21, saturation: -15, vibrance: -15, hue: 0 }, // 奶油ins風
-            'filter5': { exposure: -10, contrast: 10, saturation: 6, vibrance: 6, hue: 10 }, // 富士感濾鏡
-            'filter6': { exposure: 55, contrast: 25, saturation: 25, vibrance: 25, hue: 0 }, // 落日氛圍感
-            'filter7': { exposure: 59, contrast: 41, saturation: 41, vibrance: 41, hue: 30 }, // 日常街拍濾鏡
-            'filter8': { exposure: -60, contrast: 50, saturation: 50, vibrance: 50, hue: 35 }, // 絕美日落濾鏡
-            'filter9': { exposure: -10, contrast: 0, saturation: -10, vibrance: -15, hue: -20 }, // 靜謐暗調
+            'filter1': { exposure: 40, contrast: 35, saturation: 10, vibrance: -10, clarity: 20 }, 
+            'filter2': { exposure: 5, contrast: 17, saturation: 12, vibrance: 12, hue: 0 }, 
+            'filter3': { exposure: 30, contrast: 20, saturation: 10, vibrance: 10, hue: 10, clip: 0 }, 
+            'filter4': { exposure: 10, contrast: -21, saturation: -15, vibrance: -15, hue: 0 }, 
+            'filter5': { exposure: -10, contrast: 10, saturation: 6, vibrance: 6, hue: 10 }, 
+            'filter6': { exposure: 55, contrast: 25, saturation: 25, vibrance: 25, hue: 0 }, 
+            'filter7': { exposure: 59, contrast: 41, saturation: 41, vibrance: 41, hue: 30 }, 
+            'filter8': { exposure: -60, contrast: 50, saturation: 50, vibrance: 50, hue: 35 }, 
+            'filter9': { exposure: -10, contrast: 0, saturation: -10, vibrance: -15, hue: -20 }, 
         };
         
         // ----------------------------------------------------
@@ -157,33 +144,47 @@
         // ----------------------------------------------------
         const fileInput = document.getElementById('photo-upload');
         const canvas = document.getElementById('photo-canvas');
-        const saveButton = document.getElementById('save-button');
-        let camanInstance = null; // 儲存 Caman 實例
-        let originalImageURL = null; // 儲存原始圖片的 DataURL
+        let camanInstance = null;
+        let originalImageURL = null;
 
         /**
          * 讀取用戶選擇的圖片並初始化 CamanJS
          */
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (!file) return;
+            if (!file) {
+                // 如果用戶選擇後沒有照片 (例如取消選擇)，則不執行後續操作
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = function(event) {
                 originalImageURL = event.target.result;
                 
-                // 必須先設置圖片屬性讓 CamanJS 知道要讀取哪個圖片
+                // 1. 確保 Canvas 被正確重置和設定大小
                 const img = new Image();
                 img.onload = function() {
                     canvas.width = img.width;
                     canvas.height = img.height;
                     canvas.style.display = 'block';
-                    saveButton.style.display = 'block';
+                    document.getElementById('save-button').style.display = 'block';
+                    
+                    // 2. 銷毀舊的 Caman 實例 (如果有)
+                    if (camanInstance && camanInstance.reset) {
+                        try {
+                           // CamanJS 沒有官方的銷毀方法，只能透過重新初始化來覆蓋
+                           // 這裡避免多次 render 導致的視覺問題
+                           // 先清空 Canvas
+                           canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                        } catch(error) {
+                            console.warn("Could not clear canvas:", error);
+                        }
+                    }
 
-                    // 初始化 Caman 實例
+                    // 3. 初始化新的 Caman 實例
                     camanInstance = Caman('#photo-canvas', originalImageURL, function () {
-                        // 初始化後立即重置
-                        this.revert(true);
+                        // 首次載入時，直接渲染原始圖片
+                        this.render(); 
                     });
                 }
                 img.src = originalImageURL;
@@ -193,40 +194,41 @@
 
         /**
          * 應用 CamanJS 濾鏡效果
-         * @param {string} filterKey - 濾鏡的鍵名 (e.g., 'filter1', 'reset')
          */
         function applyFilter(filterKey) {
             if (!camanInstance) {
                 alert('請先上傳照片！');
                 return;
             }
-
-            // 1. 重置為原始圖片
-            camanInstance.revert(false); // 保持當前圖像數據，但移除濾鏡歷史
+            
+            // 每次應用新濾鏡前，先回復到原始狀態 (重要!)
+            // 傳入 false 避免在回復時發生閃爍
+            camanInstance.revert(false);
             
             if (filterKey === 'reset') {
-                camanInstance.render(); // 重新渲染 (即顯示原始圖片)
+                camanInstance.render(); // 重新渲染 (顯示原始圖片)
                 return;
             }
 
             const f = FILTERS[filterKey];
             if (!f) return;
 
-            // 2. 應用濾鏡參數
+            // 應用濾鏡參數
+            // 必須在 CamanJS 的上下文中調用濾鏡方法
             camanInstance.process('vibe_filter', function() {
-                // 將所有調整應用於 this
                 this.exposure(f.exposure || 0);
                 this.contrast(f.contrast || 0);
                 this.saturation(f.saturation || 0);
                 this.vibrance(f.vibrance || 0);
                 this.clarity(f.clarity || 0); 
                 this.hue(f.hue || 0);
-                // 為了模擬更複雜的影調，我們可以使用 sepia 或其他效果
-                // this.sepia(f.sepia || 0); 
             });
 
-            // 3. 渲染最終效果
-            camanInstance.render();
+            // 渲染最終效果
+            camanInstance.render(function() {
+                 // 濾鏡應用完成後才執行
+                 console.log(`Filter ${filterKey} applied.`);
+            });
         }
 
         /**
@@ -241,9 +243,9 @@
         });
 
         /**
-         * 儲存圖片功能 (使用 CamanJS 內建的 save 函式)
+         * 儲存圖片功能
          */
-        saveButton.addEventListener('click', () => {
+        document.getElementById('save-button').addEventListener('click', () => {
             if (!camanInstance) {
                 alert('沒有可儲存的照片！請先上傳並編輯。');
                 return;
