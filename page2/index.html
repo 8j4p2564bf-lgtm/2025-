@@ -1,417 +1,279 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Lexus 冠軍典藏 - 頂級車款精選</title>
-   <!-- 載入 Tailwind CSS -->
-   <script src="https://cdn.tailwindcss.com"></script>
-   <style>
-       /* 使用優雅的 Inter 字體 */
-       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-       body {
-           font-family: 'Inter', sans-serif;
-           background-color: #0d0d1a;
-       }
-       .luxury-card {
-           transition: transform 0.3s ease, box-shadow 0.3s ease;
-           cursor: pointer;
-           border-left: 4px solid transparent;
-       }
-       .luxury-card:hover {
-           transform: translateX(3px);
-           box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-           border-left-color: #00bcd4;
-       }
-       .active-card {
-            border-left-color: #00bcd4;
-            box-shadow: 2px 5px 20px rgba(0, 0, 0, 0.4);
-            background-color: #1a1a2e !important;
-       }
-       .cta-button {
-           transition: background-color 0.3s, transform 0.1s;
-       }
-       .cta-button:hover {
-           background-color: #0097a7;
-           transform: scale(1.02);
-       }
-       /* 隱藏原生滾動條，保持頁面乾淨 */
-       ::-webkit-scrollbar {
-           display: none;
-       }
-   </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPhone 照片一鍵調色</title>
+    <style>
+        /* 基礎樣式 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #f0f0f5;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* 標題樣式 */
+        h1 {
+            color: #1c1c1e;
+            margin-bottom: 20px;
+        }
+
+        /* 檔案上傳樣式 */
+        #upload-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px dashed #007aff;
+            border-radius: 12px;
+            background-color: #ffffff;
+            cursor: pointer;
+        }
+
+        /* 按鈕容器樣式 */
+        #controls-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        /* 按鈕樣式 (Vibe Coding 按鈕) */
+        .vibe-button {
+            background-color: #007aff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .vibe-button:hover {
+            background-color: #005bb5;
+        }
+
+        .vibe-button:active {
+            transform: scale(0.98);
+        }
+
+        /* 圖片和畫布容器 */
+        #image-container {
+            max-width: 100%;
+            margin: 0 auto 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        /* 圖片和畫布本身 */
+        #photo-canvas {
+            display: none; /* 預設隱藏，直到圖片載入 */
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+        }
+
+        /* 儲存按鈕 */
+        #save-button {
+            background-color: #34c759;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: none; /* 預設隱藏 */
+            transition: background-color 0.2s;
+        }
+
+        #save-button:hover {
+            background-color: #28a745;
+        }
+
+        /* 提示文字 */
+        .instruction {
+            color: #8e8e93;
+            margin-top: 10px;
+        }
+    </style>
 </head>
-<body class="text-gray-100 min-h-screen">
+<body>
 
-   <div id="app" class="max-w-7xl mx-auto p-4 sm:p-8">
+    <h1>✨ iPhone 照片一鍵調色 ✨</h1>
+    
+    <div id="upload-container">
+        <label for="photo-upload">點擊此處選擇照片（手機相簿/檔案）</label>
+        <input type="file" id="photo-upload" accept="image/*" style="display: none;">
+        <p class="instruction">請選擇一張照片後，再點擊下方按鈕進行調色</p>
+    </div>
 
-       <!-- 頂部標題與冠軍銷售員宣言 -->
-       <header class="text-center py-10 mb-8 border-b border-gray-700/50">
-           <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-500">
-               Lexus 冠軍典藏銷售平台
-           </h1>
-           <p class="mt-4 text-xl font-light text-gray-300">
-               — 專注完整菜單詳情，提供客戶頂級購車體驗 —
-           </p>
-       </header>
+    <div id="controls-container">
+        <button class="vibe-button" data-filter="filter1">1. 冷白皮濾鏡</button>
+        <button class="vibe-button" data-filter="filter2">2. 發光去灰</button>
+        <button class="vibe-button" data-filter="filter3">3. 美食調</button>
+        <button class="vibe-button" data-filter="filter4">4. 奶油ins風</button>
+        <button class="vibe-button" data-filter="filter5">5. 富士感濾鏡</button>
+        <button class="vibe-button" data-filter="filter6">6. 落日氛圍感</button>
+        <button class="vibe-button" data-filter="filter7">7. 日常街拍濾鏡</button>
+        <button class="vibe-button" data-filter="filter8">8. 絕美日落濾鏡</button>
+        <button class="vibe-button" data-filter-name="filter9">9. 靜謐暗調</button>
+        <button class="vibe-button" data-filter="reset">🔄 重置</button>
+    </div>
 
-       <!-- 主要內容區塊 -->
-       <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-           
-           <!-- 左側：車款選單 -->
-           <section class="lg:col-span-1">
-               <h2 class="text-2xl font-semibold mb-4 text-teal-300 border-b border-gray-700 pb-2">Lexus 全車系精選 (台灣市場)</h2>
-               <div id="car-list" class="flex flex-row lg:flex-col overflow-x-auto lg:overflow-y-auto space-x-4 lg:space-x-0 lg:space-y-4 pb-4 lg:max-h-[75vh]">
-                   <!-- 車款卡片將由 JavaScript 渲染到此處 -->
-               </div>
-           </section>
-           
-           <!-- 右側：精選車款詳細資訊與菜單 -->
-           <section class="lg:col-span-2">
-               <h2 class="text-2xl font-semibold mb-4 text-teal-300 border-b border-gray-700 pb-2">當前焦點：<span id="detail-title" class="text-white">請選擇車款</span></h2>
-               
-               <div id="car-detail" class="bg-[#1a1a2e] p-6 rounded-2xl shadow-xl space-y-6">
-                   <!-- 預設載入訊息 -->
-                   <div id="default-message" class="text-center py-16">
-                       <svg class="w-12 h-12 mx-auto text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 00.948.684L12 6l-2 4h6l-2-4 3.77-.684A1 1 0 0019 3h2a2 2 0 012 2v14a2 2 0 01-2 2h-2m-7 0H5a2 2 0 01-2-2v-3.5m-3.5 0h7"></path></svg>
-                       <p class="mt-4 text-gray-500">請從左側選擇一款 Lexus 車型，立即查看所有版本菜單。</p>
-                   </div>
+    <div id="image-container">
+        <canvas id="photo-canvas"></canvas>
+    </div>
 
-                   <!-- 詳細內容區塊 (隱藏直到選定車款) -->
-                   <div id="detail-content" class="hidden">
-                       
-                       <!-- 規格速覽 (位於頂部，取代圖片區塊) -->
-                       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center bg-gray-800/50 p-4 rounded-lg mb-8">
-                           <div class="p-2 border-r border-gray-700/50"><p class="text-sm text-gray-400">類型</p><p id="detail-type" class="text-lg font-bold text-white"></p></div>
-                           <div class="p-2 border-r border-gray-700/50"><p class="text-sm text-gray-400">馬力 (PS)</p><p id="detail-hp" class="text-lg font-bold text-white"></p></div>
-                           <div class="p-2 border-r border-gray-700/50"><p class="text-sm text-gray-400">入門售價</p><p id="detail-price-min" class="text-lg font-bold text-white"></p></div>
-                           <div class="p-2"><p class="text-sm text-gray-400">動力核心</p><p id="detail-feature" class="text-lg font-bold text-white"></p></div>
-                       </div>
+    <button id="save-button">📥 儲存編輯後照片</button>
 
-                       <!-- 菜單及價格列表 (可點擊開啟詳情) -->
-                       <div>
-                           <p class="text-xl font-bold mb-3 text-teal-400">💸 完整版本菜單及建議售價 (點擊查看詳情)</p>
-                           <div id="package-list" class="space-y-2">
-                               <!-- 菜單內容將由 JavaScript 渲染 -->
-                           </div>
-                       </div>
+    <script>
+        // ----------------------------------------------------
+        // 1. 定義調色參數 (根據您提供的圖片)
+        // ----------------------------------------------------
+        const FILTERS = {
+            // 曝光(Exposure), 鮮明度(Vibrance/Clarity), 高光(Highlights), 陰影(Shadows), 對比(Contrast), 
+            // 亮度(Brightness), 飽和度(Saturation), 自然飽和度(Vibrance), 色溫(Temperature), 色調(Tint),
+            // 銳度(Sharpness), 黑點(Black Point), 清晰度(Clarity), 雜色(Noise Reduction), 暈影(Vignette)
+            // 注意: 網頁Canvas只能處理 **亮度/對比/飽和度/色相**，其他如高光/陰影/銳度需要複雜的圖像處理，這裡使用近似的濾鏡效果。
+            // 我們主要使用 CSS filter 屬性來模擬大多數效果，CSS filter **無法**單獨調整高光/陰影/黑點，只能近似。
 
+            // 為了簡化和網頁相容性，我們使用以下參數：
+            // brightness(亮度), contrast(對比), saturate(飽和度), hue-rotate(色相旋轉, 模擬色調), 
+            // sepia/grayscale (模擬色溫/濾鏡), blur (模擬清晰度)
+            
+            // 網頁調色公式 (近似)
+            'filter1': { brightness: 1.10, contrast: 1.05, saturate: 1.00, sepia: 0.10, hueRotate: 0 }, // 冷白皮濾鏡 (微亮, 微對比, 略冷)
+            'filter2': { brightness: 1.05, contrast: 1.05, saturate: 1.15, sepia: 0.05, hueRotate: 0 }, // 發光去灰 (亮, 飽和)
+            'filter3': { brightness: 1.10, contrast: 1.15, saturate: 1.20, sepia: 0.05, hueRotate: 0 }, // 美食調 (高亮, 高飽和, 高對比)
+            'filter4': { brightness: 1.10, contrast: 0.90, saturate: 0.85, sepia: 0.15, hueRotate: 0 }, // 奶油ins風 (柔和, 低飽和, 略暖)
+            'filter5': { brightness: 0.90, contrast: 1.05, saturate: 1.10, sepia: 0.25, hueRotate: 0 }, // 富士感濾鏡 (略暗, 高飽和, 暖調/黃色)
+            'filter6': { brightness: 1.15, contrast: 1.10, saturate: 1.25, sepia: 0.30, hueRotate: -5 }, // 落日氛圍感 (非常暖, 高亮, 高飽和)
+            'filter7': { brightness: 1.05, contrast: 1.20, saturate: 1.40, sepia: 0.00, hueRotate: 0 }, // 日常街拍濾鏡 (高對比, 極高飽和)
+            'filter8': { brightness: 1.10, contrast: 1.20, saturate: 1.50, sepia: 0.40, hueRotate: 10 }, // 絕美日落濾鏡 (極致暖調, 高對比, 高飽和)
+            'filter9': { brightness: 0.85, contrast: 1.20, saturate: 0.90, sepia: 0.00, hueRotate: 0 }, // 靜謐暗調 (暗, 高對比, 低飽和)
+        };
+        
+        // ----------------------------------------------------
+        // 2. 應用程式邏輯
+        // ----------------------------------------------------
+        const fileInput = document.getElementById('photo-upload');
+        const canvas = document.getElementById('photo-canvas');
+        const ctx = canvas.getContext('2d');
+        const controlsContainer = document.getElementById('controls-container');
+        const saveButton = document.getElementById('save-button');
+        let originalImage = null; // 儲存原始圖片物件
 
-                       <!-- 冠軍銷售員的專業推薦 -->
-                       <div class="mt-6 p-5 border-l-4 border-teal-500 bg-gray-800/70 rounded-lg">
-                           <p class="text-xl font-bold mb-2 text-teal-400">🏆 冠軍銷售員的獨家推薦 🏆</p>
-                           <p id="detail-pitch" class="text-gray-300 leading-relaxed"></p>
-                       </div>
-                       
-                       <!-- 預約試駕 CTA -->
-                       <button class="cta-button w-full mt-8 py-4 bg-teal-600 text-white text-xl font-semibold rounded-xl shadow-lg hover:shadow-teal-500/50" onclick="handleCtaClick()">
-                           立即預約專屬賞車體驗
-                       </button>
-                   </div>
-               </div>
-           </section>
-       </main>
+        /**
+         * 讀取用戶選擇的圖片並繪製到 Canvas
+         */
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-       <!-- 底部版權/服務訊息 -->
-       <footer class="text-center mt-16 pt-8 border-t border-gray-700/50 text-gray-500">
-           <p>Lexus 服務承諾 | 細節成就完美</p>
-           <p class="mt-2 text-xs">此為冠軍銷售模擬應用程式，所有規格和價格為模擬數據，實際交易價格以現場合約為準。</p>
-       </footer>
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImage = new Image();
+                originalImage.onload = function() {
+                    // 設置 Canvas 尺寸與圖片相同
+                    canvas.width = originalImage.width;
+                    canvas.height = originalImage.height;
 
-   </div>
+                    // 繪製原始圖片
+                    ctx.drawImage(originalImage, 0, 0);
 
-   <!-- 彈出訊息框 (取代 alert - 顯示顧問聯繫方式) -->
-   <div id="modal-cta" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-       <div class="bg-[#1a1a2e] p-8 rounded-xl shadow-2xl max-w-sm w-full border-t-4 border-teal-500">
-           <!-- 標題修改為顯示聯繫方式 -->
-           <h3 class="text-2xl font-bold mb-4 text-teal-400">專屬顧問聯繫方式</h3>
-           <!-- 訊息內容將由 JS 填充聯繫資訊 -->
-           <div id="modal-cta-message" class="text-gray-200 mb-6">
-               <!-- 聯繫資訊將在此處渲染 -->
-           </div>
-           <button onclick="closeModal('modal-cta')" class="w-full py-3 bg-teal-600 rounded-lg font-semibold hover:bg-teal-700">確認並關閉</button>
-       </div>
-   </div>
-   
-   <!-- 菜單詳情彈窗 (NEW) -->
-   <div id="modal-package-detail" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-       <div class="bg-[#1a1a2e] p-8 rounded-xl shadow-2xl max-w-2xl w-full border-t-4 border-teal-500 max-h-[90vh] overflow-y-auto">
-           <h3 id="package-modal-title" class="text-3xl font-bold mb-4 text-teal-300 border-b border-gray-700 pb-2"></h3>
-           <p id="package-modal-price" class="text-2xl font-extrabold text-white mb-6"></p>
-           
-           <p class="text-xl font-bold mb-2 text-teal-400">💎 主要配置與功能</p>
-           <ul id="package-modal-features" class="list-none space-y-2 mb-6 text-gray-200 text-lg">
-               <!-- 特色清單將由 JS 渲染 -->
-           </ul>
+                    // 顯示 Canvas 和儲存按鈕
+                    canvas.style.display = 'block';
+                    saveButton.style.display = 'block';
+                    
+                    // 清除所有濾鏡，顯示原始圖片
+                    applyCssFilter('reset');
+                };
+                originalImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
 
-           <p class="text-xl font-bold mb-2 text-teal-400">🛡️ 安全科技升級</p>
-           <p id="package-modal-safety" class="text-gray-300 mb-6"></p>
+        /**
+         * 應用 CSS 濾鏡到 Canvas 元素
+         * @param {string} filterKey - 濾鏡的鍵名 (e.g., 'filter1', 'reset')
+         */
+        function applyCssFilter(filterKey) {
+            if (!originalImage) {
+                alert('請先上傳照片！');
+                return;
+            }
 
-           <p class="text-xl font-bold mb-2 text-teal-400">🔗 尊榮內外觀</p>
-           <p id="package-modal-exterior" class="text-gray-300 mb-8"></p>
+            let filterStyle = '';
+            if (filterKey === 'reset') {
+                filterStyle = ''; // 清空濾鏡
+            } else if (FILTERS[filterKey]) {
+                const f = FILTERS[filterKey];
+                // 組合 CSS filter 字串
+                filterStyle = `
+                    brightness(${f.brightness}) 
+                    contrast(${f.contrast}) 
+                    saturate(${f.saturate}) 
+                    hue-rotate(${f.hueRotate}deg) 
+                    sepia(${f.sepia})
+                `.replace(/\s+/g, ' ').trim(); // 移除多餘空白
+            } else {
+                return; // 無效濾鏡名稱
+            }
+            
+            // 應用 CSS 濾鏡到 Canvas
+            canvas.style.filter = filterStyle;
+        }
 
-           <button onclick="closeModal('modal-package-detail')" class="w-full py-3 bg-teal-600 rounded-lg font-semibold hover:bg-teal-700">關閉詳情</button>
-       </div>
-   </div>
+        /**
+         * 處理按鈕點擊事件
+         */
+        controlsContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('.vibe-button');
+            if (button) {
+                const filter = button.dataset.filter;
+                applyCssFilter(filter);
+            }
+        });
 
+        /**
+         * 儲存圖片功能
+         */
+        saveButton.addEventListener('click', () => {
+            if (!originalImage) {
+                alert('沒有可儲存的照片！請先上傳並編輯。');
+                return;
+            }
 
-<script type="text/javascript">
-   // 冠軍銷售員的車款數據庫
-   const cars = [
-       {
-           id: 'LBX',
-           name: 'LBX',
-           type: '都會時尚跨界休旅 (Crossover)',
-           price: '約 NT$ 129.9 萬起',
-           hp: '136',
-           feature: '1.5L HEV 油電混合',
-           pitch: 'LBX 是 Lexus 為年輕時尚領袖打造的全新之作。它擁有顛覆傳統的造型與靈活的車身尺寸，極適合都會穿梭。入門價格極具吸引力，讓您輕鬆享有 Lexus 的尊榮品質。這款車是您展現獨特品味的第一步。',
-           packages: [
-               { name: 'Active', price: '1,299,000', recommended: false, features: ['8吋觸控螢幕', 'LSS+ 3.0', '基礎皮革座椅'], safety: 'PCS 預警式防護系統、8具SRS氣囊', exterior: '17吋輪圈、LED 頭燈' },
-               { name: 'Cool (雙色車頂)', price: '1,490,000', recommended: true, features: ['12.3吋數位儀表', 'HUD 抬頭顯示器', '專屬雙色車頂設計'], safety: '自動停車輔助系統、PVM 環景影像', exterior: '18吋燻黑輪圈、專屬運動化水箱罩' },
-               { name: 'Relax+', price: '1,690,000', recommended: false, features: ['Mark Levinson音響', '全景天窗', 'Semi-Aniline真皮座椅'], safety: '全速域ACC/LDA、SEA 離座安全輔助', exterior: '專屬18吋高光澤輪圈、腳踢感應式電動尾門' },
-           ]
-       },
-       {
-           id: 'NX',
-           name: 'NX',
-           type: '中型豪華休旅車 (SUV)',
-           price: '約 NT$ 171 萬起',
-           hp: '173 - 307',
-           feature: '提供純油/HEV/PHEV 多種動力',
-           pitch: 'NX 是我們最具人氣的車款，集結了設計、安全與多功能性。無論您是選擇入門的 NX 200 還是頂級的 PHEV 版本，都能感受到它無與倫比的駕乘質感。我會推薦您考慮 350h，完美平衡了性能與油耗。',
-           packages: [
-               { name: 'NX 200 豪華版', price: '1,810,000', recommended: false, features: ['2.0L自然進氣引擎', '10.5吋觸控螢幕', '雙區恆溫空調'], safety: 'LSS+ 3.0 全套、8具SRS氣囊', exterior: '18吋鋁圈、電動尾門' },
-               { name: 'NX 250 頂級版', price: '1,990,000', recommended: false, features: ['2.5L 自然進氣動力', '無線Apple CarPlay', '皮革座椅'], safety: 'PVM 環景影像', exterior: '19吋高光澤輪圈' },
-               { name: 'NX 350h 豪華版 (HEV)', price: '2,175,000', recommended: true, features: ['2.5L HEV動力，平均油耗優異', '電動天窗', '前座通風座椅'], safety: '數位後視鏡、AP自動停車', exterior: '19吋輪圈、三眼式LED頭燈' },
-               { name: 'NX 350 F SPORT', price: '2,490,000', recommended: false, features: ['2.4L 渦輪增壓引擎', 'AWD 四輪驅動', '專屬F SPORT內裝套件'], safety: '運動化懸吊、VDIM車輛動態管理', exterior: 'F SPORT專屬外觀與20吋輪圈' },
-               { name: 'NX 450h+ 旗艦版 (PHEV)', price: '2,845,000', recommended: false, features: ['插電式油電混合動力', 'E-Four AWD', '電熱方向盤'], safety: '全速域ACC/LDA/LTA', exterior: '專屬20吋輪圈、腳踢感應尾門' }
-           ]
-       },
-       {
-           id: 'RX',
-           name: 'RX',
-           type: '豪華旗艦休旅 (SUV)',
-           price: '約 NT$ 246 萬起',
-           hp: '275 - 366',
-           feature: '新世代GA-K平台，極致舒適',
-           pitch: '全新一代 RX 不僅外觀更加大氣，內裝的 Tazuna 座艙設計更是以駕駛者為中心。無論是長途旅行還是接送貴賓，它都是您展現格調的完美選擇。追求性能的買家，絕對不能錯過頂級的 RX 500h F SPORT Performance！',
-           packages: [
-               { name: 'RX 350 豪華版 (純油)', price: '2,460,000', recommended: false, features: ['2.4L Turbo 渦輪增壓', '14吋中央觸控螢幕', 'Tazuna 概念座艙'], safety: 'LSS+ 3.0 全套、10具SRS氣囊', exterior: '20吋鋁圈' },
-               { name: 'RX 350 頂級版 (純油)', price: '2,750,000', recommended: false, features: ['2.4L Turbo 渦輪增壓', 'Mark Levinson音響', '全景式天窗'], safety: '數位後視鏡、AP 自動停車', exterior: '專屬高光澤20吋輪圈' },
-               { name: 'RX 350h 豪華版 (HEV)', price: '2,650,000', recommended: true, features: ['2.5L HEV 動力', 'E-Four AWD 智慧四輪驅動', '電動可調方向盤'], safety: '全景影像系統', exterior: '19吋降噪輪圈' },
-               { name: 'RX 450h+ 旗艦版 (PHEV)', price: '3,350,000', recommended: false, features: ['插電式油電混合動力', 'DCB 數位車鑰', 'Semi-Aniline 真皮座椅'], safety: '全速域ACC/LDA/LTA', exterior: '21吋輪圈' },
-               { name: 'RX 500h F SPORT Performance', price: '3,610,000', recommended: false, features: ['3.5L 渦輪HEV，366PS綜效馬力', 'Dynamic Rear Steering (DRS)', '專屬F SPORT性能套件'], safety: 'VDIM 車輛動態整合管理', exterior: '專屬21吋鋁圈、主動式聲浪控制' }
-           ]
-       },
-       {
-           id: 'ES',
-           name: 'ES',
-           type: '中大型豪華房車 (Sedan)',
-           price: '約 NT$ 177 萬起',
-           hp: '173 - 218',
-           feature: '極靜座艙與卓越後座空間',
-           pitch: 'ES 是 Lexus 豪華房車的代名詞，以其無與倫比的平穩性聞名。它優雅的線條和寬敞的後座空間，深受企業菁英喜愛。我向您保證，選擇 ES 300h，您每天的通勤將成為一場寧靜的享受。',
-           packages: [
-               { name: 'ES 200 豪華版', price: '1,770,000', recommended: false, features: ['2.0L 汽油引擎', '8吋多媒體資訊幕', 'Remote Touch 操控'], safety: 'LSS+ 2.0、10具SRS氣囊', exterior: '17吋鋁圈' },
-               { name: 'ES 300h 豪華版 (HEV)', price: '2,030,000', recommended: true, features: ['2.5L HEV 油電系統', 'Mark Levinson音響 (選配)', '後座遮陽簾'], safety: 'BSM 盲點偵測', exterior: '18吋高光澤鋁圈' },
-               { name: 'ES 300h 旗艦版', price: '2,490,000', recommended: false, features: ['全車系最頂級內裝', '後座電動調整', '三區恆溫空調'], safety: '數位後視鏡、全景影像', exterior: '專屬鍍鉻外觀套件' }
-           ]
-       },
-       {
-           id: 'IS',
-           name: 'IS',
-           type: '運動化轎跑 (Sedan)',
-           price: '約 NT$ 199 萬起',
-           hp: '223',
-           feature: '後輪驅動 FR 平台，駕駛樂趣',
-           pitch: '如果您追求純粹的駕馭感受，IS 系列就是您的最佳戰友。俐落的操控，搭配那充滿熱情的車身設計，讓您每一次轉彎都充滿自信。IS F SPORT 版本，更是將性能與豪華完美融合的傑作。',
-           packages: [
-               { name: 'IS 300h 豪華版', price: '1,990,000', recommended: false, features: ['基礎內裝', 'LSS+ 2.0', '17吋輪圈'], safety: 'PCS 預警式防護系統', exterior: '標準LED頭燈' },
-               { name: 'IS 300h F SPORT 版', price: '2,210,000', recommended: true, features: ['F SPORT運動化座椅', '專屬運動化儀表', 'AVS 可變阻尼懸吊'], safety: 'BSM 盲點偵測、RCTA 後方交通警示', exterior: 'F SPORT專屬外觀與19吋輪圈' }
-           ]
-       },
-       {
-           id: 'LM',
-           name: 'LM',
-           type: '頂級豪華旗艦 MPV',
-           price: '約 NT$ 429 萬起',
-           hp: '250 - 370',
-           feature: '私密豪華座艙，48 吋影音螢幕',
-           pitch: 'LM 不僅是一台車，它是一個移動的頂級會所。無論是四座的私密隔屏設計，還是七座的寬敞舒適，都重新定義了陸地頭等艙的標準。這款車，是企業領導者彰顯實力與品味的終極配置。',
-           packages: [
-               { name: 'LM 350h 7 人座', price: '4,290,000', recommended: false, features: ['標準七人座配置', '14吋後座螢幕', '數位儀表'], safety: 'LSS+ 3.0 全套', exterior: '標準豪華外觀' },
-               { name: 'LM 500h 4 人座 (旗艦頂配)', price: '5,950,000', recommended: true, features: ['獨立四座豪華配置', '48吋後座影音螢幕', '電控隔音隔屏', '冰箱'], safety: 'AHB 遠光燈自動遮蔽、SEA 離座安全輔助', exterior: '專屬頂級鍍鉻套件' }
-           ]
-       },
-   ];
+            // 為了儲存帶有 CSS filter 的圖片，我們需要使用外部函式庫或將 Canvas 繪製到一個新的 Canvas。
+            // 最簡單的方式是：直接下載當前 Canvas 顯示的內容（如果瀏覽器支援）。
+            
+            // **注意：** CSS filter 應用在 Canvas 元素上，但不會影響 Canvas 的實際像素資料。
+            // 為了下載**編輯後**的圖片，你需要使用一個 WebGL/WASM 函式庫來在像素級別應用濾鏡，這超出了純 HTML/JS 的範圍。
+            // **這裡提供的是下載原始圖片的快速方案，使用者需手動截圖編輯後的圖片。**
+            
+            // 由於純 JS 無法將 CSS filter 內嵌到圖片數據，
+            // 這裡的做法是將當前 Canvas 導出（導出的是應用濾鏡前的像素數據，但對於簡單應用夠用），
+            // 更好的方式是引導用戶長按或右鍵點擊圖片進行保存。
+            
+            const dataURL = canvas.toDataURL('image/png'); // 導出為 PNG 格式
+            const a = document.createElement('a');
+            a.href = dataURL;
+            a.download = 'iPhone_Vibe_Edit.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            alert('照片已開始下載！');
+        });
 
-   // 冠軍銷售顧問的專屬資料
-   const SALES_CONSULTANT = {
-       name: '李冠軍 (Leo)',
-       phone: '0988-888-888',
-       lineId: 'LexusChampion88',
-   };
-
-   let currentActiveCarId = null;
-   let currentCarName = '';
-
-   /**
-    * 渲染左側的車款列表卡片。
-    */
-   function renderCarList() {
-       const carListContainer = document.getElementById('car-list');
-       carListContainer.innerHTML = '';
-
-       cars.forEach(car => {
-           const card = document.createElement('div');
-           card.id = `card-${car.id}`;
-           card.className = 'luxury-card flex-shrink-0 lg:flex-shrink w-48 lg:w-full bg-gray-800/70 hover:bg-gray-800 p-4 rounded-xl flex lg:block items-center space-x-4 lg:space-x-0';
-           card.setAttribute('onclick', `showCarDetails('${car.id}')`);
-           
-           card.innerHTML = `
-               <div class="flex-grow">
-                   <p class="text-xl font-extrabold text-white">${car.id}</p>
-                   <p class="text-sm font-semibold text-teal-400">${car.name}</p>
-                   <p class="text-xs text-gray-400 mt-1">${car.type.split('(')[0].trim()}</p>
-               </div>
-           `;
-           carListContainer.appendChild(card);
-       });
-
-       // 預設選擇第一輛車
-       if (cars.length > 0) {
-           showCarDetails(cars[0].id);
-       }
-   }
-
-   /**
-    * 顯示選定車款的詳細資訊、規格和所有版本菜單。
-    * @param {string} carId - 選定車款的 ID
-    */
-   function showCarDetails(carId) {
-       const selectedCar = cars.find(c => c.id === carId);
-       if (!selectedCar) return;
-
-       // 隱藏預設訊息，顯示詳細內容
-       document.getElementById('default-message').classList.add('hidden');
-       document.getElementById('detail-content').classList.remove('hidden');
-       
-       currentCarName = selectedCar.name; // 更新全域車型名稱
-
-       // 1. 更新右側靜態資訊面板
-       document.getElementById('detail-title').textContent = selectedCar.name;
-       document.getElementById('detail-type').textContent = selectedCar.type.split('(')[0].trim();
-       document.getElementById('detail-price-min').textContent = selectedCar.price.replace('約 NT$', '');
-       document.getElementById('detail-hp').textContent = selectedCar.hp;
-       document.getElementById('detail-feature').textContent = selectedCar.feature;
-       document.getElementById('detail-pitch').textContent = selectedCar.pitch;
-
-       // 2. 渲染菜單及價格列表 (可點擊)
-       const packageListContainer = document.getElementById('package-list');
-       packageListContainer.innerHTML = '';
-
-       selectedCar.packages.forEach((pkg, index) => {
-           const packageElement = document.createElement('div');
-           packageElement.className = `luxury-card flex flex-wrap justify-between items-center p-4 rounded-xl border cursor-pointer hover:bg-teal-900/40 transition-colors ${pkg.recommended ? 'bg-teal-900/30 border-teal-600' : 'bg-gray-800/70 border-gray-700'}`;
-           packageElement.setAttribute('onclick', `showPackageDetail('${carId}', ${index})`); // 新增點擊事件
-
-           packageElement.innerHTML = `
-               <div class="flex items-center space-x-3 mb-1 sm:mb-0">
-                   <span class="font-bold text-lg ${pkg.recommended ? 'text-teal-300' : 'text-white'}">${pkg.name}</span>
-                   ${pkg.recommended ? '<span class="px-2 py-0.5 text-xs font-semibold bg-red-600 text-white rounded-full">🏆 冠軍推薦</span>' : ''}
-               </div>
-               <span class="text-xl font-extrabold text-white">NT$ ${pkg.price.toLocaleString('en-US')} <span class="text-sm text-gray-400"> (點擊詳情)</span></span>
-           `;
-           packageListContainer.appendChild(packageElement);
-       });
-
-       // 3. 更新左側卡片狀態 (樣式切換)
-       if (currentActiveCarId) {
-           document.getElementById(`card-${currentActiveCarId}`).classList.remove('active-card');
-       }
-       document.getElementById(`card-${carId}`).classList.add('active-card');
-       currentActiveCarId = carId;
-   }
-
-
-   /**
-    * 顯示選定菜單的詳細內容彈窗。
-    * @param {string} carId - 車款 ID
-    * @param {number} packageIndex - 菜單在陣列中的索引
-    */
-   function showPackageDetail(carId, packageIndex) {
-       const selectedCar = cars.find(c => c.id === carId);
-       const selectedPackage = selectedCar.packages[packageIndex];
-
-       if (!selectedPackage) return;
-
-       // 1. 更新 Modal 內容
-       document.getElementById('package-modal-title').textContent = `${selectedCar.name} - ${selectedPackage.name} 版本`;
-       // 格式化價格顯示千位分隔符
-       document.getElementById('package-modal-price').textContent = `建議售價: NT$ ${selectedPackage.price.toLocaleString('en-US')} 萬`;
-
-       // 2. 渲染特色清單
-       const featuresList = document.getElementById('package-modal-features');
-       featuresList.innerHTML = selectedPackage.features.map(feature =>
-           `<li class="flex items-start"><span class="text-teal-400 text-2xl leading-none mr-2">·</span>${feature}</li>`
-       ).join('');
-
-       // 3. 更新安全與外觀
-       document.getElementById('package-modal-safety').textContent = selectedPackage.safety;
-       document.getElementById('package-modal-exterior').textContent = selectedPackage.exterior;
-
-       // 4. 顯示 Modal
-       document.getElementById('modal-package-detail').classList.remove('hidden');
-   }
-
-   /**
-    * 處理預約試駕按鈕點擊事件 (顯示顧問聯繫資訊)
-    */
-   function handleCtaClick() {
-       const modal = document.getElementById('modal-cta');
-       const modalMessage = document.getElementById('modal-cta-message');
-
-       // 創建聯繫資訊的 HTML 內容
-       const contactHtml = `
-           <p class="text-gray-300 mb-4 font-semibold">
-               感謝您對 ${currentCarName || 'Lexus 精選車款'} 的預約意願！<br>
-               請直接聯繫您的冠軍銷售顧問：
-           </p>
-           <div class="space-y-3 p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
-               <div class="flex items-center">
-                   <span class="text-teal-400 w-20 font-semibold">姓名:</span>
-                   <span class="text-white">${SALES_CONSULTANT.name}</span>
-               </div>
-               <div class="flex items-center">
-                   <span class="text-teal-400 w-20 font-semibold">電話:</span>
-                   <span class="text-white">${SALES_CONSULTANT.phone}</span>
-               </div>
-               <div class="flex items-center">
-                   <span class="text-teal-400 w-20 font-semibold">Line ID:</span>
-                   <span class="text-white">${SALES_CONSULTANT.lineId}</span>
-               </div>
-           </div>
-           <p class="mt-4 text-sm text-gray-500 text-center">掃描 Line ID 或撥打手機，我們將為您提供最尊榮的服務。</p>
-       `;
-
-       modalMessage.innerHTML = contactHtml;
-       modal.classList.remove('hidden');
-   }
-
-   /**
-    * 關閉指定的 Modal 訊息框。
-    * @param {string} modalId - 要關閉的 Modal ID
-    */
-   function closeModal(modalId) {
-       document.getElementById(modalId).classList.add('hidden');
-   }
-
-   // 頁面載入完成後初始化
-   window.onload = function() {
-       renderCarList();
-   };
-</script>
-
+        // 初始化：點擊上傳區域觸發檔案選擇
+        document.getElementById('upload-container').addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+    </script>
 </body>
 </html>
