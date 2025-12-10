@@ -24,10 +24,10 @@
     }
     button {
       margin: 10px;
-      padding: 15px 30px;
-      font-size: 20px;
+      padding: 20px 40px;
+      font-size: 24px;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       background: #ff9800;
       color: #fff;
@@ -38,20 +38,20 @@
       transform: scale(1.1);
     }
     #question {
-      font-size: 60px;
+      font-size: 72px;
       margin: 30px;
       color: #222;
     }
     #timer {
-      font-size: 28px;
+      font-size: 32px;
       color: #d32f2f;
       margin-bottom: 20px;
     }
     #options button {
       display: inline-block;
-      margin: 10px;
-      padding: 15px 25px;
-      font-size: 24px;
+      margin: 15px;
+      padding: 20px 35px;
+      font-size: 28px;
       background: #4caf50;
     }
     #options button:hover {
@@ -59,19 +59,19 @@
     }
     #wrong {
       margin-top: 30px;
-      background: rgba(255,255,255,0.8);
-      padding: 15px;
-      border-radius: 10px;
+      background: rgba(255,255,255,0.9);
+      padding: 20px;
+      border-radius: 12px;
       width: 80%;
       margin-left: auto;
       margin-right: auto;
     }
     #wrong h3 {
-      font-size: 24px;
+      font-size: 26px;
       margin-bottom: 10px;
     }
     #wrongList {
-      font-size: 20px;
+      font-size: 22px;
       text-align: left;
     }
     #quizArea {
@@ -103,7 +103,6 @@
   </div>
 
 <script>
-/* --- 五十音資料集 --- */
 const hiragana = [
   { char: "あ", romaji: "a", katakana: "ア" },
   { char: "い", romaji: "i", katakana: "イ" },
@@ -178,19 +177,8 @@ function goHome() {
 function shuffle(arr) {
   return arr.sort(() => Math.random() - 0.5);
 }
-function randomRomaji(n) {
-  return shuffle(hiragana.map(h => h.romaji)).slice(0, n);
-}
-function randomKatakana(n) {
-  return shuffle(hiragana.map(h => h.katakana)).slice(0, n);
-}
 
 function generateQuestion() {
-  clearTimeout(countdown);
+  clearInterval(countdown);
   const q = hiragana[Math.floor(Math.random() * hiragana.length)];
-  if (mode === 1) {
-    options = shuffle([q.romaji, ...randomRomaji(3)]);
-    question = { value: q.char, answer: q.romaji };
-  } else if (mode === 2) {
-    options = shuffle([q.romaji, ...randomRomaji(3)]);
-    question =
+  if (
