@@ -9,21 +9,30 @@
     #question { font-size: 40px; margin: 20px; }
     #timer { font-size: 20px; color: red; }
     #wrong { margin-top: 20px; text-align: left; }
+    #quizArea { display: none; }
   </style>
 </head>
 <body>
   <h1>日文五十音測驗</h1>
-  <div>
-    <button onclick="setMode(1)">平假名測驗</button>
-    <button onclick="setMode(2)">片假名測驗</button>
-    <button onclick="setMode(3)">互選測驗</button>
+
+  <!-- 首頁選單 -->
+  <div id="home">
+    <h2>請選擇測驗模式</h2>
+    <button onclick="startQuiz(1)">平假名測驗</button>
+    <button onclick="startQuiz(2)">片假名測驗</button>
+    <button onclick="startQuiz(3)">互選測驗</button>
   </div>
-  <div id="question"></div>
-  <div id="timer"></div>
-  <div id="options"></div>
-  <div id="wrong">
-    <h3>錯誤紀錄</h3>
-    <ul id="wrongList"></ul>
+
+  <!-- 測驗區 -->
+  <div id="quizArea">
+    <div id="question"></div>
+    <div id="timer"></div>
+    <div id="options"></div>
+    <div id="wrong">
+      <h3>錯誤紀錄</h3>
+      <ul id="wrongList"></ul>
+    </div>
+    <button onclick="goHome()">返回首頁</button>
   </div>
 
 <script>
@@ -83,11 +92,19 @@ let timer = 8;
 let wrongAnswers = [];
 let countdown;
 
-function setMode(m) {
+function startQuiz(m) {
   mode = m;
   wrongAnswers = [];
   document.getElementById("wrongList").innerHTML = "";
+  document.getElementById("home").style.display = "none";
+  document.getElementById("quizArea").style.display = "block";
   generateQuestion();
+}
+
+function goHome() {
+  clearInterval(countdown);
+  document.getElementById("quizArea").style.display = "none";
+  document.getElementById("home").style.display = "block";
 }
 
 function shuffle(arr) {
@@ -158,9 +175,6 @@ function updateWrong() {
     list.appendChild(li);
   });
 }
-
-// 預設進入平假名模式
-setMode(1);
 </script>
 </body>
-</html>
+</html
