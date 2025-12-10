@@ -12,20 +12,22 @@
       padding: 0;
     }
     h1 {
-      font-size: 48px;
+      font-size: 60px;
       margin: 20px 0;
       color: #333;
       text-shadow: 2px 2px 4px #fff;
     }
     h2 {
-      font-size: 28px;
-      margin-bottom: 15px;
+      font-size: 36px;
+      margin-bottom: 20px;
       color: #444;
     }
     button {
-      margin: 10px;
-      padding: 20px 40px;
-      font-size: 24px;
+      display: block;
+      width: 80%;
+      margin: 15px auto;
+      padding: 25px;
+      font-size: 32px;
       border: none;
       border-radius: 12px;
       cursor: pointer;
@@ -35,23 +37,19 @@
     }
     button:hover {
       background: #e68900;
-      transform: scale(1.1);
+      transform: scale(1.05);
     }
     #question {
-      font-size: 72px;
-      margin: 20px;
+      font-size: 100px;
+      margin: 30px;
       color: #222;
     }
     #timer {
-      font-size: 32px;
+      font-size: 40px;
       color: #d32f2f;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
     #options button {
-      display: inline-block;
-      margin: 15px;
-      padding: 20px 35px;
-      font-size: 28px;
       background: #4caf50;
     }
     #options button:hover {
@@ -60,18 +58,18 @@
     #wrong {
       margin-top: 20px;
       background: rgba(255,255,255,0.9);
-      padding: 15px;
+      padding: 20px;
       border-radius: 12px;
-      width: 85%;
+      width: 90%;
       margin-left: auto;
       margin-right: auto;
     }
     #wrong h3 {
-      font-size: 26px;
+      font-size: 30px;
       margin-bottom: 10px;
     }
     #wrongList {
-      font-size: 22px;
+      font-size: 26px;
       text-align: left;
     }
     #quizArea {
@@ -178,25 +176,3 @@ let timer = 8;
 let wrongAnswers = [];
 let countdown;
 
-function startQuiz(m) {
-  mode = m;
-  wrongAnswers = [];
-  document.getElementById("wrongList").innerHTML = "";
-  document.getElementById("home").style.display = "none";
-  document.getElementById("quizArea").style.display = "block";
-  generateQuestion();
-}
-
-function goHome() {
-  clearInterval(countdown);
-  document.getElementById("quizArea").style.display = "none";
-  document.getElementById("home").style.display = "block";
-}
-
-function shuffle(arr) {
-  return arr.sort(() => Math.random() - 0.5);
-}
-
-function generateQuestion() {
-  clearInterval(countdown);
-  const q
