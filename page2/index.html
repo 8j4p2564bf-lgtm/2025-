@@ -4,12 +4,79 @@
   <meta charset="UTF-8">
   <title>日文五十音測驗</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-    button { margin: 5px; padding: 10px 20px; font-size: 16px; }
-    #question { font-size: 40px; margin: 20px; }
-    #timer { font-size: 20px; color: red; }
-    #wrong { margin-top: 20px; text-align: left; }
-    #quizArea { display: none; }
+    body {
+      font-family: "Microsoft JhengHei", Arial, sans-serif;
+      background: linear-gradient(135deg, #fceabb, #f8b500);
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      font-size: 48px;
+      margin: 30px 0;
+      color: #333;
+      text-shadow: 2px 2px 4px #fff;
+    }
+    h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #444;
+    }
+    button {
+      margin: 10px;
+      padding: 15px 30px;
+      font-size: 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #ff9800;
+      color: #fff;
+      transition: transform 0.2s, background 0.3s;
+    }
+    button:hover {
+      background: #e68900;
+      transform: scale(1.1);
+    }
+    #question {
+      font-size: 60px;
+      margin: 30px;
+      color: #222;
+    }
+    #timer {
+      font-size: 28px;
+      color: #d32f2f;
+      margin-bottom: 20px;
+    }
+    #options button {
+      display: inline-block;
+      margin: 10px;
+      padding: 15px 25px;
+      font-size: 24px;
+      background: #4caf50;
+    }
+    #options button:hover {
+      background: #388e3c;
+    }
+    #wrong {
+      margin-top: 30px;
+      background: rgba(255,255,255,0.8);
+      padding: 15px;
+      border-radius: 10px;
+      width: 80%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #wrong h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    #wrongList {
+      font-size: 20px;
+      text-align: left;
+    }
+    #quizArea {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -36,6 +103,7 @@
   </div>
 
 <script>
+/* --- 五十音資料集 --- */
 const hiragana = [
   { char: "あ", romaji: "a", katakana: "ア" },
   { char: "い", romaji: "i", katakana: "イ" },
@@ -125,56 +193,4 @@ function generateQuestion() {
     question = { value: q.char, answer: q.romaji };
   } else if (mode === 2) {
     options = shuffle([q.romaji, ...randomRomaji(3)]);
-    question = { value: q.katakana, answer: q.romaji };
-  } else {
-    options = shuffle([q.katakana, ...randomKatakana(3)]);
-    question = { value: q.char, answer: q.katakana };
-  }
-  document.getElementById("question").innerText = "題目: " + question.value;
-  showOptions();
-  timer = 8;
-  document.getElementById("timer").innerText = "剩餘時間: " + timer + " 秒";
-  countdown = setInterval(() => {
-    timer--;
-    document.getElementById("timer").innerText = "剩餘時間: " + timer + " 秒";
-    if (timer <= 0) {
-      clearInterval(countdown);
-      wrongAnswers.push(question);
-      updateWrong();
-      generateQuestion();
-    }
-  }, 1000);
-}
-
-function showOptions() {
-  const optDiv = document.getElementById("options");
-  optDiv.innerHTML = "";
-  options.forEach(opt => {
-    const btn = document.createElement("button");
-    btn.innerText = opt;
-    btn.onclick = () => chooseAnswer(opt);
-    optDiv.appendChild(btn);
-  });
-}
-
-function chooseAnswer(opt) {
-  clearInterval(countdown);
-  if (opt !== question.answer) {
-    wrongAnswers.push(question);
-    updateWrong();
-  }
-  generateQuestion();
-}
-
-function updateWrong() {
-  const list = document.getElementById("wrongList");
-  list.innerHTML = "";
-  wrongAnswers.forEach(w => {
-    const li = document.createElement("li");
-    li.innerText = "題目: " + w.value + " → 正解: " + w.answer;
-    list.appendChild(li);
-  });
-}
-</script>
-</body>
-</html
+    question =
