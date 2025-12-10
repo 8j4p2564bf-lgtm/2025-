@@ -1,250 +1,166 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iPhone 照片一鍵調色 (最終穩定版)</title>
-    <style>
-        /* CSS 樣式 */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            background-color: #f0f0f5;
-            padding: 20px;
-            text-align: center;
-        }
-
-        h1 {
-            color: #1c1c1e;
-            margin-bottom: 20px;
-        }
-
-        #upload-container {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 2px dashed #007aff;
-            border-radius: 12px;
-            background-color: #ffffff;
-            cursor: pointer;
-        }
-
-        #controls-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        .vibe-button {
-            background-color: #007aff;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-
-        .vibe-button:hover {
-            background-color: #005bb5;
-        }
-
-        .vibe-button.active {
-            background-color: #34c759;
-            transform: scale(1.05);
-        }
-
-        /* 圖片容器 */
-        #image-container {
-            max-width: 100%;
-            margin: 0 auto 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            overflow: hidden;
-            min-height: 200px; /* 預留空間給載入提示 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #e0e0e0;
-        }
-        
-        /* 顯示圖片樣式 */
-        #display-image {
-            display: none; 
-            max-width: 100%; 
-            height: auto; 
-            border-radius: 12px; 
-            margin: 0 auto;
-        }
-
-        /* 載入提示樣式 */
-        #loading-message {
-            color: #444;
-            font-size: 18px;
-            font-weight: 500;
-            display: none; /* 預設隱藏 */
-            padding: 50px;
-        }
-
-        #save-button {
-            background-color: #34c759;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            display: none;
-            transition: background-color 0.2s;
-        }
-
-        #save-button:hover {
-            background-color: #28a745;
-        }
-
-        .instruction {
-            color: #8e8e93;
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>日文五十音測驗</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+    button { margin: 5px; padding: 10px 20px; font-size: 16px; }
+    #question { font-size: 40px; margin: 20px; }
+    #timer { font-size: 20px; color: red; }
+    #wrong { margin-top: 20px; text-align: left; }
+  </style>
 </head>
 <body>
+  <h1>日文五十音測驗</h1>
+  <div>
+    <button onclick="setMode(1)">平假名測驗</button>
+    <button onclick="setMode(2)">片假名測驗</button>
+    <button onclick="setMode(3)">互選測驗</button>
+  </div>
+  <div id="question"></div>
+  <div id="timer"></div>
+  <div id="options"></div>
+  <div id="wrong">
+    <h3>錯誤紀錄</h3>
+    <ul id="wrongList"></ul>
+  </div>
 
-    <h1>✨ iPhone 照片一鍵調色 (最終穩定版) ✨</h1>
-    
-    <div id="upload-container">
-        <label for="photo-upload">點擊此處選擇照片（手機相簿/檔案）</label>
-        <input type="file" id="photo-upload" accept="image/*" style="display: none;">
-        <p class="instruction">請選擇一張照片後，再點擊下方按鈕進行調色</p>
-    </div>
+<script>
+const hiragana = [
+  { char: "あ", romaji: "a", katakana: "ア" },
+  { char: "い", romaji: "i", katakana: "イ" },
+  { char: "う", romaji: "u", katakana: "ウ" },
+  { char: "え", romaji: "e", katakana: "エ" },
+  { char: "お", romaji: "o", katakana: "オ" },
+  { char: "か", romaji: "ka", katakana: "カ" },
+  { char: "き", romaji: "ki", katakana: "キ" },
+  { char: "く", romaji: "ku", katakana: "ク" },
+  { char: "け", romaji: "ke", katakana: "ケ" },
+  { char: "こ", romaji: "ko", katakana: "コ" },
+  { char: "さ", romaji: "sa", katakana: "サ" },
+  { char: "し", romaji: "shi", katakana: "シ" },
+  { char: "す", romaji: "su", katakana: "ス" },
+  { char: "せ", romaji: "se", katakana: "セ" },
+  { char: "そ", romaji: "so", katakana: "ソ" },
+  { char: "た", romaji: "ta", katakana: "タ" },
+  { char: "ち", romaji: "chi", katakana: "チ" },
+  { char: "つ", romaji: "tsu", katakana: "ツ" },
+  { char: "て", romaji: "te", katakana: "テ" },
+  { char: "と", romaji: "to", katakana: "ト" },
+  { char: "な", romaji: "na", katakana: "ナ" },
+  { char: "に", romaji: "ni", katakana: "ニ" },
+  { char: "ぬ", romaji: "nu", katakana: "ヌ" },
+  { char: "ね", romaji: "ne", katakana: "ネ" },
+  { char: "の", romaji: "no", katakana: "ノ" },
+  { char: "は", romaji: "ha", katakana: "ハ" },
+  { char: "ひ", romaji: "hi", katakana: "ヒ" },
+  { char: "ふ", romaji: "fu", katakana: "フ" },
+  { char: "へ", romaji: "he", katakana: "ヘ" },
+  { char: "ほ", romaji: "ho", katakana: "ホ" },
+  { char: "ま", romaji: "ma", katakana: "マ" },
+  { char: "み", romaji: "mi", katakana: "ミ" },
+  { char: "む", romaji: "mu", katakana: "ム" },
+  { char: "め", romaji: "me", katakana: "メ" },
+  { char: "も", romaji: "mo", katakana: "モ" },
+  { char: "や", romaji: "ya", katakana: "ヤ" },
+  { char: "ゆ", romaji: "yu", katakana: "ユ" },
+  { char: "よ", romaji: "yo", katakana: "ヨ" },
+  { char: "ら", romaji: "ra", katakana: "ラ" },
+  { char: "り", romaji: "ri", katakana: "リ" },
+  { char: "る", romaji: "ru", katakana: "ル" },
+  { char: "れ", romaji: "re", katakana: "レ" },
+  { char: "ろ", romaji: "ro", katakana: "ロ" },
+  { char: "わ", romaji: "wa", katakana: "ワ" },
+  { char: "を", romaji: "wo", katakana: "ヲ" },
+  { char: "ん", romaji: "n", katakana: "ン" }
+];
 
-    <div id="controls-container">
-        <button class="vibe-button" data-filter="filter1">1. 冷白皮濾鏡</button>
-        <button class="vibe-button" data-filter="filter2">2. 發光去灰</button>
-        <button class="vibe-button" data-filter="filter3">3. 美食調</button>
-        <button class="vibe-button" data-filter="filter4">4. 奶油ins風</button>
-        <button class="vibe-button" data-filter="filter5">5. 富士感濾鏡</button>
-        <button class="vibe-button" data-filter="filter6">6. 落日氛圍感</button>
-        <button class="vibe-button" data-filter="filter7">7. 日常街拍濾鏡</button>
-        <button class="vibe-button" data-filter="filter8">8. 絕美日落濾鏡</button>
-        <button class="vibe-button" data-filter="filter9">9. 靜謐暗調</button>
-        <button class="vibe-button" data-filter="reset">🔄 重置</button>
-    </div>
+let mode = 1;
+let question = null;
+let options = [];
+let timer = 8;
+let wrongAnswers = [];
+let countdown;
 
-    <div id="image-container">
-        <img id="display-image">
-        <p id="loading-message">正在處理照片，請稍候...</p>
-    </div>
+function setMode(m) {
+  mode = m;
+  wrongAnswers = [];
+  document.getElementById("wrongList").innerHTML = "";
+  generateQuestion();
+}
 
-    <button id="save-button">📥 儲存編輯後照片</button>
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+function randomRomaji(n) {
+  return shuffle(hiragana.map(h => h.romaji)).slice(0, n);
+}
+function randomKatakana(n) {
+  return shuffle(hiragana.map(h => h.katakana)).slice(0, n);
+}
 
-    <script>
-        const FILTERS = {
-            'filter1': { brightness: 1.15, contrast: 1.10, saturate: 1.15, sepia: 0.05, hueRotate: -5 },
-            'filter2': { brightness: 1.05, contrast: 1.05, saturate: 1.15, sepia: 0.05, hueRotate: 0 },
-            'filter3': { brightness: 1.10, contrast: 1.15, saturate: 1.20, sepia: 0.05, hueRotate: 0 },
-            'filter4': { brightness: 1.10, contrast: 0.90, saturate: 0.85, sepia: 0.15, hueRotate: 0 },
-            'filter5': { brightness: 0.90, contrast: 1.05, saturate: 1.10, sepia: 0.25, hueRotate: 0 },
-            'filter6': { brightness: 1.15, contrast: 1.10, saturate: 1.25, sepia: 0.30, hueRotate: -5 },
-            'filter7': { brightness: 1.05, contrast: 1.20, saturate: 1.40, sepia: 0.00, hueRotate: 0 },
-            'filter8': { brightness: 1.10, contrast: 1.20, saturate: 1.50, sepia: 0.40, hueRotate: 10 },
-            'filter9': { brightness: 0.85, contrast: 1.20, saturate: 0.90, sepia: 0.00, hueRotate: 0 },
-        };
-        
-        const fileInput = document.getElementById('photo-upload');
-        const displayImage = document.getElementById('display-image');
-        const saveButton = document.getElementById('save-button');
-        const controlsContainer = document.getElementById('controls-container');
-        const loadingMessage = document.getElementById('loading-message'); // 新增
-        let originalImage = null;
+function generateQuestion() {
+  clearTimeout(countdown);
+  const q = hiragana[Math.floor(Math.random() * hiragana.length)];
+  if (mode === 1) {
+    options = shuffle([q.romaji, ...randomRomaji(3)]);
+    question = { value: q.char, answer: q.romaji };
+  } else if (mode === 2) {
+    options = shuffle([q.romaji, ...randomRomaji(3)]);
+    question = { value: q.katakana, answer: q.romaji };
+  } else {
+    options = shuffle([q.katakana, ...randomKatakana(3)]);
+    question = { value: q.char, answer: q.katakana };
+  }
+  document.getElementById("question").innerText = "題目: " + question.value;
+  showOptions();
+  timer = 8;
+  document.getElementById("timer").innerText = "剩餘時間: " + timer + " 秒";
+  countdown = setInterval(() => {
+    timer--;
+    document.getElementById("timer").innerText = "剩餘時間: " + timer + " 秒";
+    if (timer <= 0) {
+      clearInterval(countdown);
+      wrongAnswers.push(question);
+      updateWrong();
+      generateQuestion();
+    }
+  }, 1000);
+}
 
-        /**
-         * 讀取用戶選擇的圖片並顯示
-         */
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+function showOptions() {
+  const optDiv = document.getElementById("options");
+  optDiv.innerHTML = "";
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.innerText = opt;
+    btn.onclick = () => chooseAnswer(opt);
+    optDiv.appendChild(btn);
+  });
+}
 
-            // 步驟 1: 隱藏舊圖片，顯示載入提示
-            displayImage.style.display = 'none';
-            saveButton.style.display = 'none';
-            loadingMessage.style.display = 'block'; 
+function chooseAnswer(opt) {
+  clearInterval(countdown);
+  if (opt !== question.answer) {
+    wrongAnswers.push(question);
+    updateWrong();
+  }
+  generateQuestion();
+}
 
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                originalImage = new Image();
-                originalImage.onload = function() {
-                    // 步驟 2: 圖片載入完成，隱藏載入提示，顯示圖片
-                    loadingMessage.style.display = 'none';
-                    displayImage.src = originalImage.src;
-                    displayImage.style.display = 'block';
-                    saveButton.style.display = 'block';
-                    
-                    applyCssFilter('reset');
-                    setActiveButton(null); 
-                };
-                originalImage.crossOrigin = "Anonymous"; 
-                originalImage.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
+function updateWrong() {
+  const list = document.getElementById("wrongList");
+  list.innerHTML = "";
+  wrongAnswers.forEach(w => {
+    const li = document.createElement("li");
+    li.innerText = "題目: " + w.value + " → 正解: " + w.answer;
+    list.appendChild(li);
+  });
+}
 
-        function applyCssFilter(filterKey) {
-            if (!originalImage) return;
-
-            let filterStyle = '';
-            if (filterKey !== 'reset' && FILTERS[filterKey]) {
-                const f = FILTERS[filterKey];
-                filterStyle = `
-                    brightness(${f.brightness}) 
-                    contrast(${f.contrast}) 
-                    saturate(${f.saturate}) 
-                    hue-rotate(${f.hueRotate}deg) 
-                    sepia(${f.sepia})
-                `.replace(/\s+/g, ' ').trim(); 
-            }
-            
-            displayImage.style.filter = filterStyle;
-        }
-
-        function setActiveButton(activeButton) {
-            document.querySelectorAll('.vibe-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            if (activeButton) {
-                activeButton.classList.add('active');
-            }
-        }
-
-        controlsContainer.addEventListener('click', (e) => {
-            const button = e.target.closest('.vibe-button');
-            if (button) {
-                const filter = button.dataset.filter;
-                applyCssFilter(filter);
-                setActiveButton(button.dataset.filter === 'reset' ? null : button);
-            }
-        });
-
-        /**
-         * 儲存圖片功能 (引導用戶長按儲存)
-         */
-        saveButton.addEventListener('click', () => {
-            if (!originalImage) {
-                alert('沒有可儲存的照片！');
-                return;
-            }
-            
-            alert('抱歉，純網頁環境無法將 CSS 濾鏡效果完全固化到下載的圖片中。\n\n**請改用以下方式儲存編輯後的照片：**\n\n1. 長按編輯後的照片。\n2. 在彈出的選單中選擇「儲存圖片」。');
-        });
-
-        // 初始化：點擊上傳區域觸發檔案選擇
-        document.getElementById('upload-container').addEventListener('click', () => {
-            fileInput.click();
-        });
-        
-    </script>
+// 預設進入平假名模式
+setMode(1);
+</script>
 </body>
 </html>
