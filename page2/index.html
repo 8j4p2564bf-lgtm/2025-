@@ -13,13 +13,13 @@
     }
     h1 {
       font-size: 48px;
-      margin: 30px 0;
+      margin: 20px 0;
       color: #333;
       text-shadow: 2px 2px 4px #fff;
     }
     h2 {
       font-size: 28px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       color: #444;
     }
     button {
@@ -39,13 +39,13 @@
     }
     #question {
       font-size: 72px;
-      margin: 30px;
+      margin: 20px;
       color: #222;
     }
     #timer {
       font-size: 32px;
       color: #d32f2f;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
     #options button {
       display: inline-block;
@@ -58,11 +58,11 @@
       background: #388e3c;
     }
     #wrong {
-      margin-top: 30px;
+      margin-top: 20px;
       background: rgba(255,255,255,0.9);
-      padding: 20px;
+      padding: 15px;
       border-radius: 12px;
-      width: 80%;
+      width: 85%;
       margin-left: auto;
       margin-right: auto;
     }
@@ -76,6 +76,25 @@
     }
     #quizArea {
       display: none;
+    }
+
+    /* --- 動畫效果 --- */
+    @keyframes fadeInZoom {
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes slideIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in-zoom {
+      animation: fadeInZoom 0.4s ease-out;
+    }
+    .slide-in {
+      animation: slideIn 0.3s ease-out;
+    }
+    .fade-in {
+      animation: fadeInZoom 0.3s ease-out;
     }
   </style>
 </head>
@@ -180,5 +199,4 @@ function shuffle(arr) {
 
 function generateQuestion() {
   clearInterval(countdown);
-  const q = hiragana[Math.floor(Math.random() * hiragana.length)];
-  if (
+  const q
